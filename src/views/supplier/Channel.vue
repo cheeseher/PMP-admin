@@ -1,228 +1,186 @@
-<!-- 供应商管理/供应商通道管理 - 管理供应商支付通道 -->
+<!-- 供应商管理/供应商通道列表 - 管理供应商通道信息 -->
 <template>
-  <div class="supplier-channel">
-    <!-- 供应商信息 -->
-    <el-card shadow="never" class="mb-4">
-      <template #header>
-        <div class="card-header">
-          <span>供应商信息</span>
-          <el-tag type="success">合作中</el-tag>
+  <div class="supplier-channel-container">
+    <!-- 搜索区域 -->
+    <div class="search-section">
+      <div class="search-row">
+        <div class="search-item">
+          <span class="label">ID</span>
+          <el-input v-model="searchForm.id" placeholder="请输入" clearable />
         </div>
-      </template>
-      <el-descriptions :column="4" border>
-        <el-descriptions-item label="供应商名称" width="280">
-          示例支付科技有限公司
-        </el-descriptions-item>
-        <el-descriptions-item label="供应商编码" width="200">
-          S202403150001
-        </el-descriptions-item>
-        <el-descriptions-item label="供应商类型" width="200">
-          <el-tag size="small" type="primary">支付机构</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="通道数量" width="200">
-          <el-tag size="small" type="info">5</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="联系人">
-          张三
-        </el-descriptions-item>
-        <el-descriptions-item label="联系电话">
-          13800138000
-        </el-descriptions-item>
-        <el-descriptions-item label="联系邮箱">
-          zhangsan@example.com
-        </el-descriptions-item>
-        <el-descriptions-item label="创建时间">
-          2024-03-15 10:00:00
-        </el-descriptions-item>
-      </el-descriptions>
-    </el-card>
-
-    <!-- 搜索卡片 -->
-    <el-card class="search-card">
-      <el-form :model="searchForm" inline>
-        <el-form-item label="通道名称">
-          <el-input v-model="searchForm.channelName" placeholder="请输入通道名称" clearable />
-        </el-form-item>
-        <el-form-item label="支付类型">
-          <el-select v-model="searchForm.payType" placeholder="请选择" clearable style="width: 168px">
-            <el-option label="支付宝" value="ALIPAY" />
-            <el-option label="微信" value="WECHAT" />
-            <el-option label="银联" value="UNIONPAY" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="通道状态">
-          <el-select v-model="searchForm.status" placeholder="请选择" clearable style="width: 168px">
-            <el-option label="正常" value="ACTIVE" />
-            <el-option label="维护中" value="MAINTENANCE" />
-            <el-option label="已关闭" value="CLOSED" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
+        <div class="search-item">
+          <span class="label">通道名称</span>
+          <el-input v-model="searchForm.channelName" placeholder="请输入" clearable />
+        </div>
+        <div class="search-item">
+          <span class="label">编码</span>
+          <el-input v-model="searchForm.channelCode" placeholder="请输入" clearable />
+        </div>
+        <div class="search-actions">
           <el-button type="primary" :icon="Search" @click="handleSearch">搜索</el-button>
-          <el-button :icon="Refresh" @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <!-- 通道列表 -->
-    <el-card shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>通道列表</span>
-          <div class="right">
-            <el-button type="primary" :icon="Plus" @click="handleAdd">新增通道</el-button>
-            <el-button type="success" :icon="Download" @click="handleExport">导出Excel</el-button>
-          </div>
+          <el-button @click="handleReset">重置</el-button>
         </div>
-      </template>
+      </div>
+    </div>
 
-      <el-table :data="tableData" style="width: 100%" border>
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="channelCode" label="通道编码" width="120" />
-        <el-table-column prop="channelName" label="通道名称" width="180" />
-        <el-table-column prop="payType" label="支付方式" width="120">
+    <!-- 操作按钮区域 -->
+    <div class="action-buttons">
+      <el-button type="primary" @click="handleAdd">
+        <el-icon><Plus /></el-icon>批量添加
+      </el-button>
+      <el-button type="success" @click="handleBatchEnable" :disabled="selectedRows.length === 0">
+        <el-icon><Check /></el-icon>批量启用
+      </el-button>
+      <el-button type="danger" @click="handleBatchDisable" :disabled="selectedRows.length === 0">
+        <el-icon><Close /></el-icon>批量禁用
+      </el-button>
+    </div>
+
+    <!-- 表格区域 -->
+    <div class="table-container">
+      <el-table
+        v-loading="tableLoading"
+        :data="tableData"
+        style="width: 100%"
+        border
+        stripe
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column label="ID" prop="id" width="60" align="center" />
+        <el-table-column label="通道名称" prop="channelName" min-width="150" />
+        <el-table-column label="通道编码" prop="channelCode" width="100" align="center" />
+        <el-table-column label="费率" width="80" align="center">
           <template #default="scope">
-            <el-tag :type="getPayTypeType(scope.row.payType)">
-              {{ getPayTypeText(scope.row.payType) }}
+            {{ scope.row.rate.toFixed(2) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="上游" prop="supplier" width="120" />
+        <el-table-column label="上游编码" prop="supplierCode" width="120" align="center" />
+        <el-table-column label="支付类型" prop="payType" width="120" align="center" />
+        <el-table-column label="分组" prop="category" width="120" align="center" />
+        <el-table-column label="是否启用" width="80" align="center">
+          <template #default="scope">
+            <el-tag
+              :type="scope.row.enabled ? 'success' : 'danger'"
+              effect="light"
+              size="small"
+            >
+              {{ scope.row.enabled ? '启用' : '禁用' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="rate" label="费率" width="120">
+        <el-table-column label="操作" width="150" fixed="right" align="center">
           <template #default="scope">
-            {{ scope.row.rate }}%
-          </template>
-        </el-table-column>
-        <el-table-column prop="minAmount" label="单笔最小(元)" width="120">
-          <template #default="scope">
-            ¥ {{ scope.row.minAmount.toFixed(2) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="maxAmount" label="单笔最大(元)" width="120">
-          <template #default="scope">
-            ¥ {{ scope.row.maxAmount.toFixed(2) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="dailyLimit" label="日交易限额(元)" width="120">
-          <template #default="scope">
-            ¥ {{ scope.row.dailyLimit.toFixed(2) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="status" label="通道状态" width="100">
-          <template #default="scope">
-            <el-tag :type="getStatusType(scope.row.status)">
-              {{ getStatusText(scope.row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column label="操作" width="250" fixed="right">
-          <template #default="scope">
-            <el-button type="primary" link :icon="Edit" @click="handleEdit(scope.row)">
+            <el-button
+              type="primary"
+              link
+              size="small"
+              @click="handleEdit(scope.row)"
+            >
               编辑
             </el-button>
             <el-button
-              v-if="scope.row.status === 'active'"
-              type="danger"
+              type="primary"
               link
-              :icon="TakeawayBox"
-              @click="handleDisable(scope.row)"
+              size="small"
+              @click="handleToggleStatus(scope.row)"
             >
-              禁用
-            </el-button>
-            <el-button
-              v-if="scope.row.status === 'disabled'"
-              type="success"
-              link
-              :icon="Sell"
-              @click="handleEnable(scope.row)"
-            >
-              启用
-            </el-button>
-            <el-button type="danger" link :icon="Delete" @click="handleDelete(scope.row)">
-              删除
+              {{ scope.row.enabled ? '禁用' : '启用' }}
             </el-button>
           </template>
         </el-table-column>
       </el-table>
 
-      <!-- 分页 -->
+      <!-- 分页区域 -->
       <div class="pagination-container">
         <el-pagination
-          v-model:current-page="pagination.currentPage"
-          v-model:page-size="pagination.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          :total="pagination.total"
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 30, 50]"
+          :total="total"
           layout="total, sizes, prev, pager, next, jumper"
+          background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
       </div>
-    </el-card>
+    </div>
 
-    <!-- 表单对话框 -->
+    <!-- 添加/编辑对话框 -->
     <el-dialog
-      v-model="formDialogVisible"
-      :title="formType === 'add' ? '新增通道' : '编辑通道'"
-      width="500px"
+      v-model="dialogVisible"
+      :title="dialogType === 'add' ? '添加通道' : '编辑通道'"
+      width="600px"
+      destroy-on-close
     >
-      <el-form :model="channelForm" label-width="100px">
-        <el-form-item label="通道名称">
+      <el-form
+        ref="formRef"
+        :model="channelForm"
+        :rules="rules"
+        label-width="100px"
+        style="max-width: 500px; margin: 0 auto;"
+      >
+        <el-form-item label="通道名称" prop="channelName">
           <el-input v-model="channelForm.channelName" placeholder="请输入通道名称" />
         </el-form-item>
-        <el-form-item label="支付类型">
-          <el-select v-model="channelForm.payType" placeholder="请选择" style="width: 100%">
-            <el-option label="支付宝" value="ALIPAY" />
-            <el-option label="微信" value="WECHAT" />
-            <el-option label="银联" value="UNIONPAY" />
+        <el-form-item label="通道编码" prop="channelCode">
+          <el-input v-model="channelForm.channelCode" placeholder="请输入通道编码" />
+        </el-form-item>
+        <el-form-item label="费率" prop="rate">
+          <el-input-number 
+            v-model="channelForm.rate" 
+            :precision="2" 
+            :step="0.1" 
+            :min="0"
+            style="width: 100%;"
+          />
+        </el-form-item>
+        <el-form-item label="上游" prop="supplier">
+          <el-select v-model="channelForm.supplier" placeholder="请选择上游" clearable style="width: 100%;">
+            <el-option
+              v-for="item in supplierOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
           </el-select>
         </el-form-item>
-        <el-form-item label="费率">
-          <el-input-number
-            v-model="channelForm.rate"
-            :min="0"
-            :max="1"
-            :precision="4"
-            :step="0.0001"
-            style="width: 100%"
-          />
+        <el-form-item label="上游编码" prop="supplierCode">
+          <el-input v-model="channelForm.supplierCode" placeholder="请输入上游编码" disabled />
         </el-form-item>
-        <el-form-item label="单笔最小">
-          <el-input-number
-            v-model="channelForm.minAmount"
-            :min="0"
-            :precision="2"
-            style="width: 100%"
-          />
+        <el-form-item label="支付类型" prop="payType">
+          <el-select v-model="channelForm.payType" placeholder="请选择支付类型" clearable style="width: 168px;">
+            <el-option
+              v-for="item in payTypeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="单笔最大">
-          <el-input-number
-            v-model="channelForm.maxAmount"
-            :min="channelForm.minAmount"
-            :precision="2"
-            style="width: 100%"
-          />
+        <el-form-item label="分组" prop="category">
+          <el-select v-model="channelForm.category" placeholder="请选择分组" clearable style="width: 168px;">
+            <el-option
+              v-for="item in categoryOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="日限额">
-          <el-input-number
-            v-model="channelForm.dailyLimit"
-            :min="channelForm.maxAmount"
-            :precision="2"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input
-            v-model="channelForm.remark"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入备注信息"
+        <el-form-item label="状态" prop="enabled">
+          <el-switch
+            v-model="channelForm.enabled"
+            active-text="启用"
+            inactive-text="禁用"
           />
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="formDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleFormSubmit">确认</el-button>
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleSubmitForm">确认</el-button>
         </span>
       </template>
     </el-dialog>
@@ -230,242 +188,344 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { Plus, Download, Edit, Delete, TakeawayBox, Sell, Search, Refresh } from '@element-plus/icons-vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
+import { Search, Plus, Check, Close } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { useRoute } from 'vue-router'
+import { channelList, payTypeOptions, categoryOptions } from '@/data/channelData'
+import { supplierList } from '@/data/supplierData'
 
-const route = useRoute()
-const supplierNo = route.query.supplierNo
-
+// 搜索表单
 const searchForm = reactive({
+  id: '',
   channelName: '',
-  payType: '',
-  status: ''
+  channelCode: ''
 })
 
-const tableData = ref([
-  {
-    channelCode: 'C202403150001',
-    channelName: '微信支付通道',
-    payType: 'wechat',
-    rate: 0.6,
-    minAmount: 0.01,
-    maxAmount: 50000.00,
-    dailyLimit: 1000000.00,
-    status: 'active',
-    createTime: '2024-03-15 10:00:00'
-  },
-  {
-    channelCode: 'C202403150002',
-    channelName: '支付宝通道',
-    payType: 'alipay',
-    rate: 0.55,
-    minAmount: 0.01,
-    maxAmount: 100000.00,
-    dailyLimit: 2000000.00,
-    status: 'disabled',
-    createTime: '2024-03-15 11:00:00'
-  }
-])
+// 表格数据
+const tableData = ref([])
+const tableLoading = ref(false)
 
-const currentPage = ref(1)
-const pageSize = ref(10)
-const total = ref(100)
-
-const formDialogVisible = ref(false)
-const formType = ref('add')
-const channelForm = reactive({
-  channelName: '',
-  payType: '',
-  rate: 0,
-  minAmount: 0,
-  maxAmount: 0,
-  dailyLimit: 0,
-  remark: ''
-})
-
-const handleSearch = () => {
-  // TODO: 实现搜索逻辑
-  console.log('搜索条件：', searchForm)
+// 选中的行
+const selectedRows = ref([])
+const handleSelectionChange = (selection) => {
+  selectedRows.value = selection
 }
 
+// 分页相关
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+
+// 对话框相关
+const dialogVisible = ref(false)
+const dialogType = ref('add') // 'add' 或 'edit'
+const formRef = ref(null)
+const channelForm = reactive({
+  id: '',
+  channelName: '',
+  channelCode: '',
+  rate: 6.00,
+  supplier: '',
+  supplierCode: '',
+  payType: '',
+  category: '',
+  enabled: true
+})
+
+// 表单验证规则
+const rules = {
+  channelName: [{ required: true, message: '请输入通道名称', trigger: 'blur' }],
+  channelCode: [{ required: true, message: '请输入通道编码', trigger: 'blur' }],
+  rate: [{ required: true, message: '请输入费率', trigger: 'blur' }],
+  supplier: [{ required: true, message: '请选择上游', trigger: 'change' }],
+  payType: [{ required: true, message: '请选择支付类型', trigger: 'change' }],
+  category: [{ required: true, message: '请选择分组', trigger: 'change' }]
+}
+
+// 上游选项
+const supplierOptions = computed(() => {
+  return supplierList.map(item => ({
+    label: item.supplier,
+    value: item.supplier,
+    code: item.code
+  }))
+})
+
+// 监听上游变化，自动填充上游编码
+watch(() => channelForm.supplier, (newVal) => {
+  if (newVal) {
+    const selectedSupplier = supplierOptions.value.find(item => item.value === newVal)
+    channelForm.supplierCode = selectedSupplier ? selectedSupplier.code : ''
+  } else {
+    channelForm.supplierCode = ''
+  }
+})
+
+// 搜索方法
+const handleSearch = () => {
+  tableLoading.value = true
+  
+  // 模拟API调用
+  setTimeout(() => {
+    let filteredData = [...channelList]
+    
+    if (searchForm.id) {
+      filteredData = filteredData.filter(item => 
+        item.id.toString().includes(searchForm.id))
+    }
+    
+    if (searchForm.channelName) {
+      filteredData = filteredData.filter(item => 
+        item.channelName.includes(searchForm.channelName))
+    }
+    
+    if (searchForm.channelCode) {
+      filteredData = filteredData.filter(item => 
+        item.channelCode.includes(searchForm.channelCode))
+    }
+    
+    tableData.value = filteredData
+    total.value = filteredData.length
+    
+    tableLoading.value = false
+    ElMessage.success('查询成功')
+  }, 500)
+}
+
+// 重置搜索条件
 const handleReset = () => {
   Object.keys(searchForm).forEach(key => {
     searchForm[key] = ''
   })
+  handleSearch()
 }
 
+// 添加通道
 const handleAdd = () => {
-  formType.value = 'add'
-  Object.keys(channelForm).forEach(key => {
-    channelForm[key] = key === 'rate' ? 0 : key.includes('Amount') || key === 'dailyLimit' ? 0 : ''
-  })
-  formDialogVisible.value = true
+  dialogType.value = 'add'
+  resetForm()
+  dialogVisible.value = true
 }
 
+// 编辑通道
 const handleEdit = (row) => {
-  formType.value = 'edit'
+  dialogType.value = 'edit'
+  resetForm()
+  
+  // 填充表单数据
   Object.keys(channelForm).forEach(key => {
-    channelForm[key] = row[key] || ''
+    if (key in row) {
+      channelForm[key] = row[key]
+    }
   })
-  formDialogVisible.value = true
+  
+  dialogVisible.value = true
 }
 
-const handleFormSubmit = () => {
-  if (!channelForm.channelName || !channelForm.payType) {
-    ElMessage.warning('请填写完整的通道信息')
-    return
-  }
-
-  if (channelForm.maxAmount < channelForm.minAmount) {
-    ElMessage.warning('单笔最大金额不能小于最小金额')
-    return
-  }
-
-  if (channelForm.dailyLimit < channelForm.maxAmount) {
-    ElMessage.warning('日限额不能小于单笔最大金额')
-    return
-  }
-
-  // TODO: 实现表单提交逻辑
-  ElMessage.success(formType.value === 'add' ? '添加成功' : '修改成功')
-  formDialogVisible.value = false
-}
-
-const handleDisable = (row) => {
+// 切换状态
+const handleToggleStatus = (row) => {
+  const newStatus = !row.enabled
+  const action = newStatus ? '启用' : '禁用'
+  
   ElMessageBox.confirm(
-    '确认要禁用该通道吗？',
-    '提示',
+    `确认${action}通道 "${row.channelName}"?`,
+    `${action}确认`,
     {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
     }
   ).then(() => {
-    console.log('禁用通道：', row)
-    ElMessage.success('通道已禁用')
-  }).catch(() => {})
+    // 模拟API调用
+    row.enabled = newStatus
+    ElMessage.success(`${action}成功`)
+  }).catch(() => {
+    ElMessage.info('已取消操作')
+  })
 }
 
-const handleEnable = (row) => {
+// 批量启用
+const handleBatchEnable = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请至少选择一条记录')
+    return
+  }
+  
   ElMessageBox.confirm(
-    '确认要启用该通道吗？',
-    '提示',
+    `确认批量启用已选中的 ${selectedRows.value.length} 条记录?`,
+    '批量启用',
     {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
     }
   ).then(() => {
-    console.log('启用通道：', row)
-    ElMessage.success('通道已启用')
-  }).catch(() => {})
+    // 模拟API调用
+    const ids = selectedRows.value.map(item => item.id)
+    tableData.value.forEach(item => {
+      if (ids.includes(item.id)) {
+        item.enabled = true
+      }
+    })
+    ElMessage.success(`批量启用成功`)
+  }).catch(() => {
+    ElMessage.info('已取消操作')
+  })
 }
 
-const handleDelete = (row) => {
+// 批量禁用
+const handleBatchDisable = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请至少选择一条记录')
+    return
+  }
+  
   ElMessageBox.confirm(
-    '确认要删除该通道吗？删除后将无法恢复！',
-    '警告',
+    `确认批量禁用已选中的 ${selectedRows.value.length} 条记录?`,
+    '批量禁用',
     {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
     }
   ).then(() => {
-    console.log('删除通道：', row)
-    ElMessage.success('通道已删除')
-  }).catch(() => {})
+    // 模拟API调用
+    const ids = selectedRows.value.map(item => item.id)
+    tableData.value.forEach(item => {
+      if (ids.includes(item.id)) {
+        item.enabled = false
+      }
+    })
+    ElMessage.success(`批量禁用成功`)
+  }).catch(() => {
+    ElMessage.info('已取消操作')
+  })
 }
 
-const handleSizeChange = (val) => {
-  pageSize.value = val
-  // TODO: 重新加载数据
-}
-
-const handleCurrentChange = (val) => {
-  currentPage.value = val
-  // TODO: 重新加载数据
-}
-
-const handleExport = () => {
-  ElMessage.success('通道数据导出成功')
-}
-
-// 支付方式映射
-const getPayTypeType = (type) => {
-  const map = {
-    wechat: 'success',
-    alipay: 'primary',
-    union: 'warning',
-    bank: 'info'
+// 重置表单
+const resetForm = () => {
+  if (formRef.value) {
+    formRef.value.resetFields()
   }
-  return map[type]
+  
+  // 重置为默认值
+  Object.assign(channelForm, {
+    id: '',
+    channelName: '',
+    channelCode: '',
+    rate: 6.00,
+    supplier: '',
+    supplierCode: '',
+    payType: '',
+    category: '',
+    enabled: true
+  })
 }
 
-const getPayTypeText = (type) => {
-  const map = {
-    wechat: '微信支付',
-    alipay: '支付宝',
-    union: '银联',
-    bank: '网银'
-  }
-  return map[type]
+// 提交表单
+const handleSubmitForm = () => {
+  formRef.value.validate((valid) => {
+    if (valid) {
+      if (dialogType.value === 'add') {
+        // 添加操作
+        const newId = Math.max(...tableData.value.map(item => item.id), 0) + 1
+        const newChannel = {
+          ...channelForm,
+          id: newId
+        }
+        tableData.value.push(newChannel)
+        ElMessage.success('添加成功')
+      } else {
+        // 编辑操作
+        const index = tableData.value.findIndex(item => item.id === channelForm.id)
+        if (index !== -1) {
+          tableData.value[index] = { ...channelForm }
+          ElMessage.success('更新成功')
+        }
+      }
+      dialogVisible.value = false
+    } else {
+      return false
+    }
+  })
 }
 
-// 状态映射
-const getStatusType = (status) => {
-  const map = {
-    active: 'success',
-    disabled: 'info',
-    error: 'danger'
-  }
-  return map[status]
+// 每页条数改变
+const handleSizeChange = (size) => {
+  pageSize.value = size
+  handleSearch()
 }
 
-const getStatusText = (status) => {
-  const map = {
-    active: '正常',
-    disabled: '已禁用',
-    error: '异常'
-  }
-  return map[status]
+// 页码改变
+const handleCurrentChange = (page) => {
+  currentPage.value = page
+  handleSearch()
 }
+
+// 页面加载时获取数据
+onMounted(() => {
+  // 模拟从服务器获取数据
+  tableLoading.value = true
+  setTimeout(() => {
+    tableData.value = channelList
+    total.value = channelList.length
+    tableLoading.value = false
+  }, 500)
+})
 </script>
 
 <style scoped>
-.supplier-channel {
+.supplier-channel-container {
   padding: 20px;
 }
 
-.mb-4 {
-  margin-bottom: 16px;
+.search-section {
+  background-color: #fff;
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
 }
 
-.card-header {
+.search-row {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
   align-items: center;
 }
 
-.right {
+.search-item {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
 }
 
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
+.search-item .label {
+  min-width: 70px;
+  color: #606266;
 }
 
-.search-card {
+.search-actions {
+  margin-left: auto;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.table-container {
+  background-color: #fff;
+  padding: 16px;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
 }
 
-.pagination {
-  margin-top: 20px;
+.pagination-container {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  margin-top: 20px;
 }
 </style> 

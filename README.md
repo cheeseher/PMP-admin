@@ -11,19 +11,18 @@ src/
 │   │   ├── MerchantOrder.vue   # 商户订单管理
 │   │   ├── Recharge.vue       # 账户充值列表
 │   │   └── Withdraw.vue       # 提现审核
-│   ├── merchant/        # 商户管理模块
-│   │   ├── MerchantList.vue   # 商户列表
-│   │   └── Products.vue       # 商户产品列表
 │   ├── supplier/        # 供应商管理模块
 │   │   ├── SupplierList.vue   # 供应商列表
 │   │   └── Channel.vue        # 供应商通道列表
+│   ├── product/         # 商品管理模块
+│   │   └── ProductList.vue    # 商品列表
 │   ├── payment/         # 支付配置模块
 │   │   ├── Type.vue           # 支付类型管理
 │   │   └── Product.vue        # 支付产品管理
 │   └── statistics/      # 数据统计模块
-│       ├── Product.vue        # 产品跑量统计
+│       ├── ProductStats.vue   # 产品跑量统计
 │       ├── Upstream.vue       # 上游渠道统计
-│       ├── Channel.vue        # 支付通道统计
+│       ├── ChannelStats.vue   # 支付通道统计
 │       ├── MerchantRank.vue   # 商户支付排行
 │       ├── PlatformProfit.vue # 平台分润统计
 │       ├── MerchantIncome.vue # 商户收款统计
@@ -49,22 +48,21 @@ src/
 - 账户充值列表：充值记录查询、充值状态管理
 - 商户提现审核：提现申请处理、审核流程管理
 
-### 商户管理模块 (/merchant)
-- 商户列表：商户信息管理、状态管理
-- 商户产品列表：产品配置、费率设置、产品上下架
-
 ### 供应商管理模块 (/supplier)
 - 供应商列表：供应商信息管理、状态管理
 - 供应商通道列表：通道配置、费率设置、通道状态管理
+
+### 商品管理模块 (/product)
+- 商品列表：商品信息管理、添加/编辑商品、批量配置、状态管理
 
 ### 支付配置模块 (/payment)
 - 支付类型管理：支付方式配置、状态管理
 - 支付产品管理：产品参数配置、费率设置
 
 ### 数据统计模块 (/statistics)
-- 产品跑量统计 (Product.vue)：产品交易量统计分析
+- 产品跑量统计 (ProductStats.vue)：产品交易量统计分析
 - 上游渠道统计 (Upstream.vue)：上游渠道数据分析
-- 支付通道统计 (Channel.vue)：支付通道数据分析
+- 支付通道统计 (ChannelStats.vue)：支付通道数据分析
 - 商户支付排行 (MerchantRank.vue)：商户交易排名分析
 - 平台分润统计 (PlatformProfit.vue)：平台收益数据统计
 - 商户收款统计 (MerchantIncome.vue)：商户收入详细分析

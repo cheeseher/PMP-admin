@@ -1,188 +1,164 @@
 <!-- 订单管理/商户订单管理 - 展示和管理商户的订单列表 -->
 <template>
   <div class="merchant-order">
-    <!-- 统计卡片 -->
-    <el-row :gutter="20" class="mb-4">
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>今日交易总额</span>
-              <el-tag type="success" size="small">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">¥ 358,000.00</span>
-            <div class="trend">
-              <span class="label">较昨日</span>
-              <el-tag type="success" size="small">
-                <el-icon><ArrowUp /></el-icon>
-                15.2%
-              </el-tag>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>今日订单笔数</span>
-              <el-tag type="success" size="small">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">1,286</span>
-            <div class="trend">
-              <span class="label">较昨日</span>
-              <el-tag type="success" size="small">
-                <el-icon><ArrowUp /></el-icon>
-                12.5%
-              </el-tag>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>今日成功率</span>
-              <el-tag type="success" size="small">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">99.8%</span>
-            <div class="trend">
-              <span class="label">较昨日</span>
-              <el-tag type="info" size="small">
-                <el-icon><Minus /></el-icon>
-                0.1%
-              </el-tag>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>今日退款金额</span>
-              <el-tag type="success" size="small">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">¥ 2,360.00</span>
-            <div class="trend">
-              <span class="label">较昨日</span>
-              <el-tag type="danger" size="small">
-                <el-icon><ArrowDown /></el-icon>
-                8.3%
-              </el-tag>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
     <!-- 搜索表单 -->
-    <el-card shadow="never" class="mb-4">
-      <el-form :model="searchForm" label-width="120px" inline>
-        <el-form-item label="商户名称">
-          <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 168px" clearable />
-        </el-form-item>
-        <el-form-item label="订单号">
-          <el-input v-model="searchForm.orderNo" placeholder="请输入订单号" style="width: 168px" clearable />
-        </el-form-item>
-        <el-form-item label="商户订单号">
-          <el-input v-model="searchForm.merchantOrderNo" placeholder="请输入商户订单号" style="width: 168px" clearable />
-        </el-form-item>
-        <el-form-item label="支付通道">
-          <el-select v-model="searchForm.channelId" placeholder="请选择通道" style="width: 168px" clearable>
-            <el-option label="支付宝" value="alipay" />
-            <el-option label="微信支付" value="wxpay" />
-            <el-option label="银联" value="unionpay" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="订单状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" style="width: 168px" clearable>
-            <el-option label="待支付" value="pending" />
-            <el-option label="支付中" value="processing" />
-            <el-option label="支付成功" value="success" />
-            <el-option label="支付失败" value="failed" />
-            <el-option label="已退款" value="refunded" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="下单时间">
-          <el-date-picker
-            v-model="searchForm.dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            style="width: 360px"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" :icon="Search" @click="handleSearch">搜索</el-button>
-          <el-button :icon="Refresh" @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
+    <el-card shadow="never" class="search-card">
+      <div class="search-form">
+        <el-form :model="searchForm" inline>
+          <el-form-item label="今日">
+            <el-select v-model="searchForm.today" placeholder="请选择" style="width: 168px" clearable>
+              <el-option label="全部" value="all" />
+              <el-option label="今日" value="today" />
+              <el-option label="昨日" value="yesterday" />
+              <el-option label="本周" value="week" />
+              <el-option label="本月" value="month" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="日期范围">
+            <el-date-picker
+              v-model="searchForm.dateRange"
+              type="daterange"
+              range-separator="~"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 360px"
+            />
+          </el-form-item>
+          <el-form-item label="平台单号">
+            <el-input v-model="searchForm.platformOrderNo" placeholder="请输入平台单号" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="商户ID">
+            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="商户名称">
+            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="商户类型">
+            <el-input v-model="searchForm.merchantType" placeholder="请输入商户类型" style="width: 168px" clearable />
+          </el-form-item>
+        </el-form>
+      </div>
+      <div class="second-row">
+        <el-form :model="searchForm" inline>
+          <el-form-item label="上游单号">
+            <el-input v-model="searchForm.upstreamOrderNo" placeholder="请输入上游单号" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="产品">
+            <el-select v-model="searchForm.product" placeholder="请选择" style="width: 168px" clearable>
+              <el-option label="全部产品" value="all" />
+              <el-option label="支付宝" value="alipay" />
+              <el-option label="微信支付" value="wxpay" />
+              <el-option label="银联" value="unionpay" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="产品编码">
+            <el-input v-model="searchForm.productCode" placeholder="请输入产品编码" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="上游">
+            <el-select v-model="searchForm.upstream" placeholder="请选择" style="width: 168px" clearable>
+              <el-option label="全部上游" value="all" />
+              <el-option label="上游A" value="A" />
+              <el-option label="上游B" value="B" />
+              <el-option label="上游C" value="C" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="上游通道">
+            <el-select v-model="searchForm.upstreamChannel" placeholder="请选择" style="width: 168px" clearable>
+              <el-option label="全部通道" value="all" />
+              <el-option label="通道1" value="1" />
+              <el-option label="通道2" value="2" />
+              <el-option label="通道3" value="3" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="通道编码">
+            <el-input v-model="searchForm.channelCode" placeholder="请输入通道编码" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="通道状态">
+            <el-select v-model="searchForm.channelStatus" placeholder="请选择" style="width: 168px" clearable>
+              <el-option label="全部状态" value="all" />
+              <el-option label="成功" value="success" />
+              <el-option label="失败" value="failed" />
+              <el-option label="处理中" value="processing" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button :icon="Refresh" @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
     </el-card>
 
-    <!-- 数据表格 -->
-    <el-card shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>订单列表</span>
-          <div class="right">
-            <el-button type="success" :icon="Download" @click="handleExport">导出Excel</el-button>
-          </div>
-        </div>
-      </template>
+    <!-- 统计信息区域 -->
+    <div class="stat-tags">
+      <el-tag type="success" effect="plain">总服务费：{{ formatAmount(5000) }}</el-tag>
+      <el-tag type="success" effect="plain">成功笔数：5000</el-tag>
+      <el-tag type="success" effect="plain">总利润金额：{{ formatAmount(5000) }}</el-tag>
+      <el-tag type="success" effect="plain">总利润率：0.00%</el-tag>
+      <el-tag type="success" effect="plain">成功总额：{{ formatAmount(5000) }}</el-tag>
+      <el-tag type="success" effect="plain">成交笔数：5000</el-tag>
+      <el-tag type="success" effect="plain">升序服务费：{{ formatAmount(5000) }}</el-tag>
+      <el-tag type="success" effect="plain">升序利润：{{ formatAmount(5000) }}</el-tag>
+      <el-tag type="success" effect="plain">下游渠道费：{{ formatAmount(5000) }}</el-tag>
+      <el-tag type="success" effect="plain">上游渠道费：{{ formatAmount(0) }}</el-tag>
+    </div>
 
-      <el-table :data="tableData" style="width: 100%" border>
+    <!-- 数据表格 -->
+    <el-card shadow="never" class="table-card">
+      <div class="table-header">
+        <div class="left">
+          <el-button-group>
+            <el-button type="primary" :icon="Search">查询</el-button>
+            <el-button :icon="Refresh">刷新</el-button>
+          </el-button-group>
+        </div>
+        <div class="right">
+          <el-button-group>
+            <el-button icon="Printer">打印</el-button>
+            <el-button icon="Download" @click="handleExport">导出</el-button>
+            <el-button icon="Refresh">刷新</el-button>
+          </el-button-group>
+        </div>
+      </div>
+
+      <el-table
+        :data="tableData"
+        border
+        style="width: 100%"
+        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
+      >
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="orderNo" label="订单号" width="180" />
-        <el-table-column prop="merchantOrderNo" label="商户订单号" width="180" />
-        <el-table-column prop="merchantName" label="商户名称" width="150" />
-        <el-table-column prop="amount" label="订单金额" width="120">
+        <el-table-column prop="merchantId" label="商户ID" width="80" />
+        <el-table-column prop="merchantName" label="商户名称" width="120" />
+        <el-table-column prop="upstream" label="上游" width="100" />
+        <el-table-column prop="orderNo" label="平台单号" width="120" />
+        <el-table-column prop="productCode" label="产品编码" width="100" />
+        <el-table-column prop="productName" label="产品名称" width="120" />
+        <el-table-column prop="orderAmount" label="订单金额" width="120">
           <template #default="scope">
-            ¥ {{ scope.row.amount.toFixed(2) }}
+            {{ formatAmount(scope.row.orderAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="channelName" label="支付通道" width="120" />
-        <el-table-column prop="status" label="订单状态" width="100">
+        <el-table-column prop="orderStatus" label="订单状态" width="90">
           <template #default="scope">
-            <el-tag :type="getStatusType(scope.row.status)">
-              {{ getStatusText(scope.row.status) }}
+            <el-tag 
+              :type="getStatusType(scope.row.orderStatus)" 
+              size="small"
+            >
+              {{ getStatusText(scope.row.orderStatus) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="下单时间" width="180" />
-        <el-table-column prop="payTime" label="支付时间" width="180" />
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column prop="createTime" label="创建时间" width="140" />
+        <el-table-column prop="completeTime" label="完成时间" width="140" />
+        <el-table-column prop="remarkStatus" label="备注状态" width="100" />
+        <el-table-column prop="remarkInfo" label="备注信息" min-width="160" />
+        <el-table-column label="操作" width="90" fixed="right">
           <template #default="scope">
-            <el-button type="primary" link :icon="View" @click="handleView(scope.row)">
-              查看
-            </el-button>
-            <el-button 
-              v-if="scope.row.status === 'success'"
-              type="primary" 
-              link 
-              :icon="TurnOff"
-              @click="handleRefund(scope.row)"
-            >
-              退款
-            </el-button>
-            <el-button
-              v-if="scope.row.status === 'pending'"
-              type="danger"
-              link
-              :icon="Close"
-              @click="handleCancel(scope.row)"
-            >
-              关闭
+            <el-button type="primary" link size="small" @click="handleOperate(scope.row)">
+              操作
             </el-button>
           </template>
         </el-table-column>
@@ -193,297 +169,417 @@
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
+          :page-sizes="[10, 20, 30, 50]"
           :total="pagination.total"
           layout="total, sizes, prev, pager, next, jumper"
+          background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
       </div>
     </el-card>
-
-    <!-- 退款对话框 -->
-    <el-dialog
-      v-model="refundVisible"
-      title="订单退款"
-      width="500px"
-    >
-      <el-form
-        ref="refundFormRef"
-        :model="refundForm"
-        :rules="refundRules"
-        label-width="100px"
-      >
-        <el-form-item label="订单号">
-          <el-input v-model="refundForm.orderNo" disabled />
-        </el-form-item>
-        <el-form-item label="商户订单号">
-          <el-input v-model="refundForm.merchantOrderNo" disabled />
-        </el-form-item>
-        <el-form-item label="订单金额">
-          <el-input v-model="refundForm.orderAmount" disabled>
-            <template #prepend>¥</template>
-          </el-input>
-        </el-form-item>
-        <el-form-item label="退款金额" prop="refundAmount">
-          <el-input v-model="refundForm.refundAmount">
-            <template #prepend>¥</template>
-          </el-input>
-        </el-form-item>
-        <el-form-item label="退款原因" prop="refundReason">
-          <el-input
-            v-model="refundForm.refundReason"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入退款原因"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="refundVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleRefundSubmit">确认退款</el-button>
-        </span>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Search, Refresh, Download, View, TurnOff, Close, ArrowUp, ArrowDown, Minus } from '@element-plus/icons-vue'
+import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 搜索表单数据
 const searchForm = reactive({
+  today: 'today',
+  dateRange: ['2025-03-24', '2025-03-24'],
+  platformOrderNo: '',
+  merchantId: '',
   merchantName: '',
-  orderNo: '',
-  merchantOrderNo: '',
-  channelId: '',
-  status: '',
-  dateRange: []
+  merchantType: '',
+  upstreamOrderNo: '',
+  product: '',
+  productCode: '',
+  upstream: '',
+  upstreamChannel: '',
+  channelCode: '',
+  channelStatus: ''
 })
 
 // 表格数据
 const tableData = ref([
   {
-    orderNo: 'P202403150001',
-    merchantOrderNo: 'M202403150001',
-    merchantName: '测试商户A',
-    amount: 1000.00,
-    channelName: '支付宝',
-    status: 'success',
-    createTime: '2024-03-15 10:00:00',
-    payTime: '2024-03-15 10:01:23'
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '102',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '100.00',
+    orderStatus: 'success',
+    createTime: '2023-03-14 17:31:32',
+    completeTime: '2025-03-22 13:20:31',
+    remarkStatus: '',
+    remarkInfo: ''
   },
   {
-    orderNo: 'P202403150002',
-    merchantOrderNo: 'M202403150002',
-    merchantName: '测试商户B',
-    amount: 2000.00,
-    channelName: '微信支付',
-    status: 'processing',
-    createTime: '2024-03-15 10:05:00',
-    payTime: '-'
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '100.00',
+    orderStatus: 'success',
+    createTime: '2024-10-31 15:53:19',
+    completeTime: '2025-02-26 12:26:28',
+    remarkStatus: '',
+    remarkInfo: ''
   },
   {
-    orderNo: 'P202403150003',
-    merchantOrderNo: 'M202403150003',
-    merchantName: '测试商户A',
-    amount: 3000.00,
-    channelName: '银联',
-    status: 'failed',
-    createTime: '2024-03-15 10:10:00',
-    payTime: '-'
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '100.00',
+    orderStatus: 'success',
+    createTime: '2024-10-31 15:53:16',
+    completeTime: '2024-10-31 15:54:56',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '300.00',
+    orderStatus: 'pending',
+    createTime: '2024-10-31 15:53:15',
+    completeTime: '',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '300.00',
+    orderStatus: 'success',
+    createTime: '2024-10-31 15:53:14',
+    completeTime: '2024-10-31 15:54:56',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '100.00',
+    orderStatus: 'pending',
+    createTime: '2024-10-31 15:53:10',
+    completeTime: '',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '200.00',
+    orderStatus: 'pending',
+    createTime: '2024-10-31 15:53:08',
+    completeTime: '',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '500.00',
+    orderStatus: 'success',
+    createTime: '2024-10-31 15:53:06',
+    completeTime: '2024-10-31 15:54:56',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '300.00',
+    orderStatus: 'success',
+    createTime: '2024-10-31 15:53:03',
+    completeTime: '2024-10-31 15:54:56',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '300.00',
+    orderStatus: 'pending',
+    createTime: '2024-10-31 15:53:03',
+    completeTime: '',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '500.00',
+    orderStatus: 'pending',
+    createTime: '2024-10-31 15:52:59',
+    completeTime: '',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '500.00',
+    orderStatus: 'pending',
+    createTime: '2024-10-31 15:52:58',
+    completeTime: '',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '500.00',
+    orderStatus: 'pending',
+    createTime: '2024-10-31 15:52:55',
+    completeTime: '',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '300.00',
+    orderStatus: 'success',
+    createTime: '2024-10-31 15:52:51',
+    completeTime: '2024-10-31 15:54:55',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '100.00',
+    orderStatus: 'pending',
+    createTime: '2024-10-31 15:52:49',
+    completeTime: '',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '100.00',
+    orderStatus: 'success',
+    createTime: '2024-10-31 15:52:46',
+    completeTime: '2024-10-31 15:54:55',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '500.00',
+    orderStatus: 'pending',
+    createTime: '2024-10-31 15:52:43',
+    completeTime: '',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '100.00',
+    orderStatus: 'pending',
+    createTime: '2024-10-31 15:52:43',
+    completeTime: '',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '100.00',
+    orderStatus: 'pending',
+    createTime: '2024-10-31 15:52:41',
+    completeTime: '',
+    remarkStatus: '',
+    remarkInfo: ''
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    upstream: '新吓你',
+    orderNo: '0000',
+    productCode: '8888',
+    productName: '淘宝产品',
+    orderAmount: '500.00',
+    orderStatus: 'success',
+    createTime: '2024-10-31 15:52:40',
+    completeTime: '2024-10-31 15:54:55',
+    remarkStatus: '',
+    remarkInfo: ''
   }
 ])
 
 // 分页数据
 const pagination = reactive({
   currentPage: 1,
-  pageSize: 10,
-  total: 100
+  pageSize: 30,
+  total: 8500
 })
-
-// 退款对话框
-const refundVisible = ref(false)
-const refundFormRef = ref(null)
-const refundForm = reactive({
-  orderNo: '',
-  merchantOrderNo: '',
-  orderAmount: '',
-  refundAmount: '',
-  refundReason: ''
-})
-
-// 退款表单验证规则
-const refundRules = {
-  refundAmount: [
-    { required: true, message: '请输入退款金额', trigger: 'blur' },
-    { 
-      validator: (rule, value, callback) => {
-        if (value <= 0) {
-          callback(new Error('退款金额必须大于0'))
-        } else if (value > refundForm.orderAmount) {
-          callback(new Error('退款金额不能大于订单金额'))
-        } else {
-          callback()
-        }
-      },
-      trigger: 'blur'
-    }
-  ],
-  refundReason: [
-    { required: true, message: '请输入退款原因', trigger: 'blur' }
-  ]
-}
 
 // 状态映射
 const getStatusType = (status) => {
   const map = {
-    pending: 'info',
-    processing: 'warning',
+    pending: 'warning',
+    processing: 'info',
     success: 'success',
-    failed: 'danger',
-    refunded: ''
+    failed: 'danger'
   }
-  return map[status]
+  return map[status] || 'info'
 }
 
 const getStatusText = (status) => {
   const map = {
     pending: '待支付',
-    processing: '支付中',
-    success: '支付成功',
-    failed: '支付失败',
-    refunded: '已退款'
+    processing: '处理中',
+    success: '交易成功',
+    failed: '交易失败'
   }
-  return map[status]
+  return map[status] || '未知状态'
 }
 
-// 搜索
-const handleSearch = () => {
-  console.log('搜索条件：', searchForm)
-}
-
-// 重置
-const handleReset = () => {
-  Object.assign(searchForm, {
-    merchantName: '',
-    orderNo: '',
-    merchantOrderNo: '',
-    channelId: '',
-    status: '',
-    dateRange: []
+// 处理操作按钮点击
+const handleOperate = (row) => {
+  ElMessageBox.alert(`正在查看订单：${row.orderNo}`, '订单操作', {
+    confirmButtonText: '确定'
   })
-}
-
-// 导出
-const handleExport = () => {
-  ElMessage.success('订单数据导出成功')
-}
-
-// 查看详情
-const handleView = (row) => {
-  console.log('查看订单：', row)
-}
-
-// 退款
-const handleRefund = (row) => {
-  Object.assign(refundForm, {
-    orderNo: row.orderNo,
-    merchantOrderNo: row.merchantOrderNo,
-    orderAmount: row.amount,
-    refundAmount: '',
-    refundReason: ''
-  })
-  refundVisible.value = true
-}
-
-// 提交退款
-const handleRefundSubmit = async () => {
-  if (!refundFormRef.value) return
-  await refundFormRef.value.validate((valid) => {
-    if (valid) {
-      ElMessageBox.confirm(
-        `确认要退款 ¥${refundForm.refundAmount} 吗？`,
-        '退款确认',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }
-      ).then(() => {
-        console.log('退款信息：', refundForm)
-        ElMessage.success('退款申请提交成功')
-        refundVisible.value = false
-      }).catch(() => {})
-    }
-  })
-}
-
-// 关闭订单
-const handleCancel = (row) => {
-  ElMessageBox.confirm(
-    '确认要关闭该订单吗？',
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  ).then(() => {
-    console.log('关闭订单：', row)
-    ElMessage.success('订单已关闭')
-  }).catch(() => {})
 }
 
 // 分页事件处理
 const handleSizeChange = (val) => {
-  console.log('每页条数:', val)
+  pagination.pageSize = val
+  // 这里应该调用获取数据的方法
 }
 
 const handleCurrentChange = (val) => {
-  console.log('当前页:', val)
+  pagination.currentPage = val
+  // 这里应该调用获取数据的方法
+}
+
+// 格式化金额
+const formatAmount = (amount) => {
+  return Number(amount).toLocaleString('zh-CN', {
+    style: 'currency',
+    currency: 'CNY',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
 }
 </script>
 
 <style scoped>
 .merchant-order {
-  padding: 20px;
+  padding: 15px;
 }
 
-.mb-4 {
-  margin-bottom: 16px;
+.search-card {
+  margin-bottom: 15px;
 }
 
-.card-header {
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.second-row {
+  margin-top: 10px;
+  border-top: 1px solid var(--el-border-color-lighter);
+  padding-top: 15px;
+}
+
+.stat-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.table-card {
+  margin-bottom: 15px;
+}
+
+.table-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.card-content {
-  text-align: center;
-}
-
-.amount {
-  font-size: 24px;
-  font-weight: bold;
-  color: #303133;
-}
-
-.trend {
-  margin-top: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
-.label {
-  font-size: 12px;
-  color: #909399;
+  margin-bottom: 15px;
 }
 
 .pagination-container {
@@ -492,9 +588,36 @@ const handleCurrentChange = (val) => {
   justify-content: center;
 }
 
-.dialog-footer {
+:deep(.el-tag) {
+  margin-right: 5px;
+}
+
+/* 修复表格内部标签居中问题 */
+:deep(.el-table .cell) {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  align-items: center;
+}
+
+:deep(.el-table .cell .el-tag) {
+  margin: 0 auto;
+}
+
+/* 统一按钮组样式 */
+:deep(.el-button-group) {
+  margin-right: 10px;
+}
+
+:deep(.el-button-group:last-child) {
+  margin-right: 0;
+}
+
+/* 统一表单项样式 */
+:deep(.el-form-item) {
+  margin-bottom: 18px;
+  margin-right: 18px;
+}
+
+:deep(.el-form-item:last-child) {
+  margin-right: 0;
 }
 </style> 

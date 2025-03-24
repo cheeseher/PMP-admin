@@ -1,176 +1,120 @@
 <!-- 订单管理/商户充值列表 - 管理商户账户充值记录 -->
 <template>
   <div class="recharge-list">
-    <!-- 统计卡片 -->
-    <el-row :gutter="20" class="mb-4">
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>今日充值总额</span>
-              <el-tag type="success" size="small">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">¥ 156,000.00</span>
-            <div class="trend">
-              <span class="label">较昨日</span>
-              <el-tag type="success" size="small">
-                <el-icon><ArrowUp /></el-icon>
-                10.5%
-              </el-tag>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>今日充值笔数</span>
-              <el-tag type="success" size="small">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">386</span>
-            <div class="trend">
-              <span class="label">较昨日</span>
-              <el-tag type="success" size="small">
-                <el-icon><ArrowUp /></el-icon>
-                8.2%
-              </el-tag>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>今日成功率</span>
-              <el-tag type="success" size="small">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">99.5%</span>
-            <div class="trend">
-              <span class="label">较昨日</span>
-              <el-tag type="info" size="small">
-                <el-icon><Minus /></el-icon>
-                0.2%
-              </el-tag>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>今日充值商户数</span>
-              <el-tag type="success" size="small">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">126</span>
-            <div class="trend">
-              <span class="label">较昨日</span>
-              <el-tag type="success" size="small">
-                <el-icon><ArrowUp /></el-icon>
-                5.8%
-              </el-tag>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
     <!-- 搜索表单 -->
-    <el-card shadow="never" class="mb-4">
-      <el-form :model="searchForm" label-width="120px" inline>
-        <el-form-item label="商户名称">
-          <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 168px" clearable />
-        </el-form-item>
-        <el-form-item label="充值单号">
-          <el-input v-model="searchForm.rechargeNo" placeholder="请输入充值单号" style="width: 168px" clearable />
-        </el-form-item>
-        <el-form-item label="充值方式">
-          <el-select v-model="searchForm.payMethod" placeholder="请选择方式" style="width: 168px" clearable>
-            <el-option label="支付宝" value="alipay" />
-            <el-option label="微信支付" value="wxpay" />
-            <el-option label="银行转账" value="bank" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="充值状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" style="width: 168px" clearable>
-            <el-option label="待支付" value="pending" />
-            <el-option label="支付中" value="processing" />
-            <el-option label="充值成功" value="success" />
-            <el-option label="充值失败" value="failed" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="充值时间">
-          <el-date-picker
-            v-model="searchForm.dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            style="width: 360px"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" :icon="Search" @click="handleSearch">搜索</el-button>
-          <el-button :icon="Refresh" @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
+    <el-card shadow="never" class="search-card">
+      <div class="search-form">
+        <el-form :model="searchForm" inline>
+          <el-form-item label="充值单号">
+            <el-input v-model="searchForm.rechargeNo" placeholder="请输入充值单号" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="状态">
+            <el-select v-model="searchForm.status" placeholder="请选择" style="width: 168px" clearable>
+              <el-option label="全部状态" value="all" />
+              <el-option label="待支付" value="pending" />
+              <el-option label="支付中" value="processing" />
+              <el-option label="充值成功" value="success" />
+              <el-option label="充值失败" value="failed" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="日期范围">
+            <el-date-picker
+              v-model="searchForm.dateRange"
+              type="daterange"
+              range-separator="~"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 360px"
+            />
+          </el-form-item>
+          <el-form-item label="商户ID">
+            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="商户名称">
+            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="商户类型">
+            <el-input v-model="searchForm.merchantType" placeholder="请输入商户类型" style="width: 168px" clearable />
+          </el-form-item>
+        </el-form>
+      </div>
+      <div class="second-row">
+        <el-form :model="searchForm" inline>
+          <el-form-item>
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button :icon="Refresh" @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
     </el-card>
 
-    <!-- 数据表格 -->
-    <el-card shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>充值记录</span>
-          <div class="right">
-            <el-button type="primary" :icon="Plus" @click="handleAdd">发起充值</el-button>
-            <el-button type="success" :icon="Download" @click="handleExport">导出Excel</el-button>
-          </div>
-        </div>
-      </template>
+    <!-- 统计信息区域 -->
+    <div class="stat-tags">
+      <el-tag type="success" effect="plain">总充值笔数：1000</el-tag>
+      <el-tag type="success" effect="plain">总充值金额：{{ formatAmount(3500000) }}</el-tag>
+      <el-tag type="success" effect="plain">成功笔数：850</el-tag>
+      <el-tag type="success" effect="plain">成功金额：{{ formatAmount(3000000) }}</el-tag>
+      <el-tag type="success" effect="plain">充值成功率：85.00%</el-tag>
+    </div>
 
-      <el-table :data="tableData" style="width: 100%" border>
+    <!-- 数据表格 -->
+    <el-card shadow="never" class="table-card">
+      <div class="table-header">
+        <div class="left">
+          <el-button type="primary" :icon="Plus" @click="handleAdd">发起充值</el-button>
+        </div>
+        <div class="right">
+          <el-button-group>
+            <el-button icon="Printer">打印</el-button>
+            <el-button icon="Download" @click="handleExport">导出</el-button>
+            <el-button icon="Refresh">刷新</el-button>
+          </el-button-group>
+        </div>
+      </div>
+      
+      <el-table
+        :data="tableData"
+        border
+        style="width: 100%"
+        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
+      >
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="rechargeNo" label="充值单号" width="180" />
-        <el-table-column prop="merchantName" label="商户名称" width="150" />
-        <el-table-column prop="amount" label="充值金额" width="120">
+        <el-table-column prop="merchantId" label="商户" width="80" />
+        <el-table-column prop="merchantName" label="商户名称" width="120" />
+        <el-table-column prop="rechargeNo" label="充值单号" width="140" />
+        <el-table-column prop="beforeAmount" label="充值前余额" width="120">
           <template #default="scope">
-            ¥ {{ scope.row.amount.toFixed(2) }}
+            {{ formatAmount(scope.row.beforeAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="payMethod" label="充值方式" width="120" />
-        <el-table-column prop="status" label="充值状态" width="100">
+        <el-table-column prop="amount" label="充值金额" width="120">
           <template #default="scope">
-            <el-tag :type="getStatusType(scope.row.status)">
+            {{ formatAmount(scope.row.amount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="afterAmount" label="充值后余额" width="120">
+          <template #default="scope">
+            {{ formatAmount(scope.row.afterAmount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="100">
+          <template #default="scope">
+            <el-tag 
+              :type="getStatusType(scope.row.status)" 
+              size="small"
+            >
               {{ getStatusText(scope.row.status) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="180" />
-        <el-table-column prop="payTime" label="支付时间" width="180" />
-        <el-table-column prop="remark" label="备注" min-width="200" />
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column prop="remark" label="备注" min-width="150" />
+        <el-table-column prop="createTime" label="操作时间" width="140" />
+        <el-table-column label="操作" width="90" fixed="right">
           <template #default="scope">
-            <el-button type="primary" link :icon="View" @click="handleView(scope.row)">
+            <el-button type="primary" link size="small" @click="handleView(scope.row)">
               查看
-            </el-button>
-            <el-button
-              v-if="scope.row.status === 'pending'"
-              type="danger"
-              link
-              :icon="Close"
-              @click="handleCancel(scope.row)"
-            >
-              关闭
             </el-button>
           </template>
         </el-table-column>
@@ -181,9 +125,10 @@
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
-          :page-sizes="[10, 20, 50, 100]"
+          :page-sizes="[10, 20, 30, 50]"
           :total="pagination.total"
           layout="total, sizes, prev, pager, next, jumper"
+          background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
@@ -202,29 +147,22 @@
         :rules="rechargeRules"
         label-width="100px"
       >
-        <el-form-item label="商户名称" prop="merchantName">
+        <el-form-item label="商户名称" prop="merchantId">
           <el-select
-            v-model="rechargeForm.merchantName"
+            v-model="rechargeForm.merchantId"
             placeholder="请选择商户"
             style="width: 360px"
             filterable
           >
-            <el-option label="测试商户A" value="测试商户A" />
-            <el-option label="测试商户B" value="测试商户B" />
-            <el-option label="测试商户C" value="测试商户C" />
+            <el-option label="测试商户A" value="1" />
+            <el-option label="测试商户B" value="2" />
+            <el-option label="测试商户C" value="3" />
           </el-select>
         </el-form-item>
         <el-form-item label="充值金额" prop="amount">
           <el-input v-model="rechargeForm.amount" style="width: 360px">
             <template #prepend>¥</template>
           </el-input>
-        </el-form-item>
-        <el-form-item label="充值方式" prop="payMethod">
-          <el-select v-model="rechargeForm.payMethod" placeholder="请选择充值方式" style="width: 360px">
-            <el-option label="支付宝" value="alipay" />
-            <el-option label="微信支付" value="wxpay" />
-            <el-option label="银行转账" value="bank" />
-          </el-select>
         </el-form-item>
         <el-form-item label="备注">
           <el-input
@@ -248,14 +186,15 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Search, Refresh, Download, View, Plus, Close, ArrowUp, ArrowDown, Minus } from '@element-plus/icons-vue'
+import { Search, Refresh, Download, Plus, View, Printer } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 搜索表单数据
 const searchForm = reactive({
-  merchantName: '',
   rechargeNo: '',
-  payMethod: '',
+  merchantId: '',
+  merchantName: '',
+  merchantType: '',
   status: '',
   dateRange: []
 })
@@ -263,57 +202,81 @@ const searchForm = reactive({
 // 表格数据
 const tableData = ref([
   {
-    rechargeNo: 'R202403150001',
-    merchantName: '测试商户A',
-    amount: 50000.00,
-    payMethod: '支付宝',
+    merchantId: '1',
+    merchantName: '测试',
+    rechargeNo: '202503141725',
+    beforeAmount: '1000.00',
+    amount: '500.00',
+    afterAmount: '1500.00',
     status: 'success',
-    createTime: '2024-03-15 10:00:00',
-    payTime: '2024-03-15 10:01:23',
-    remark: '账户余额不足，紧急充值'
+    remark: '',
+    createTime: '2025-03-14 17:25:30'
   },
   {
-    rechargeNo: 'R202403150002',
-    merchantName: '测试商户B',
-    amount: 100000.00,
-    payMethod: '银行转账',
-    status: 'processing',
-    createTime: '2024-03-15 10:05:00',
-    payTime: '-',
-    remark: '月度常规充值'
+    merchantId: '1',
+    merchantName: '测试',
+    rechargeNo: '202503141726',
+    beforeAmount: '1500.00',
+    amount: '2000.00',
+    afterAmount: '3500.00',
+    status: 'success',
+    remark: '',
+    createTime: '2025-03-14 17:26:15'
   },
   {
-    rechargeNo: 'R202403150003',
-    merchantName: '测试商户C',
-    amount: 30000.00,
-    payMethod: '微信支付',
+    merchantId: '2',
+    merchantName: '示例商户',
+    rechargeNo: '202503141728',
+    beforeAmount: '5000.00',
+    amount: '10000.00',
+    afterAmount: '15000.00',
     status: 'pending',
-    createTime: '2024-03-15 10:10:00',
-    payTime: '-',
-    remark: '新商户首次充值'
+    remark: '紧急充值',
+    createTime: '2025-03-14 17:28:45'
+  },
+  {
+    merchantId: '3',
+    merchantName: '新商户',
+    rechargeNo: '202503141730',
+    beforeAmount: '0.00',
+    amount: '50000.00',
+    afterAmount: '50000.00',
+    status: 'success',
+    remark: '首次充值',
+    createTime: '2025-03-14 17:30:22'
+  },
+  {
+    merchantId: '1',
+    merchantName: '测试',
+    rechargeNo: '202503141732',
+    beforeAmount: '3500.00',
+    amount: '5000.00',
+    afterAmount: '8500.00',
+    status: 'failed',
+    remark: '支付超时',
+    createTime: '2025-03-14 17:32:10'
   }
 ])
 
 // 分页数据
 const pagination = reactive({
   currentPage: 1,
-  pageSize: 10,
-  total: 100
+  pageSize: 20,
+  total: 125
 })
 
 // 充值表单对话框
 const dialogVisible = ref(false)
 const rechargeFormRef = ref(null)
 const rechargeForm = reactive({
-  merchantName: '',
+  merchantId: '',
   amount: '',
-  payMethod: '',
   remark: ''
 })
 
 // 充值表单验证规则
 const rechargeRules = {
-  merchantName: [
+  merchantId: [
     { required: true, message: '请选择商户', trigger: 'change' }
   ],
   amount: [
@@ -328,44 +291,43 @@ const rechargeRules = {
       },
       trigger: 'blur'
     }
-  ],
-  payMethod: [
-    { required: true, message: '请选择充值方式', trigger: 'change' }
   ]
 }
 
 // 状态映射
 const getStatusType = (status) => {
   const map = {
-    pending: 'info',
-    processing: 'warning',
+    pending: 'warning',
+    processing: 'info',
     success: 'success',
     failed: 'danger'
   }
-  return map[status]
+  return map[status] || 'info'
 }
 
 const getStatusText = (status) => {
   const map = {
     pending: '待支付',
-    processing: '支付中',
+    processing: '处理中',
     success: '充值成功',
     failed: '充值失败'
   }
-  return map[status]
+  return map[status] || '未知状态'
 }
 
 // 搜索
 const handleSearch = () => {
   console.log('搜索条件：', searchForm)
+  ElMessage.success('搜索条件已提交')
 }
 
 // 重置
 const handleReset = () => {
   Object.assign(searchForm, {
-    merchantName: '',
     rechargeNo: '',
-    payMethod: '',
+    merchantId: '',
+    merchantName: '',
+    merchantType: '',
     status: '',
     dateRange: []
   })
@@ -379,9 +341,8 @@ const handleExport = () => {
 // 发起充值
 const handleAdd = () => {
   Object.assign(rechargeForm, {
-    merchantName: '',
+    merchantId: '',
     amount: '',
-    payMethod: '',
     remark: ''
   })
   dialogVisible.value = true
@@ -401,76 +362,70 @@ const handleSubmit = async () => {
 
 // 查看详情
 const handleView = (row) => {
-  console.log('查看充值记录：', row)
-}
-
-// 关闭充值单
-const handleCancel = (row) => {
-  ElMessageBox.confirm(
-    '确认要关闭该充值单吗？',
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  ).then(() => {
-    console.log('关闭充值单：', row)
-    ElMessage.success('充值单已关闭')
-  }).catch(() => {})
+  ElMessageBox.alert(`充值单号：${row.rechargeNo}<br>商户：${row.merchantName}<br>充值金额：${row.amount}<br>状态：${getStatusText(row.status)}`, '充值详情', {
+    dangerouslyUseHTMLString: true,
+    confirmButtonText: '确定'
+  })
 }
 
 // 分页事件处理
 const handleSizeChange = (val) => {
-  console.log('每页条数:', val)
+  pagination.pageSize = val
+  // 这里应该调用获取数据的方法
 }
 
 const handleCurrentChange = (val) => {
-  console.log('当前页:', val)
+  pagination.currentPage = val
+  // 这里应该调用获取数据的方法
+}
+
+// 格式化金额
+const formatAmount = (amount) => {
+  return Number(amount).toLocaleString('zh-CN', {
+    style: 'currency',
+    currency: 'CNY',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
 }
 </script>
 
 <style scoped>
 .recharge-list {
-  padding: 20px;
+  padding: 15px;
 }
 
-.mb-4 {
-  margin-bottom: 16px;
+.search-card {
+  margin-bottom: 15px;
 }
 
-.card-header {
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.second-row {
+  margin-top: 10px;
+  border-top: 1px solid var(--el-border-color-lighter);
+  padding-top: 15px;
+}
+
+.stat-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.table-card {
+  margin-bottom: 15px;
+}
+
+.table-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-}
-
-.card-content {
-  text-align: center;
-}
-
-.amount {
-  font-size: 24px;
-  font-weight: bold;
-  color: #303133;
-}
-
-.trend {
-  margin-top: 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-}
-
-.label {
-  font-size: 12px;
-  color: #909399;
-}
-
-.right {
-  display: flex;
-  gap: 12px;
+  margin-bottom: 15px;
 }
 
 .pagination-container {
@@ -483,5 +438,38 @@ const handleCurrentChange = (val) => {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+:deep(.el-tag) {
+  margin-right: 5px;
+}
+
+/* 修复表格内部标签居中问题 */
+:deep(.el-table .cell) {
+  display: flex;
+  align-items: center;
+}
+
+:deep(.el-table .cell .el-tag) {
+  margin: 0 auto;
+}
+
+/* 统一按钮组样式 */
+:deep(.el-button-group) {
+  margin-right: 10px;
+}
+
+:deep(.el-button-group:last-child) {
+  margin-right: 0;
+}
+
+/* 统一表单项样式 */
+:deep(.el-form-item) {
+  margin-bottom: 18px;
+  margin-right: 18px;
+}
+
+:deep(.el-form-item:last-child) {
+  margin-right: 0;
 }
 </style> 

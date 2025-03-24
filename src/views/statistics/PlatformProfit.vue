@@ -2,40 +2,49 @@
 <template>
   <div class="statistics-platform-profit">
     <!-- 搜索表单 -->
-    <el-form :model="searchForm" inline class="search-form">
-      <el-form-item label="商户名称">
-        <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" clearable style="width: 168px" />
-      </el-form-item>
-      <el-form-item label="支付类型">
-        <el-select v-model="searchForm.payType" placeholder="请选择支付类型" clearable style="width: 168px">
-          <el-option label="支付宝" value="alipay" />
-          <el-option label="微信支付" value="wechat" />
-          <el-option label="银联" value="unionpay" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="结算状态">
-        <el-select v-model="searchForm.settleStatus" placeholder="请选择结算状态" clearable style="width: 168px">
-          <el-option label="待结算" value="pending" />
-          <el-option label="已结算" value="settled" />
-          <el-option label="结算失败" value="failed" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="统计时间">
-        <el-date-picker
-          v-model="searchForm.dateRange"
-          type="daterange"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-          value-format="YYYY-MM-DD"
-          style="width: 240px"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="handleSearch">查询</el-button>
-        <el-button @click="handleReset">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <el-card shadow="never" class="search-card">
+      <div class="search-form">
+        <el-form :model="searchForm" inline>
+          <el-form-item label="商户ID">
+            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="商户名称">
+            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="支付类型">
+            <el-select v-model="searchForm.payType" placeholder="请选择支付类型" style="width: 168px" clearable>
+              <el-option label="支付宝" value="alipay" />
+              <el-option label="微信支付" value="wechat" />
+              <el-option label="银联" value="unionpay" />
+              <el-option label="快捷支付" value="quick" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="结算状态">
+            <el-select v-model="searchForm.settleStatus" placeholder="请选择结算状态" style="width: 168px" clearable>
+              <el-option label="待结算" value="pending" />
+              <el-option label="已结算" value="settled" />
+              <el-option label="结算失败" value="failed" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="日期范围">
+            <el-date-picker
+              v-model="searchForm.dateRange"
+              type="daterange"
+              range-separator="~"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 360px"
+            />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button :icon="Refresh" @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+    </el-card>
 
     <!-- 统计卡片 -->
     <el-row :gutter="20" class="stat-cards">
@@ -48,7 +57,7 @@
             </div>
           </template>
           <div class="card-content">
-            <span class="amount">¥{{ totalAmount.toFixed(2) }}</span>
+            <span class="amount">{{ formatAmount(totalAmount) }}</span>
             <div class="trend">
               <span :class="{ 'up': amountTrend > 0, 'down': amountTrend < 0 }">
                 {{ Math.abs(amountTrend) }}%
@@ -68,7 +77,7 @@
             </div>
           </template>
           <div class="card-content">
-            <span class="amount">¥{{ totalProfit.toFixed(2) }}</span>
+            <span class="amount">{{ formatAmount(totalProfit) }}</span>
             <div class="trend">
               <span :class="{ 'up': profitTrend > 0, 'down': profitTrend < 0 }">
                 {{ Math.abs(profitTrend) }}%
@@ -88,7 +97,7 @@
             </div>
           </template>
           <div class="card-content">
-            <span class="amount">¥{{ pendingAmount.toFixed(2) }}</span>
+            <span class="amount">{{ formatAmount(pendingAmount) }}</span>
           </div>
         </el-card>
       </el-col>
@@ -101,63 +110,92 @@
             </div>
           </template>
           <div class="card-content">
-            <span class="amount">¥{{ settledAmount.toFixed(2) }}</span>
+            <span class="amount">{{ formatAmount(settledAmount) }}</span>
           </div>
         </el-card>
       </el-col>
     </el-row>
 
     <!-- 数据表格 -->
-    <el-table :data="tableData" border style="width: 100%" v-loading="loading">
-      <el-table-column prop="date" label="日期" width="120" />
-      <el-table-column prop="merchantName" label="商户名称" width="150" />
-      <el-table-column prop="payType" label="支付类型" width="120" />
-      <el-table-column prop="orderAmount" label="交易金额" width="150">
-        <template #default="{ row }">
-          <span>¥{{ row.orderAmount.toFixed(2) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="profitAmount" label="分润金额" width="150">
-        <template #default="{ row }">
-          <span>¥{{ row.profitAmount.toFixed(2) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="profitRate" label="分润比例" width="120">
-        <template #default="{ row }">
-          <span>{{ (row.profitRate * 100).toFixed(2) }}%</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="settleStatus" label="结算状态" width="100">
-        <template #default="{ row }">
-          <el-tag :type="getSettleStatusType(row.settleStatus)">
-            {{ getSettleStatusText(row.settleStatus) }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="settleTime" label="结算时间" width="180" />
-    </el-table>
+    <el-card shadow="never" class="table-card">
+      <div class="table-header">
+        <div class="left">
+          <el-button-group>
+            <el-button :icon="Refresh" @click="refreshData">刷新</el-button>
+          </el-button-group>
+        </div>
+        <div class="right">
+          <el-button-group>
+            <el-button icon="Printer">打印</el-button>
+            <el-button icon="Download" @click="handleExport">导出</el-button>
+          </el-button-group>
+        </div>
+      </div>
+      
+      <el-table
+        :data="tableData"
+        border
+        style="width: 100%"
+        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
+        v-loading="loading"
+      >
+        <el-table-column prop="date" label="日期" width="120" />
+        <el-table-column prop="merchantId" label="商户ID" width="120" />
+        <el-table-column prop="merchantName" label="商户名称" width="150" />
+        <el-table-column prop="payType" label="支付类型" width="120" />
+        <el-table-column prop="orderAmount" label="交易金额" width="150">
+          <template #default="{ row }">
+            {{ formatAmount(row.orderAmount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="profitAmount" label="分润金额" width="150">
+          <template #default="{ row }">
+            {{ formatAmount(row.profitAmount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="profitRate" label="分润比例" width="120">
+          <template #default="{ row }">
+            <el-tag type="info" size="small">
+              {{ (row.profitRate * 100).toFixed(2) }}%
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="settleStatus" label="结算状态" width="100">
+          <template #default="{ row }">
+            <el-tag :type="getSettleStatusType(row.settleStatus)" size="small">
+              {{ getSettleStatusText(row.settleStatus) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="settleTime" label="结算时间" width="180" />
+        <el-table-column prop="remark" label="备注" min-width="150" />
+      </el-table>
 
-    <!-- 分页 -->
-    <div class="pagination-container">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-      />
-    </div>
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 30, 50]"
+          :total="total"
+          layout="total, sizes, prev, pager, next, jumper"
+          background
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </el-card>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { ArrowUp, ArrowDown } from '@element-plus/icons-vue'
+import { ArrowUp, ArrowDown, Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 // 搜索表单数据
 const searchForm = reactive({
+  merchantId: '',
   merchantName: '',
   payType: '',
   settleStatus: '',
@@ -176,13 +214,63 @@ const profitTrend = ref(-5.2)
 const tableData = ref([
   {
     date: '2024-03-14',
-    merchantName: '示例商户',
+    merchantId: 'M2024031401',
+    merchantName: '优质商户A',
     payType: '支付宝',
     orderAmount: 50000.00,
     profitAmount: 2500.00,
     profitRate: 0.05,
     settleStatus: 'settled',
-    settleTime: '2024-03-14 15:30:00'
+    settleTime: '2024-03-14 15:30:00',
+    remark: ''
+  },
+  {
+    date: '2024-03-14',
+    merchantId: 'M2024031402',
+    merchantName: '优质商户B',
+    payType: '微信支付',
+    orderAmount: 42500.00,
+    profitAmount: 2125.00,
+    profitRate: 0.05,
+    settleStatus: 'settled',
+    settleTime: '2024-03-14 16:10:00',
+    remark: ''
+  },
+  {
+    date: '2024-03-14',
+    merchantId: 'M2024031403',
+    merchantName: '标准商户C',
+    payType: '银联',
+    orderAmount: 37500.00,
+    profitAmount: 1875.00,
+    profitRate: 0.05,
+    settleStatus: 'pending',
+    settleTime: '',
+    remark: '待系统结算'
+  },
+  {
+    date: '2024-03-14',
+    merchantId: 'M2024031404',
+    merchantName: '标准商户D',
+    payType: '快捷支付',
+    orderAmount: 30000.00,
+    profitAmount: 1500.00,
+    profitRate: 0.05,
+    settleStatus: 'pending',
+    settleTime: '',
+    remark: '待人工审核'
+  },
+  {
+    date: '2024-03-13',
+    merchantId: 'M2024031405',
+    merchantName: '新商户E',
+    payType: '支付宝',
+    orderAmount: 25000.00,
+    profitAmount: 1250.00,
+    profitRate: 0.05,
+    settleStatus: 'failed',
+    settleTime: '2024-03-13 23:50:00',
+    remark: '银行通道异常'
   }
 ])
 
@@ -217,11 +305,13 @@ const handleSearch = () => {
   // TODO: 调用接口获取数据
   setTimeout(() => {
     loading.value = false
+    ElMessage.success('查询成功')
   }, 1000)
 }
 
 // 重置方法
 const handleReset = () => {
+  searchForm.merchantId = ''
   searchForm.merchantName = ''
   searchForm.payType = ''
   searchForm.settleStatus = ''
@@ -239,65 +329,130 @@ const handleCurrentChange = (val) => {
   currentPage.value = val
   handleSearch()
 }
+
+// 导出数据
+const handleExport = () => {
+  ElMessage.success('导出成功')
+}
+
+// 刷新数据
+const refreshData = () => {
+  loading.value = true
+  setTimeout(() => {
+    loading.value = false
+    ElMessage.success('数据已刷新')
+  }, 500)
+}
+
+// 格式化金额
+const formatAmount = (amount) => {
+  return Number(amount).toLocaleString('zh-CN', {
+    style: 'currency',
+    currency: 'CNY',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .statistics-platform-profit {
-  .search-form {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 4px;
-    margin-bottom: 20px;
-  }
+  padding: 15px;
+}
 
-  .stat-cards {
-    margin-bottom: 20px;
+.search-card {
+  margin-bottom: 15px;
+}
 
-    .el-card {
-      .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+}
 
-      .card-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+.stat-cards {
+  margin-bottom: 15px;
+}
 
-        .amount {
-          font-size: 24px;
-          font-weight: bold;
-          color: #303133;
-        }
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-        .trend {
-          display: flex;
-          align-items: center;
-          gap: 4px;
+.card-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
 
-          .up {
-            color: #67c23a;
-          }
+.amount {
+  font-size: 24px;
+  font-weight: bold;
+  color: #303133;
+}
 
-          .down {
-            color: #f56c6c;
-          }
+.trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 
-          .el-icon {
-            font-size: 16px;
-          }
-        }
-      }
-    }
-  }
+.up {
+  color: #67c23a;
+}
 
-  .pagination-container {
-    text-align: right;
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #fff;
-    border-radius: 4px;
-  }
+.down {
+  color: #f56c6c;
+}
+
+.table-card {
+  margin-bottom: 15px;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+:deep(.el-tag) {
+  margin-right: 5px;
+}
+
+/* 修复表格内部标签居中问题 */
+:deep(.el-table .cell) {
+  display: flex;
+  align-items: center;
+}
+
+:deep(.el-table .cell .el-tag) {
+  margin: 0 auto;
+}
+
+/* 统一按钮组样式 */
+:deep(.el-button-group) {
+  margin-right: 10px;
+}
+
+:deep(.el-button-group:last-child) {
+  margin-right: 0;
+}
+
+/* 统一表单项样式 */
+:deep(.el-form-item) {
+  margin-bottom: 18px;
+  margin-right: 18px;
+}
+
+:deep(.el-form-item:last-child) {
+  margin-right: 0;
 }
 </style> 

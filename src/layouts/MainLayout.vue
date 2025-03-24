@@ -36,19 +36,9 @@
               <el-icon><Document /></el-icon>
               <span>订单管理</span>
             </template>
-            <el-menu-item index="/order/merchant">商户订单管理</el-menu-item>
             <el-menu-item index="/order/recharge">商户充值列表</el-menu-item>
+            <el-menu-item index="/order/merchant">商户订单管理</el-menu-item>
             <el-menu-item index="/order/withdraw">商户提现审核</el-menu-item>
-          </el-sub-menu>
-
-          <!-- 商户管理 -->
-          <el-sub-menu index="/merchant">
-            <template #title>
-              <el-icon style="stroke-width: 2; fill: none;"><Shop /></el-icon>
-              <span>商户管理</span>
-            </template>
-            <el-menu-item index="/merchant/list">商户列表</el-menu-item>
-            <el-menu-item index="/merchant/products">商户产品列表</el-menu-item>
           </el-sub-menu>
 
           <!-- 供应商管理 -->
@@ -59,6 +49,16 @@
             </template>
             <el-menu-item index="/supplier/list">供应商列表</el-menu-item>
             <el-menu-item index="/supplier/channel">供应商通道管理</el-menu-item>
+          </el-sub-menu>
+
+          <!-- 商品管理 -->
+          <el-sub-menu index="/product">
+            <template #title>
+              <el-icon><ShoppingCart /></el-icon>
+              <span>商品管理</span>
+            </template>
+            <el-menu-item index="/product/list">商品列表</el-menu-item>
+            <el-menu-item index="/product/merchant-products">商户产品列表</el-menu-item>
           </el-sub-menu>
 
           <!-- 支付配置 -->
@@ -119,13 +119,13 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  Shop,
   Document,
   Connection,
   Goods,
   Money,
   Expand,
-  Fold
+  Fold,
+  ShoppingCart
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

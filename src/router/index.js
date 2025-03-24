@@ -7,13 +7,13 @@ const router = createRouter({
     {
       path: '/',
       component: MainLayout,
-      redirect: '/order/merchant',
+      redirect: '/product/list',
       children: [
         // 订单管理
         {
           path: '/order',
           name: 'Order',
-          redirect: '/order/merchant',
+          redirect: '/order/recharge',
           meta: { title: '订单管理' },
           children: [
             {
@@ -37,28 +37,6 @@ const router = createRouter({
           ]
         },
         
-        // 商户管理
-        {
-          path: '/merchant',
-          name: 'Merchant',
-          redirect: '/merchant/list',
-          meta: { title: '商户管理' },
-          children: [
-            {
-              path: 'list',
-              name: 'MerchantList',
-              component: () => import('@/views/merchant/MerchantList.vue'),
-              meta: { title: '商户列表' }
-            },
-            {
-              path: 'products',
-              name: 'MerchantProducts',
-              component: () => import('@/views/merchant/Products.vue'),
-              meta: { title: '商户产品列表' }
-            }
-          ]
-        },
-
         // 供应商管理
         {
           path: '/supplier',
@@ -77,6 +55,28 @@ const router = createRouter({
               name: 'SupplierChannel',
               component: () => import('@/views/supplier/Channel.vue'),
               meta: { title: '供应商通道管理' }
+            }
+          ]
+        },
+
+        // 商品管理
+        {
+          path: '/product',
+          name: 'Product',
+          redirect: '/product/list',
+          meta: { title: '商品管理' },
+          children: [
+            {
+              path: 'list',
+              name: 'ProductList',
+              component: () => import('@/views/product/ProductList.vue'),
+              meta: { title: '商品列表' }
+            },
+            {
+              path: 'merchant-products',
+              name: 'MerchantProductList',
+              component: () => import('@/views/product/MerchantProductList.vue'),
+              meta: { title: '商户产品列表' }
             }
           ]
         },

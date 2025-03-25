@@ -17,13 +17,28 @@
         </el-col>
         <el-col :span="6">
           <div class="search-item">
-            <span class="label">产品</span>
-            <el-input v-model="searchForm.product" placeholder="请输入" clearable />
+            <span class="label">商户账号</span>
+            <el-input v-model="searchForm.merchantNo" placeholder="请输入" clearable />
           </div>
         </el-col>
         <el-col :span="6">
+          <div class="search-item">
+            <span class="label">商户名称</span>
+            <el-input v-model="searchForm.merchantName" placeholder="请输入" clearable />
+          </div>
+        </el-col>
+        <el-col :span="6">
+          <div class="search-item">
+            <span class="label">支付产品</span>
+            <el-input v-model="searchForm.product" placeholder="请输入" clearable />
+          </div>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20" class="search-form" style="margin-top: 10px;">
+        <el-col :span="6">
           <el-button type="primary" @click="handleSearch" class="search-btn">
             <el-icon><Search /></el-icon>
+            查询
           </el-button>
           <el-button @click="handleReset" plain class="reset-btn">重置</el-button>
         </el-col>
@@ -43,16 +58,16 @@
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column prop="id" label="ID" width="80" align="center" sortable />
         <el-table-column prop="merchantNo" label="商户账号" min-width="120" align="center" />
-        <el-table-column prop="merchantName" label="商户名称" min-width="120" align="center" />
-        <el-table-column prop="productName" label="产品名称" min-width="120" align="center" />
-        <el-table-column prop="productCode" label="产品编码" min-width="120" align="center" />
-        <el-table-column prop="rate" label="费率" min-width="100" align="center">
+        <el-table-column prop="merchantName" label="商户名称" min-width="150" align="center" />
+        <el-table-column prop="productName" label="支付产品名称" min-width="150" align="center" />
+        <el-table-column prop="productCode" label="支付产品编码" min-width="120" align="center" />
+        <el-table-column prop="rate" label="商户费率" width="100" align="center">
           <template #default="scope">
-            {{ scope.row.rate.toFixed(2) }}
+            {{ scope.row.rate.toFixed(2) }}%
           </template>
         </el-table-column>
         <el-table-column prop="weight" label="权重" width="80" align="center" />
-        <el-table-column prop="remark" label="备注" min-width="120" align="center" />
+        <el-table-column prop="remark" label="备注" min-width="150" align="left" :show-overflow-tooltip="true" />
       </el-table>
     </div>
 
@@ -100,6 +115,8 @@ import { merchantProductList } from '@/data/merchantProductData'
 // 搜索表单
 const searchForm = reactive({
   id: '',
+  merchantNo: '',
+  merchantName: '',
   product: ''
 })
 
@@ -125,6 +142,16 @@ const fetchData = () => {
     if (searchForm.id) {
       filteredData = filteredData.filter(item => 
         item.id.toString().includes(searchForm.id))
+    }
+    
+    if (searchForm.merchantNo) {
+      filteredData = filteredData.filter(item => 
+        item.merchantNo.includes(searchForm.merchantNo))
+    }
+    
+    if (searchForm.merchantName) {
+      filteredData = filteredData.filter(item => 
+        item.merchantName.toLowerCase().includes(searchForm.merchantName.toLowerCase()))
     }
     
     if (searchForm.product) {

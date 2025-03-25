@@ -13,7 +13,7 @@
           <el-input v-model="searchForm.channelName" placeholder="请输入" clearable />
         </div>
         <div class="search-item">
-          <span class="label">编码</span>
+          <span class="label">通道编码</span>
           <el-input v-model="searchForm.channelCode" placeholder="请输入" clearable />
         </div>
         <div class="search-actions">
@@ -48,17 +48,17 @@
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="ID" prop="id" width="60" align="center" />
-        <el-table-column label="通道名称" prop="channelName" min-width="150" />
+        <el-table-column label="通道名称" prop="channelName" min-width="120" />
         <el-table-column label="通道编码" prop="channelCode" width="100" align="center" />
-        <el-table-column label="费率" width="80" align="center">
+        <el-table-column label="通道费率" width="90" align="center">
           <template #default="scope">
             {{ scope.row.rate.toFixed(2) }}
           </template>
         </el-table-column>
-        <el-table-column label="上游" prop="supplier" width="120" />
-        <el-table-column label="上游编码" prop="supplierCode" width="120" align="center" />
-        <el-table-column label="支付类型" prop="payType" width="120" align="center" />
-        <el-table-column label="分组" prop="category" width="120" align="center" />
+        <el-table-column label="上游通道名称" prop="supplier" min-width="120" />
+        <el-table-column label="上游通道编码" prop="supplierCode" width="120" align="center" />
+        <el-table-column label="支付类型" prop="payType" width="100" align="center" />
+        <el-table-column label="分组" prop="category" width="100" align="center" />
         <el-table-column label="是否启用" width="80" align="center">
           <template #default="scope">
             <el-tag
@@ -127,7 +127,7 @@
         <el-form-item label="通道编码" prop="channelCode">
           <el-input v-model="channelForm.channelCode" placeholder="请输入通道编码" />
         </el-form-item>
-        <el-form-item label="费率" prop="rate">
+        <el-form-item label="通道费率" prop="rate">
           <el-input-number 
             v-model="channelForm.rate" 
             :precision="2" 
@@ -136,8 +136,8 @@
             style="width: 100%;"
           />
         </el-form-item>
-        <el-form-item label="上游" prop="supplier">
-          <el-select v-model="channelForm.supplier" placeholder="请选择上游" clearable style="width: 100%;">
+        <el-form-item label="上游通道名称" prop="supplier">
+          <el-select v-model="channelForm.supplier" placeholder="请选择上游通道" clearable style="width: 100%;">
             <el-option
               v-for="item in supplierOptions"
               :key="item.value"
@@ -146,8 +146,8 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="上游编码" prop="supplierCode">
-          <el-input v-model="channelForm.supplierCode" placeholder="请输入上游编码" disabled />
+        <el-form-item label="上游通道编码" prop="supplierCode">
+          <el-input v-model="channelForm.supplierCode" placeholder="请输入上游通道编码" disabled />
         </el-form-item>
         <el-form-item label="支付类型" prop="payType">
           <el-select v-model="channelForm.payType" placeholder="请选择支付类型" clearable style="width: 168px;">
@@ -236,8 +236,8 @@ const channelForm = reactive({
 const rules = {
   channelName: [{ required: true, message: '请输入通道名称', trigger: 'blur' }],
   channelCode: [{ required: true, message: '请输入通道编码', trigger: 'blur' }],
-  rate: [{ required: true, message: '请输入费率', trigger: 'blur' }],
-  supplier: [{ required: true, message: '请选择上游', trigger: 'change' }],
+  rate: [{ required: true, message: '请输入通道费率', trigger: 'blur' }],
+  supplier: [{ required: true, message: '请选择上游通道名称', trigger: 'change' }],
   payType: [{ required: true, message: '请选择支付类型', trigger: 'change' }],
   category: [{ required: true, message: '请选择分组', trigger: 'change' }]
 }

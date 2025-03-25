@@ -20,8 +20,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="商户号">
-              <el-input v-model="searchForm.productNo" placeholder="请输入商户号" clearable style="width: 168px" />
+            <el-form-item label="商户账户">
+              <el-input v-model="searchForm.productId" placeholder="请输入商户账户" clearable style="width: 168px" />
             </el-form-item>
           </el-col>
           <el-col :span="6">
@@ -30,10 +30,34 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
+            <el-form-item label="商户号">
+              <el-input v-model="searchForm.productNo" placeholder="请输入商户号" clearable style="width: 168px" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="6">
+            <el-form-item label="角色">
+              <el-select v-model="searchForm.role" placeholder="请选择角色" clearable style="width: 168px">
+                <el-option label="超级管理员" value="admin" />
+                <el-option label="普通用户" value="user" />
+                <el-option label="商户" value="merchant" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
             <el-form-item label="状态">
               <el-select v-model="searchForm.verified" placeholder="请选择状态" clearable style="width: 168px">
                 <el-option label="已验证" value="Y" />
                 <el-option label="未验证" value="N" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="6">
+            <el-form-item label="谷歌认证">
+              <el-select v-model="searchForm.googleAuth" placeholder="请选择状态" clearable style="width: 168px">
+                <el-option label="已绑定" :value="true" />
+                <el-option label="未绑定" :value="false" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -65,18 +89,48 @@
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column prop="productNo" label="商户号" min-width="120" />
+        <el-table-column prop="productId" label="商户账户" min-width="120" />
         <el-table-column prop="productName" label="商户名称" min-width="150" />
-        <el-table-column prop="balance" label="余额" width="120" align="right">
+        <el-table-column prop="productNo" label="商户号" min-width="120" />
+        <el-table-column prop="balance" label="余额" width="100" align="right">
           <template #default="scope">
             <span class="amount-text">{{ formatAmount(scope.row.balance) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="flow" label="流水" width="120" align="right">
+        <el-table-column prop="freeze" label="冻结金额" width="100" align="right">
           <template #default="scope">
-            <span class="flow-text">{{ formatAmount(scope.row.flow) }}</span>
+            <span class="amount-text">{{ formatAmount(scope.row.freeze || 0) }}</span>
           </template>
         </el-table-column>
+        <el-table-column prop="agentBalance" label="代付余额" width="100" align="right">
+          <template #default="scope">
+            <span class="amount-text">{{ formatAmount(scope.row.agentBalance || 0) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="agentFreeze" label="代付冻结" width="100" align="right">
+          <template #default="scope">
+            <span class="amount-text">{{ formatAmount(scope.row.agentFreeze || 0) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="authIp" label="上次登录IP" width="140" />
+        <el-table-column prop="loginCount" label="登录次数" width="100" align="center" />
+        <el-table-column prop="googleAuth" label="谷歌认证状态" width="120" align="center">
+          <template #default="scope">
+            <el-tag
+              :type="scope.row.googleAuth ? 'success' : 'info'"
+              effect="light"
+              size="small"
+            >
+              {{ scope.row.googleAuth ? '已绑定' : '未绑定' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="quickLogin" label="一键登录" width="100" align="center">
+          <template #default="scope">
+            <el-button type="primary" link size="small" @click="handleQuickLogin(scope.row)">登录</el-button>
+          </template>
+        </el-table-column>
+        <el-table-column prop="role" label="角色" width="100" align="center" />
         <el-table-column prop="verified" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag
@@ -88,7 +142,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="registerTime" label="注册时间" min-width="180" />
         <el-table-column label="操作" width="180" fixed="right" align="center">
           <template #default="scope">
             <el-button type="primary" link size="small" @click="handleEdit(scope.row)">编辑</el-button>
@@ -128,14 +181,27 @@
         label-width="100px"
         style="max-width: 450px; margin: 0 auto;"
       >
-        <el-form-item label="商户号" prop="productNo">
-          <el-input v-model="productForm.productNo" placeholder="请输入商户号" />
+        <el-form-item label="商户账户" prop="productId">
+          <el-input v-model="productForm.productId" placeholder="请输入商户账户" />
         </el-form-item>
         <el-form-item label="商户名称" prop="productName">
           <el-input v-model="productForm.productName" placeholder="请输入商户名称" />
         </el-form-item>
-        <el-form-item label="商户ID" prop="productId">
-          <el-input v-model="productForm.productId" placeholder="请输入商户ID" />
+        <el-form-item label="商户号" prop="productNo">
+          <el-input v-model="productForm.productNo" placeholder="请输入商户号" />
+        </el-form-item>
+        <el-form-item label="余额">
+          <el-input-number v-model="productForm.balance" :precision="2" :min="0" :controls="false" style="width: 168px" />
+        </el-form-item>
+        <el-form-item label="角色" prop="role">
+          <el-select v-model="productForm.role" placeholder="请选择角色" style="width: 168px">
+            <el-option label="超级管理员" value="admin" />
+            <el-option label="普通用户" value="user" />
+            <el-option label="商户" value="merchant" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="谷歌认证" prop="googleAuth">
+          <el-switch v-model="productForm.googleAuth" active-text="已绑定" inactive-text="未绑定" />
         </el-form-item>
         <el-form-item label="状态" prop="verified">
           <el-select v-model="productForm.verified" placeholder="请选择状态" style="width: 168px">
@@ -192,9 +258,12 @@ import { productList } from '@/data/productData'
 // 搜索表单
 const searchForm = reactive({
   id: '',
-  productNo: '',
+  productId: '',
   productName: '',
-  verified: ''
+  productNo: '',
+  role: '',
+  verified: '',
+  googleAuth: ''
 })
 
 // 表格数据
@@ -227,9 +296,9 @@ const fetchData = () => {
         item.id.toString().includes(searchForm.id))
     }
     
-    if (searchForm.productNo) {
+    if (searchForm.productId) {
       filteredData = filteredData.filter(item => 
-        item.productNo.toLowerCase().includes(searchForm.productNo.toLowerCase()))
+        item.productId && item.productId.toLowerCase().includes(searchForm.productId.toLowerCase()))
     }
     
     if (searchForm.productName) {
@@ -237,9 +306,25 @@ const fetchData = () => {
         item.productName.toLowerCase().includes(searchForm.productName.toLowerCase()))
     }
     
+    if (searchForm.productNo) {
+      filteredData = filteredData.filter(item => 
+        item.productNo.toLowerCase().includes(searchForm.productNo.toLowerCase()))
+    }
+    
+    if (searchForm.role) {
+      filteredData = filteredData.filter(item => 
+        item.role === searchForm.role)
+    }
+    
     if (searchForm.verified) {
       filteredData = filteredData.filter(item => 
         item.verified === searchForm.verified)
+    }
+    
+    if (searchForm.googleAuth !== '') {
+      const isGoogleAuth = searchForm.googleAuth === true || searchForm.googleAuth === 'true'
+      filteredData = filteredData.filter(item => 
+        item.googleAuth === isGoogleAuth)
     }
     
     total.value = filteredData.length
@@ -297,9 +382,10 @@ const productForm = reactive({
 })
 
 const productRules = {
-  productNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }],
+  productId: [{ required: true, message: '请输入商户账户', trigger: 'blur' }],
   productName: [{ required: true, message: '请输入商户名称', trigger: 'blur' }],
-  productId: [{ required: true, message: '请输入商户ID', trigger: 'blur' }]
+  productNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }],
+  role: [{ required: true, message: '请选择角色', trigger: 'change' }]
 }
 
 const resetProductForm = () => {
@@ -308,9 +394,15 @@ const resetProductForm = () => {
   }
   Object.assign(productForm, {
     id: '',
-    productNo: '',
-    productName: '',
     productId: '',
+    productName: '',
+    productNo: '',
+    balance: 0,
+    freeze: 0,
+    agentBalance: 0,
+    agentFreeze: 0,
+    role: 'merchant',
+    googleAuth: false,
     verified: 'N'
   })
 }
@@ -349,12 +441,11 @@ const submitForm = async () => {
         const newProduct = {
           ...productForm,
           id: productList.length + 1,
-          balance: 0,
-          flow: 0,
-          agentBalance: 0,
-          agentFlow: 0,
           authIp: '',
           loginCount: 0,
+          freeze: productForm.freeze || 0,
+          agentBalance: productForm.agentBalance || 0,
+          agentFreeze: productForm.agentFreeze || 0,
           registerTime: new Date().toLocaleString('zh-CN', {
             year: 'numeric',
             month: '2-digit',
@@ -445,6 +536,12 @@ const handleBatchDelete = () => {
 // 配置商户
 const handleConfig = (row) => {
   ElMessage.info(`正在配置商户：${row.productName}`)
+}
+
+// 一键登录
+const handleQuickLogin = (row) => {
+  ElMessage.success(`正在登录商户账户：${row.productId}`)
+  // 实际登录逻辑这里仅作演示
 }
 
 // 批量配置

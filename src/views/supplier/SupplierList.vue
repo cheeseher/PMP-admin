@@ -20,13 +20,13 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="上游名称">
-              <el-input v-model="searchForm.supplierName" placeholder="请输入上游名称" clearable />
+            <el-form-item label="上游通道名称">
+              <el-input v-model="searchForm.supplierName" placeholder="请输入上游通道名称" clearable />
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="上游编码">
-              <el-input v-model="searchForm.supplierCode" placeholder="请输入上游编码" clearable />
+            <el-form-item label="上游通道编码">
+              <el-input v-model="searchForm.supplierCode" placeholder="请输入上游通道编码" clearable />
             </el-form-item>
           </el-col>
           <el-col :span="6">
@@ -72,15 +72,15 @@
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="ID" prop="id" width="80" align="center" />
-        <el-table-column label="上游" prop="supplier" min-width="120" />
-        <el-table-column label="编码" prop="code" width="120" />
-        <el-table-column label="商户号" prop="merchantNo" width="180" />
+        <el-table-column label="上游通道名称" prop="supplier" min-width="120" />
+        <el-table-column label="上游通道编码" prop="code" width="120" />
+        <el-table-column label="上游通道商户号" prop="merchantNo" width="180" />
         <el-table-column label="余额" prop="amount" width="120" align="right">
           <template #default="scope">
             <span class="amount-text">{{ formatAmount(scope.row.amount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="冻结" prop="freeze" width="120" align="right">
+        <el-table-column label="冻结金额" prop="freeze" width="120" align="right">
           <template #default="scope">
             <span class="freeze-text">{{ formatAmount(scope.row.freeze || 0) }}</span>
           </template>
@@ -173,13 +173,13 @@
         <el-form-item label="上游通道编码" prop="code">
           <el-input v-model="supplierForm.code" placeholder="请输入上游通道编码" />
         </el-form-item>
-        <el-form-item label="商户号" prop="merchantNo">
-          <el-input v-model="supplierForm.merchantNo" placeholder="请输入商户号" />
+        <el-form-item label="上游通道商户号" prop="merchantNo">
+          <el-input v-model="supplierForm.merchantNo" placeholder="请输入上游通道商户号" />
         </el-form-item>
         <el-form-item label="余额">
           <el-input-number v-model="supplierForm.amount" :precision="2" :min="0" :controls="false" style="width: 168px" />
         </el-form-item>
-        <el-form-item label="冻结">
+        <el-form-item label="冻结金额">
           <el-input-number v-model="supplierForm.freeze" :precision="2" :min="0" :controls="false" style="width: 168px" />
         </el-form-item>
         <el-form-item label="提醒阈值">
@@ -251,7 +251,7 @@
           <span class="detail-value">{{ currentSupplier.code }}</span>
         </div>
         <div class="detail-item">
-          <span class="detail-label">商户号：</span>
+          <span class="detail-label">上游通道商户号：</span>
           <span class="detail-value">{{ currentSupplier.merchantNo }}</span>
         </div>
         <div class="detail-item">
@@ -259,7 +259,7 @@
           <span class="detail-value">{{ formatAmount(currentSupplier.amount) }}</span>
         </div>
         <div class="detail-item">
-          <span class="detail-label">冻结：</span>
+          <span class="detail-label">冻结金额：</span>
           <span class="detail-value">{{ formatAmount(currentSupplier.freeze || 0) }}</span>
         </div>
         <div class="detail-item">

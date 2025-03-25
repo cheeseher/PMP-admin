@@ -1,17 +1,17 @@
 <!-- 数据统计/商户收款统计 - 统计商户收入数据 -->
 <template>
-  <div class="statistics-merchant-income">
+  <div class="merchant-income-container">
     <!-- 搜索表单 -->
-    <el-card shadow="never" class="search-card">
-      <div class="search-form">
-        <el-form :model="searchForm" inline>
-          <el-form-item label="商户ID">
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" inline class="filter-form">
+        <div class="filter-row">
+          <el-form-item label="商户ID：">
             <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="商户名称">
-            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 168px" clearable />
+          <el-form-item label="商户名称：">
+            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="支付类型">
+          <el-form-item label="支付类型：">
             <el-select v-model="searchForm.payType" placeholder="请选择支付类型" style="width: 168px" clearable>
               <el-option label="支付宝" value="alipay" />
               <el-option label="微信支付" value="wechat" />
@@ -19,7 +19,7 @@
               <el-option label="快捷支付" value="quick" />
             </el-select>
           </el-form-item>
-          <el-form-item label="订单状态">
+          <el-form-item label="订单状态：">
             <el-select v-model="searchForm.orderStatus" placeholder="请选择订单状态" style="width: 168px" clearable>
               <el-option label="支付成功" value="success" />
               <el-option label="支付失败" value="failed" />
@@ -27,7 +27,7 @@
               <el-option label="已退款" value="refunded" />
             </el-select>
           </el-form-item>
-          <el-form-item label="日期范围">
+          <el-form-item label="日期范围：">
             <el-date-picker
               v-model="searchForm.dateRange"
               type="daterange"
@@ -39,36 +39,37 @@
               style="width: 360px"
             />
           </el-form-item>
-          <el-form-item>
-            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
-            <el-button :icon="Refresh" @click="handleReset">重置</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+        </div>
+        <div class="filter-buttons">
+          <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
+          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+        </div>
+      </el-form>
     </el-card>
 
     <!-- 数据表格 -->
-    <el-card shadow="never" class="table-card">
-      <div class="table-header">
-        <div class="table-title">
-          <span>商户收款列表</span>
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
+        <div class="left">
+          <span class="table-title">商户收款列表</span>
           <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
         </div>
-        <div class="table-operations">
-          <el-button :icon="Printer">打印</el-button>
-          <el-button :icon="Download" @click="handleExport">导出</el-button>
-          <el-button :icon="Refresh" @click="refreshData" :loading="loading">刷新</el-button>
+        <div class="right">
+          <el-button :icon="Printer" plain>打印</el-button>
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="refreshData" :loading="loading" />
+          </el-tooltip>
         </div>
       </div>
       
       <el-table
         :data="tableData"
         border
-        style="width: 100%"
-        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
-        v-loading="loading"
-        highlight-current-row
         stripe
+        style="width: 100%"
+        v-loading="loading"
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column prop="merchantId" label="商户ID" width="120" align="center" />
@@ -115,7 +116,6 @@
           :page-sizes="[10, 20, 30, 50]"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
-          background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
@@ -275,71 +275,78 @@ const getSuccessRateType = (rate) => {
 }
 </script>
 
-<style scoped lang="scss">
-.statistics-merchant-income {
-  .search-card {
-    margin-bottom: 16px;
-  }
-
-  .search-form {
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .table-card {
-    margin-bottom: 16px;
-  }
-
-  .table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    
-    .table-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 16px;
-      font-weight: 500;
-    }
-  }
-  
-  .table-operations {
-    display: flex;
-    gap: 10px;
-  }
-  
-  .amount-cell {
-    font-family: monospace;
-    font-weight: 500;
-    
-    &.income {
-      color: #67c23a;
-    }
-    
-    &.outcome {
-      color: #f56c6c;
-    }
-  }
-
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
-  }
+<style scoped>
+.merchant-income-container {
+  padding: 16px;
 }
 
-:deep(.el-form-item) {
-  margin-bottom: 18px;
-  margin-right: 18px;
+.filter-container {
+  margin-bottom: 16px;
 }
 
-:deep(.el-form-item:last-child) {
-  margin-right: 0;
+.filter-form {
+  display: flex;
+  flex-direction: column;
 }
 
-:deep(.el-date-editor.el-input__wrapper) {
-  --el-date-editor-width: auto;
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-row .el-form-item {
+  margin-bottom: 0;
+  margin-right: 20px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.table-toolbar .left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.table-toolbar .right .el-button {
+  margin-left: 8px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.amount-cell {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+}
+
+.amount-cell.income {
+  color: #67c23a;
+}
+
+.amount-cell.outcome {
+  color: #f56c6c;
 }
 </style> 

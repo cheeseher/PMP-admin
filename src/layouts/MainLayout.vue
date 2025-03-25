@@ -70,6 +70,20 @@
             <el-menu-item index="/payment/type">支付类型管理</el-menu-item>
             <el-menu-item index="/payment/product">支付产品管理</el-menu-item>
           </el-sub-menu>
+
+          <!-- 系统管理 -->
+          <el-sub-menu index="/system">
+            <template #title>
+              <el-icon><Setting /></el-icon>
+              <span>系统管理</span>
+            </template>
+            <el-menu-item index="/system/admin">管理员管理</el-menu-item>
+            <el-menu-item index="/system/role">角色管理</el-menu-item>
+            <el-menu-item index="/system/permission">权限管理</el-menu-item>
+            <el-menu-item index="/system/menu">菜单管理</el-menu-item>
+            <el-menu-item index="/system/operation-log">管理员操作日志</el-menu-item>
+            <el-menu-item index="/system/business-log">管理员业务日志</el-menu-item>
+          </el-sub-menu>
         </el-menu>
       </el-scrollbar>
     </el-aside>
@@ -125,7 +139,8 @@ import {
   Money,
   Expand,
   Fold,
-  ShoppingCart
+  ShoppingCart,
+  Setting
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

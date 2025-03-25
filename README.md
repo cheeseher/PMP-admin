@@ -19,6 +19,13 @@ src/
 │   ├── payment/         # 支付配置模块
 │   │   ├── Type.vue           # 支付类型管理
 │   │   └── Product.vue        # 支付产品管理
+│   ├── system/          # 系统管理模块
+│   │   ├── AdminList.vue      # 管理员管理
+│   │   ├── RoleList.vue       # 角色管理
+│   │   ├── PermissionList.vue # 权限管理
+│   │   ├── MenuList.vue       # 菜单管理
+│   │   ├── OperationLog.vue   # 管理员操作日志
+│   │   └── BusinessLog.vue    # 管理员业务日志
 │   └── statistics/      # 数据统计模块
 │       ├── ProductStats.vue   # 产品跑量统计
 │       ├── Upstream.vue       # 上游渠道统计
@@ -58,6 +65,14 @@ src/
 ### 支付配置模块 (/payment)
 - 支付类型管理：支付方式配置、状态管理
 - 支付产品管理：产品参数配置、费率设置
+
+### 系统管理模块 (/system)
+- 管理员管理 (AdminList.vue)：管理员账号创建、编辑、状态管理及权限分配
+- 角色管理 (RoleList.vue)：角色创建、编辑、权限分配及用户关联
+- 权限管理 (PermissionList.vue)：系统权限配置、权限标识管理
+- 菜单管理 (MenuList.vue)：系统菜单结构配置、菜单权限关联
+- 管理员操作日志 (OperationLog.vue)：记录管理员操作行为，支持多维度查询
+- 管理员业务日志 (BusinessLog.vue)：记录管理员业务操作，包含操作前后数据对比
 
 ### 数据统计模块 (/statistics)
 - 产品跑量统计 (ProductStats.vue)：产品交易量统计分析

@@ -159,6 +159,52 @@ const router = createRouter({
               meta: { title: '商户余额快照' }
             }
           ]
+        },
+
+        // 系统管理
+        {
+          path: '/system',
+          name: 'System',
+          redirect: '/system/admin',
+          meta: { title: '系统管理' },
+          children: [
+            {
+              path: 'admin',
+              name: 'AdminList',
+              component: () => import('@/views/system/AdminList.vue'),
+              meta: { title: '管理员管理' }
+            },
+            {
+              path: 'role',
+              name: 'RoleList',
+              component: () => import('@/views/system/RoleList.vue'),
+              meta: { title: '角色管理' }
+            },
+            {
+              path: 'permission',
+              name: 'PermissionList',
+              component: () => import('@/views/system/PermissionList.vue'),
+              meta: { title: '权限管理' }
+            },
+            {
+              path: 'menu',
+              name: 'MenuList',
+              component: () => import('@/views/system/MenuList.vue'),
+              meta: { title: '菜单管理' }
+            },
+            {
+              path: 'operation-log',
+              name: 'OperationLog',
+              component: () => import('@/views/system/OperationLog.vue'),
+              meta: { title: '管理员操作日志' }
+            },
+            {
+              path: 'business-log',
+              name: 'BusinessLog',
+              component: () => import('@/views/system/BusinessLog.vue'),
+              meta: { title: '管理员业务日志' }
+            }
+          ]
         }
       ]
     }

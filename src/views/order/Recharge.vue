@@ -1,14 +1,16 @@
 <!-- 订单管理/商户充值列表 - 管理商户账户充值记录 -->
 <template>
-  <div class="recharge-list">
+  <div class="order-recharge">
     <!-- 搜索表单 -->
-    <el-card shadow="never" class="search-card">
-      <div class="search-form">
-        <el-form :model="searchForm" inline>
-          <el-form-item label="充值订单号">
-            <el-input v-model="searchForm.rechargeNo" placeholder="请输入充值订单号" style="width: 168px" clearable />
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" inline class="multi-line-filter-form">
+        <!-- 第一行筛选项 -->
+        <div class="filter-line">
+          <el-form-item label="充值订单号：">
+            <el-input v-model="searchForm.rechargeNo" placeholder="请输入充值订单号" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="状态">
+          
+          <el-form-item label="状态：">
             <el-select v-model="searchForm.status" placeholder="请选择" style="width: 168px" clearable>
               <el-option label="全部状态" value="all" />
               <el-option label="待支付" value="pending" />
@@ -17,37 +19,41 @@
               <el-option label="充值失败" value="failed" />
             </el-select>
           </el-form-item>
-          <el-form-item label="日期范围">
+          
+          <el-form-item label="日期范围：">
             <el-date-picker
               v-model="searchForm.dateRange"
               type="daterange"
-              range-separator="~"
+              range-separator="至"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
               format="YYYY-MM-DD"
               value-format="YYYY-MM-DD"
-              style="width: 360px"
             />
           </el-form-item>
-          <el-form-item label="商户ID">
+        </div>
+
+        <!-- 第二行筛选项 -->
+        <div class="filter-line">
+          <el-form-item label="商户ID：">
             <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="商户名称">
-            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 168px" clearable />
+          
+          <el-form-item label="商户名称：">
+            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="商户类型">
+          
+          <el-form-item label="商户类型：">
             <el-input v-model="searchForm.merchantType" placeholder="请输入商户类型" style="width: 168px" clearable />
           </el-form-item>
-        </el-form>
-      </div>
-      <div class="second-row">
-        <el-form :model="searchForm" inline>
-          <el-form-item>
-            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-            <el-button :icon="Refresh" @click="handleReset">重置</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+          
+          <!-- 操作按钮组，靠右对齐 -->
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
+            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          </div>
+        </div>
+      </el-form>
     </el-card>
 
     <!-- 统计信息区域 -->
@@ -60,55 +66,58 @@
     </div>
 
     <!-- 数据表格 -->
-    <el-card shadow="never" class="table-card">
-      <div class="table-header">
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
         <div class="left">
           <el-button type="primary" :icon="Plus" @click="handleAdd">发起充值</el-button>
+          <el-button :icon="Download" plain @click="handleExport">导出</el-button>
+          <el-button :icon="Printer" plain>打印</el-button>
         </div>
         <div class="right">
-          <el-button-group>
-            <el-button icon="Printer">打印</el-button>
-            <el-button icon="Download" @click="handleExport">导出</el-button>
-            <el-button icon="Refresh">刷新</el-button>
-          </el-button-group>
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="refreshData" :loading="loading" />
+          </el-tooltip>
         </div>
       </div>
       
       <el-table
         :data="tableData"
         border
-        style="width: 100%"
-        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
+        stripe
+        v-loading="loading"
+        highlight-current-row
+        @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="merchantId" label="商户ID" width="80" />
+        <el-table-column type="selection" width="55" fixed="left" />
+        <el-table-column prop="merchantId" label="商户ID" width="80" fixed="left" />
         <el-table-column prop="rechargeNo" label="充值订单号" width="140" />
-        <el-table-column prop="beforeAmount" label="充值前余额" width="120">
+        <el-table-column prop="beforeAmount" label="充值前余额" width="120" align="right">
           <template #default="scope">
-            {{ formatAmount(scope.row.beforeAmount) }}
+            <span class="amount-cell">{{ formatAmount(scope.row.beforeAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="beforeFrozen" label="原始冻结" width="120">
+        <el-table-column prop="beforeFrozen" label="原始冻结" width="120" align="right">
           <template #default="scope">
-            {{ formatAmount(scope.row.beforeFrozen || 0) }}
+            <span class="amount-cell">{{ formatAmount(scope.row.beforeFrozen || 0) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="amount" label="充值金额" width="120">
+        <el-table-column prop="amount" label="充值金额" width="120" align="right">
           <template #default="scope">
-            {{ formatAmount(scope.row.amount) }}
+            <span class="amount-cell income">{{ formatAmount(scope.row.amount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="afterAmount" label="充值后余额" width="120">
+        <el-table-column prop="afterAmount" label="充值后余额" width="120" align="right">
           <template #default="scope">
-            {{ formatAmount(scope.row.afterAmount) }}
+            <span class="amount-cell">{{ formatAmount(scope.row.afterAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="afterFrozen" label="充值后冻结" width="120">
+        <el-table-column prop="afterFrozen" label="充值后冻结" width="120" align="right">
           <template #default="scope">
-            {{ formatAmount(scope.row.afterFrozen || 0) }}
+            <span class="amount-cell">{{ formatAmount(scope.row.afterFrozen || 0) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="remark" label="备注" min-width="150" />
+        <el-table-column prop="remark" label="备注" min-width="150" show-overflow-tooltip />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
             <el-tag 
@@ -122,9 +131,7 @@
         <el-table-column prop="createTime" label="操作时间" width="140" />
         <el-table-column label="操作" width="90" fixed="right">
           <template #default="scope">
-            <el-button type="primary" link size="small" @click="handleView(scope.row)">
-              查看
-            </el-button>
+            <el-button link type="primary" @click="handleView(scope.row)">查看</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -134,10 +141,9 @@
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
-          :page-sizes="[10, 20, 30, 50]"
+          :page-sizes="[10, 20, 50, 100]"
           :total="pagination.total"
           layout="total, sizes, prev, pager, next, jumper"
-          background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
@@ -446,85 +452,71 @@ const formatAmount = (amount) => {
 </script>
 
 <style scoped>
-.recharge-list {
-  padding: 15px;
+.filter-container {
+  margin-bottom: 16px;
 }
 
-.search-card {
-  margin-bottom: 15px;
-}
-
-.search-form {
+.multi-line-filter-form .filter-line {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
 }
 
-.second-row {
-  margin-top: 10px;
-  border-top: 1px solid var(--el-border-color-lighter);
-  padding-top: 15px;
+.multi-line-filter-form .filter-line:last-child {
+  margin-bottom: 0;
+}
+
+.multi-line-filter-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 20px;
+}
+
+.filter-buttons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 .stat-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
-.table-card {
-  margin-bottom: 15px;
-}
-
-.table-header {
+.table-toolbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
+}
+
+.table-toolbar .left .el-button {
+  margin-right: 8px;
+}
+
+.table-toolbar .right .el-button {
+  margin-left: 8px;
 }
 
 .pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-.dialog-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  margin-top: 16px;
 }
 
-:deep(.el-tag) {
-  margin-right: 5px;
+.amount-cell {
+  font-family: 'Roboto Mono', monospace;
 }
 
-/* 修复表格内部标签居中问题 */
-:deep(.el-table .cell) {
-  display: flex;
-  align-items: center;
+.amount-cell.income {
+  color: #67C23A;
 }
 
-:deep(.el-table .cell .el-tag) {
-  margin: 0 auto;
-}
-
-/* 统一按钮组样式 */
-:deep(.el-button-group) {
-  margin-right: 10px;
-}
-
-:deep(.el-button-group:last-child) {
-  margin-right: 0;
-}
-
-/* 统一表单项样式 */
-:deep(.el-form-item) {
-  margin-bottom: 18px;
-  margin-right: 18px;
-}
-
-:deep(.el-form-item:last-child) {
-  margin-right: 0;
+.amount-cell.outcome {
+  color: #F56C6C;
 }
 </style> 

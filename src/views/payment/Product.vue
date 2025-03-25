@@ -1,122 +1,152 @@
-<!-- 支付配置/支付产品管理 - 配置支付产品和费率 -->
+<!-- 支付配置/支付产品管理 - 管理系统支持的支付产品 -->
 <template>
   <div class="payment-product">
     <!-- 页面标题 -->
     <div class="page-header">
       <div class="title">支付产品管理</div>
-      <div class="description">管理系统支持的所有支付产品及费率配置</div>
+      <div class="description">管理所有支付通道产品并配置费率等信息</div>
     </div>
 
-    <el-card class="search-card" shadow="never">
-      <div class="search-form">
-        <div class="search-item">
-          <span class="search-label">ID</span>
-          <el-input v-model="searchForm.id" placeholder="请输入" clearable style="width: 240px" />
+    <!-- 搜索表单 -->
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" inline class="filter-form">
+        <div class="filter-row">
+          <el-form-item label="产品ID：">
+            <el-input v-model="searchForm.id" placeholder="请输入产品ID" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="产品名称：">
+            <el-input v-model="searchForm.productName" placeholder="请输入产品名称" style="width: 220px" clearable />
+          </el-form-item>
+          <el-form-item label="产品编码：">
+            <el-input v-model="searchForm.productCode" placeholder="请输入产品编码" style="width: 220px" clearable />
+          </el-form-item>
         </div>
-        <div class="search-item">
-          <span class="search-label">支付产品名称</span>
-          <el-input v-model="searchForm.productName" placeholder="请输入" clearable style="width: 240px" />
+        <div class="filter-buttons">
+          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
         </div>
-        <div class="search-item">
-          <span class="search-label">支付产品编码</span>
-          <el-input v-model="searchForm.productCode" placeholder="请输入" clearable style="width: 240px" />
-        </div>
-        <el-button type="primary" :icon="Search" @click="handleSearch">搜索</el-button>
-        <el-button @click="handleReset">重置</el-button>
-      </div>
+      </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>产品列表</span>
-          <div class="header-operations">
-            <el-button type="danger" :icon="Delete" @click="handleBatchDelete" :disabled="!selectedRows.length">批量删除</el-button>
-            <el-button type="primary" :icon="Plus" @click="handleAdd">添加</el-button>
-            <el-button type="primary" @click="handleBatchApprove">产品一键开启</el-button>
-            <el-button type="warning" @click="handleBatchReject">产品一键关闭</el-button>
-            <el-button type="danger" @click="handleBatchRemove">下架一键关闭</el-button>
-          </div>
+    <!-- 数据表格 -->
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
+        <div class="left">
+          <el-button type="primary" :icon="Plus" @click="handleAdd">新增</el-button>
+          <el-button :icon="Delete" plain :disabled="selectedRows.length === 0" @click="handleBatchDelete">批量删除</el-button>
         </div>
-      </template>
+        <div class="right">
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="fetchData" />
+          </el-tooltip>
+        </div>
+      </div>
+
       <el-table 
         :data="tableData" 
-        style="width: 100%" 
-        @selection-change="handleSelectionChange"
-        border
-        highlight-current-row
+        border 
         stripe
         v-loading="loading"
-      >
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column prop="productName" label="支付产品名称" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="productCode" label="支付产品编码" min-width="150" show-overflow-tooltip />
-        <el-table-column label="备注" prop="remark" min-width="200" show-overflow-tooltip />
-        <el-table-column label="是否启用" width="100" align="center">
+        @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="55" fixed="left" />
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="productName" label="产品名称" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="productCode" label="产品编码" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="payType" label="支付类型" width="120">
           <template #default="scope">
-            <el-tag :type="scope.row.status === 'ONLINE' ? 'success' : 'info'" size="small">
-              {{ scope.row.status === 'ONLINE' ? '启用' : '禁用' }}
+            <el-tag 
+              :type="scope.row.payType === 'ALIPAY' ? 'primary' : 
+                    scope.row.payType === 'WECHAT' ? 'success' : 'info'">
+              {{ scope.row.payType === 'ALIPAY' ? '支付宝' : 
+                 scope.row.payType === 'WECHAT' ? '微信支付' : 
+                 scope.row.payType === 'UNIONPAY' ? '银联支付' : scope.row.payType }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right" align="center">
+        <el-table-column prop="feeRate" label="费率" width="100">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="handleEdit(scope.row)">
-              <el-icon><Edit /></el-icon> 编辑
-            </el-button>
+            <span class="fee-rate">{{ (scope.row.feeRate * 100).toFixed(2) }}%</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="100">
+          <template #default="scope">
+            <el-tag :type="scope.row.status === 'ONLINE' ? 'success' : 'danger'">
+              {{ scope.row.status === 'ONLINE' ? '已启用' : '已禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
+        <el-table-column label="操作" width="240" fixed="right">
+          <template #default="scope">
+            <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button 
               link 
-              :type="scope.row.status === 'ONLINE' ? 'danger' : 'success'"
-              size="small"
-              @click="handleToggleStatus(scope.row)"
-            >
+              :type="scope.row.status === 'ONLINE' ? 'warning' : 'success'"
+              @click="handleToggleStatus(scope.row)">
               {{ scope.row.status === 'ONLINE' ? '禁用' : '启用' }}
             </el-button>
-            <el-button link type="danger" size="small" @click="handleDelete(scope.row)">
-              <el-icon><Delete /></el-icon> 删除
-            </el-button>
+            <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
 
-      <div class="pagination">
+      <!-- 分页 -->
+      <div class="pagination-container">
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 30, 50]"
+          :page-sizes="[10, 20, 50, 100]"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          background
         />
       </div>
     </el-card>
 
+    <!-- 新增/编辑弹窗 -->
     <el-dialog
+      :title="formType === 'add' ? '新增支付产品' : '编辑支付产品'"
       v-model="formDialogVisible"
-      :title="formType === 'add' ? '新增产品' : '编辑产品'"
-      width="550px"
+      width="600px"
       destroy-on-close
-      :close-on-click-modal="false"
     >
       <el-form 
         :model="productForm" 
-        label-width="120px" 
-        :rules="formRules"
-        ref="productFormRef"
-        status-icon
+        :rules="formRules" 
+        ref="productFormRef" 
+        label-width="100px"
+        class="product-form"
       >
-        <el-form-item label="支付产品名称" prop="productName">
-          <el-input v-model="productForm.productName" placeholder="请输入支付产品名称" />
+        <el-form-item label="产品名称" prop="productName">
+          <el-input v-model="productForm.productName" placeholder="请输入产品名称" />
         </el-form-item>
-        <el-form-item label="支付产品编码" prop="productCode">
-          <el-input 
-            v-model="productForm.productCode" 
-            placeholder="请输入支付产品编码"
-            :disabled="formType === 'edit'"
-          />
+        <el-form-item label="产品编码" prop="productCode">
+          <el-input v-model="productForm.productCode" placeholder="请输入产品编码" />
+        </el-form-item>
+        <el-form-item label="支付类型" prop="payType">
+          <el-select v-model="productForm.payType" placeholder="请选择支付类型" style="width: 100%">
+            <el-option label="支付宝" value="ALIPAY" />
+            <el-option label="微信支付" value="WECHAT" />
+            <el-option label="银联支付" value="UNIONPAY" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="费率" prop="feeRate">
+          <el-input-number 
+            v-model="productForm.feeRate" 
+            :precision="4" 
+            :step="0.001" 
+            :min="0" 
+            :max="1"
+            style="width: 100%" />
+          <div class="form-tip">费率为百分比的小数形式，如0.25%应填写0.0025</div>
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="productForm.status">
+            <el-radio label="ONLINE">启用</el-radio>
+            <el-radio label="OFFLINE">禁用</el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input
@@ -124,22 +154,17 @@
             type="textarea"
             :rows="3"
             placeholder="请输入备注信息"
-            maxlength="200"
-            show-word-limit
           />
-        </el-form-item>
-        <el-form-item label="是否启用" prop="status">
-          <el-radio-group v-model="productForm.status">
-            <el-radio label="ONLINE">启用</el-radio>
-            <el-radio label="OFFLINE">禁用</el-radio>
-          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
-        <span class="dialog-footer">
+        <div class="dialog-footer">
           <el-button @click="formDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleFormSubmit" :loading="submitLoading">确认</el-button>
-        </span>
+          <el-button 
+            type="primary" 
+            @click="handleFormSubmit" 
+            :loading="submitLoading">确认</el-button>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -414,74 +439,89 @@ const fetchData = () => {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .payment-product {
-  padding: 20px;
+  padding: 16px;
+}
 
-  .page-header {
-    margin-bottom: 20px;
-    
-    .title {
-      font-size: 20px;
-      font-weight: 600;
-      color: #303133;
-      margin-bottom: 8px;
-    }
+.page-header {
+  margin-bottom: 16px;
+}
 
-    .description {
-      color: #606266;
-      font-size: 14px;
-    }
-  }
+.page-header .title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 8px;
+}
 
-  .search-card {
-    margin-bottom: 20px;
-  }
+.page-header .description {
+  color: #606266;
+  font-size: 14px;
+}
 
-  .search-card :deep(.el-card__body) {
-    padding: 15px 20px;
-  }
+.filter-container {
+  margin-bottom: 16px;
+}
 
-  .search-form {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-  }
+.filter-form {
+  display: flex;
+  flex-direction: column;
+}
 
-  .search-item {
-    display: flex;
-    align-items: center;
-  }
+.filter-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
-  .search-label {
-    margin-right: 8px;
-    font-size: 14px;
-    white-space: nowrap;
-  }
+.filter-row .el-form-item {
+  margin-bottom: 0;
+  margin-right: 20px;
+}
 
-  .table-card {
-    margin-bottom: 20px;
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
 
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
+}
 
-      .header-operations {
-        display: flex;
-        gap: 12px;
-      }
-    }
-  }
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
 
-  .action-bar {
-    display: none;
-  }
+.table-toolbar .left .el-button {
+  margin-right: 8px;
+}
 
-  .pagination {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-  }
+.table-toolbar .right .el-button {
+  margin-left: 8px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.fee-rate {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 500;
+}
+
+.form-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
+}
+
+.product-form .el-form-item {
+  margin-bottom: 20px;
 }
 </style> 

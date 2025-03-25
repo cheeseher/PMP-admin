@@ -1,152 +1,138 @@
 <!-- 商户管理/商户列表 - 管理商户信息 -->
 <template>
   <div class="product-list-container">
-    <!-- 搜索区域 -->
-    <el-card class="search-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>筛选查询</span>
-          <div class="header-buttons">
-            <el-button type="primary" @click="handleSearch" :icon="Search">查询</el-button>
-            <el-button @click="handleReset" :icon="Refresh">重置</el-button>
-          </div>
+    <!-- 搜索表单 -->
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" inline class="filter-form">
+        <!-- 第一行筛选项 -->
+        <div class="filter-row">
+          <el-form-item label="ID：">
+            <el-input v-model="searchForm.id" placeholder="请输入ID" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="商户账户：">
+            <el-input v-model="searchForm.productId" placeholder="请输入商户账户" style="width: 220px" clearable />
+          </el-form-item>
+          <el-form-item label="商户名称：">
+            <el-input v-model="searchForm.productName" placeholder="请输入商户名称" style="width: 220px" clearable />
+          </el-form-item>
+          <el-form-item label="商户号：">
+            <el-input v-model="searchForm.productNo" placeholder="请输入商户号" style="width: 168px" clearable />
+          </el-form-item>
         </div>
-      </template>
-      <el-form :model="searchForm" label-width="100px" class="search-form">
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="ID">
-              <el-input v-model="searchForm.id" placeholder="请输入ID" clearable style="width: 168px" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="商户账户">
-              <el-input v-model="searchForm.productId" placeholder="请输入商户账户" clearable style="width: 168px" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="商户名称">
-              <el-input v-model="searchForm.productName" placeholder="请输入商户名称" clearable style="width: 168px" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="商户号">
-              <el-input v-model="searchForm.productNo" placeholder="请输入商户号" clearable style="width: 168px" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item label="角色">
-              <el-select v-model="searchForm.role" placeholder="请选择角色" clearable style="width: 168px">
-                <el-option label="超级管理员" value="admin" />
-                <el-option label="普通用户" value="user" />
-                <el-option label="商户" value="merchant" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="状态">
-              <el-select v-model="searchForm.verified" placeholder="请选择状态" clearable style="width: 168px">
-                <el-option label="已验证" value="Y" />
-                <el-option label="未验证" value="N" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="谷歌认证">
-              <el-select v-model="searchForm.googleAuth" placeholder="请选择状态" clearable style="width: 168px">
-                <el-option label="已绑定" :value="true" />
-                <el-option label="未绑定" :value="false" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
+        
+        <!-- 第二行筛选项 -->
+        <div class="filter-row">
+          <el-form-item label="角色：">
+            <el-select v-model="searchForm.role" placeholder="请选择角色" style="width: 168px" clearable>
+              <el-option label="超级管理员" value="admin" />
+              <el-option label="普通用户" value="user" />
+              <el-option label="商户" value="merchant" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="状态：">
+            <el-select v-model="searchForm.verified" placeholder="请选择状态" style="width: 168px" clearable>
+              <el-option label="已验证" value="Y" />
+              <el-option label="未验证" value="N" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="谷歌认证：">
+            <el-select v-model="searchForm.googleAuth" placeholder="请选择状态" style="width: 168px" clearable>
+              <el-option label="已绑定" :value="true" />
+              <el-option label="未绑定" :value="false" />
+            </el-select>
+          </el-form-item>
+        </div>
+        
+        <!-- 按钮区域 -->
+        <div class="filter-buttons">
+          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+        </div>
       </el-form>
     </el-card>
 
-    <!-- 数据展示区域 -->
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>数据列表</span>
-          <div class="header-buttons">
-            <el-button type="primary" @click="handleAdd" :icon="Plus">新增商户</el-button>
-            <el-button type="danger" :disabled="!selectedRows.length" @click="handleBatchDelete" :icon="Delete">批量删除</el-button>
-            <el-button :disabled="!selectedRows.length" @click="handleBatchConfig" :icon="Setting">批量配置</el-button>
-          </div>
+    <!-- 数据表格 -->
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
+        <div class="left">
+          <el-button type="primary" :icon="Plus" @click="handleAdd">新增商户</el-button>
+          <el-button :icon="Delete" plain :disabled="!selectedRows.length" @click="handleBatchDelete">批量删除</el-button>
+          <el-button :icon="Setting" plain :disabled="!selectedRows.length" @click="handleBatchConfig">批量配置</el-button>
         </div>
-      </template>
+        <div class="right">
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="fetchData" />
+          </el-tooltip>
+        </div>
+      </div>
       
       <!-- 表格 -->
       <el-table
         v-loading="loading"
         :data="tableData"
         border
-        style="width: 100%"
-        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
+        stripe
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column prop="id" label="ID" width="80" align="center" />
+        <el-table-column type="selection" width="55" fixed="left" />
+        <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="productId" label="商户账户" min-width="120" />
         <el-table-column prop="productName" label="商户名称" min-width="150" />
         <el-table-column prop="productNo" label="商户号" min-width="120" />
         <el-table-column prop="balance" label="余额" width="100" align="right">
           <template #default="scope">
-            <span class="amount-text">{{ formatAmount(scope.row.balance) }}</span>
+            <span class="amount-cell">{{ formatAmount(scope.row.balance) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="freeze" label="冻结金额" width="100" align="right">
           <template #default="scope">
-            <span class="amount-text">{{ formatAmount(scope.row.freeze || 0) }}</span>
+            <span class="amount-cell">{{ formatAmount(scope.row.freeze || 0) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="agentBalance" label="代付余额" width="100" align="right">
           <template #default="scope">
-            <span class="amount-text">{{ formatAmount(scope.row.agentBalance || 0) }}</span>
+            <span class="amount-cell">{{ formatAmount(scope.row.agentBalance || 0) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="agentFreeze" label="代付冻结" width="100" align="right">
           <template #default="scope">
-            <span class="amount-text">{{ formatAmount(scope.row.agentFreeze || 0) }}</span>
+            <span class="amount-cell">{{ formatAmount(scope.row.agentFreeze || 0) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="authIp" label="上次登录IP" width="140" />
-        <el-table-column prop="loginCount" label="登录次数" width="100" align="center" />
-        <el-table-column prop="googleAuth" label="谷歌认证状态" width="120" align="center">
+        <el-table-column prop="loginCount" label="登录次数" width="100" />
+        <el-table-column prop="googleAuth" label="谷歌认证" width="100">
           <template #default="scope">
             <el-tag
               :type="scope.row.googleAuth ? 'success' : 'info'"
-              effect="light"
               size="small"
             >
               {{ scope.row.googleAuth ? '已绑定' : '未绑定' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="quickLogin" label="一键登录" width="100" align="center">
+        <el-table-column prop="quickLogin" label="一键登录" width="90">
           <template #default="scope">
-            <el-button type="primary" link size="small" @click="handleQuickLogin(scope.row)">登录</el-button>
+            <el-button link type="primary" @click="handleQuickLogin(scope.row)">登录</el-button>
           </template>
         </el-table-column>
-        <el-table-column prop="role" label="角色" width="100" align="center" />
-        <el-table-column prop="verified" label="状态" width="100" align="center">
+        <el-table-column prop="role" label="角色" width="100" />
+        <el-table-column prop="verified" label="状态" width="90">
           <template #default="scope">
             <el-tag
               :type="scope.row.verified === 'Y' ? 'success' : 'danger'"
-              effect="light"
               size="small"
             >
               {{ scope.row.verified === 'Y' ? '已验证' : '未验证' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right" align="center">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="scope">
-            <el-button type="primary" link size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="primary" link size="small" @click="handleConfig(scope.row)">配置</el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button link type="primary" @click="handleConfig(scope.row)">配置</el-button>
+            <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -156,10 +142,9 @@
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 30, 50]"
+          :page-sizes="[10, 20, 50, 100]"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
-          background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
@@ -170,16 +155,15 @@
     <el-dialog
       :title="dialogTitle"
       v-model="dialogVisible"
-      width="500px"
+      width="550px"
       destroy-on-close
-      align-center
     >
       <el-form
         ref="productFormRef"
         :model="productForm"
         :rules="productRules"
         label-width="100px"
-        style="max-width: 450px; margin: 0 auto;"
+        class="product-form"
       >
         <el-form-item label="商户账户" prop="productId">
           <el-input v-model="productForm.productId" placeholder="请输入商户账户" />
@@ -191,59 +175,54 @@
           <el-input v-model="productForm.productNo" placeholder="请输入商户号" />
         </el-form-item>
         <el-form-item label="余额">
-          <el-input-number v-model="productForm.balance" :precision="2" :min="0" :controls="false" style="width: 168px" />
+          <el-input-number v-model="productForm.balance" :precision="2" :min="0" :controls="false" style="width: 100%" />
         </el-form-item>
         <el-form-item label="角色" prop="role">
-          <el-select v-model="productForm.role" placeholder="请选择角色" style="width: 168px">
+          <el-select v-model="productForm.role" placeholder="请选择角色" style="width: 100%">
             <el-option label="超级管理员" value="admin" />
             <el-option label="普通用户" value="user" />
             <el-option label="商户" value="merchant" />
           </el-select>
         </el-form-item>
-        <el-form-item label="谷歌认证" prop="googleAuth">
-          <el-switch v-model="productForm.googleAuth" active-text="已绑定" inactive-text="未绑定" />
-        </el-form-item>
-        <el-form-item label="状态" prop="verified">
-          <el-select v-model="productForm.verified" placeholder="请选择状态" style="width: 168px">
-            <el-option label="已验证" value="Y" />
-            <el-option label="未验证" value="N" />
-          </el-select>
+        <el-form-item label="验证状态">
+          <el-radio-group v-model="productForm.verified">
+            <el-radio label="Y">已验证</el-radio>
+            <el-radio label="N">未验证</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
-        <span class="dialog-footer">
+        <div class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
           <el-button type="primary" @click="submitForm">确认</el-button>
-        </span>
+        </div>
       </template>
     </el-dialog>
-
+    
     <!-- 批量配置对话框 -->
     <el-dialog
       title="批量配置"
       v-model="batchConfigVisible"
-      width="500px"
+      width="400px"
       destroy-on-close
-      align-center
     >
       <el-form
         ref="batchConfigFormRef"
         :model="batchConfigForm"
         label-width="100px"
-        style="max-width: 450px; margin: 0 auto;"
       >
-        <el-form-item label="状态">
-          <el-select v-model="batchConfigForm.verified" placeholder="请选择状态" style="width: 168px">
-            <el-option label="已验证" value="Y" />
-            <el-option label="未验证" value="N" />
-          </el-select>
+        <el-form-item label="验证状态">
+          <el-radio-group v-model="batchConfigForm.verified">
+            <el-radio label="Y">已验证</el-radio>
+            <el-radio label="N">未验证</el-radio>
+          </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
-        <span class="dialog-footer">
+        <div class="dialog-footer">
           <el-button @click="batchConfigVisible = false">取消</el-button>
           <el-button type="primary" @click="submitBatchConfig">确认</el-button>
-        </span>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -251,7 +230,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Refresh, Delete, Plus, Setting } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, Delete, Setting, Edit } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { productList } from '@/data/productData'
 
@@ -276,19 +255,12 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 
-// 格式化金额
-const formatAmount = (amount) => {
-  return amount.toLocaleString('zh-CN', { 
-    minimumFractionDigits: 2, 
-    maximumFractionDigits: 2 
-  })
-}
-
 // 获取数据
 const fetchData = () => {
   loading.value = true
+  
+  // 模拟异步请求
   setTimeout(() => {
-    // 过滤数据
     let filteredData = [...productList]
     
     if (searchForm.id) {
@@ -336,6 +308,11 @@ const fetchData = () => {
     tableData.value = filteredData.slice(start, end)
     loading.value = false
   }, 300)
+}
+
+// 格式化金额
+const formatAmount = (amount) => {
+  return amount?.toFixed(2) || '0.00'
 }
 
 // 搜索与重置
@@ -594,42 +571,70 @@ onMounted(() => {
 
 <style scoped>
 .product-list-container {
-  padding: 20px;
+  padding: 16px;
 }
 
-.search-card, .table-card {
-  margin-bottom: 20px;
-  border-radius: 4px;
-  border: 1px solid #ebeef5;
+.filter-container {
+  margin-bottom: 16px;
 }
 
-.card-header {
+.filter-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.filter-row:last-child {
+  margin-bottom: 0;
+}
+
+.filter-row .el-form-item {
+  margin-bottom: 0;
+  margin-right: 20px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
+}
+
+.table-toolbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  margin-bottom: 16px;
 }
 
-.header-buttons {
-  display: flex;
-  gap: 10px;
+.table-toolbar .left .el-button {
+  margin-right: 8px;
 }
 
-.search-form {
-  margin-top: 10px;
+.table-toolbar .right .el-button {
+  margin-left: 8px;
 }
 
 .pagination-container {
   display: flex;
-  justify-content: center;
-  margin-top: 20px;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
-.amount-text, .flow-text {
-  font-family: Arial, sans-serif;
-  color: #606266;
+.amount-cell {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
 }
 
-.el-table {
-  --el-table-header-bg-color: #f5f7fa;
+.product-form .el-form-item {
+  margin-bottom: 20px;
 }
 </style> 

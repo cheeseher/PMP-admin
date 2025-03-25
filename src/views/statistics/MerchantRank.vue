@@ -1,71 +1,66 @@
 <!-- 数据统计/商户支付排行 - 统计商户支付数据排名 -->
 <template>
-  <div class="app-container">
+  <div class="merchant-rank-container">
     <!-- 搜索表单 -->
-    <el-card class="filter-container" shadow="never">
-      <el-form :model="searchForm" inline label-width="80px" label-position="left" class="search-form">
-        <el-form-item label="商户ID">
-          <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
-        </el-form-item>
-        <el-form-item label="商户名称">
-          <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 168px" clearable />
-        </el-form-item>
-        <el-form-item label="排序字段">
-          <el-select v-model="searchForm.sortField" placeholder="请选择排序字段" style="width: 168px">
-            <el-option label="收款金额" value="amount" />
-            <el-option label="成功率" value="rate" />
-            <el-option label="成功单数" value="count" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="日期范围">
-          <el-date-picker
-            v-model="searchForm.dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            style="width: 360px"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>查询
-          </el-button>
-          <el-button @click="handleReset">
-            <el-icon><Refresh /></el-icon>重置
-          </el-button>
-        </el-form-item>
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" inline class="filter-form">
+        <div class="filter-row">
+          <el-form-item label="商户ID：">
+            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="商户名称：">
+            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
+          </el-form-item>
+          <el-form-item label="排序字段：">
+            <el-select v-model="searchForm.sortField" placeholder="请选择排序字段" style="width: 168px">
+              <el-option label="收款金额" value="amount" />
+              <el-option label="成功率" value="rate" />
+              <el-option label="成功单数" value="count" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="日期范围：">
+            <el-date-picker
+              v-model="searchForm.dateRange"
+              type="daterange"
+              range-separator="~"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 360px"
+            />
+          </el-form-item>
+        </div>
+        <div class="filter-buttons">
+          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+        </div>
       </el-form>
     </el-card>
 
     <!-- 数据表格 -->
-    <el-card shadow="never" class="table-container">
-      <template #header>
-        <div class="table-header">
-          <div class="left">
-            <el-button @click="refreshData" class="refresh-btn">
-              <el-icon><Refresh /></el-icon>刷新数据
-            </el-button>
-          </div>
-          <div class="right">
-            <el-button icon="Printer" plain>打印</el-button>
-            <el-button type="primary" @click="handleExport">
-              <el-icon><Download /></el-icon>导出
-            </el-button>
-          </div>
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
+        <div class="left">
+          <span class="table-title">商户排行榜</span>
+          <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
         </div>
-      </template>
+        <div class="right">
+          <el-button :icon="Printer" plain>打印</el-button>
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="refreshData" />
+          </el-tooltip>
+        </div>
+      </div>
       
       <el-table
         :data="tableData"
         border
         v-loading="loading"
         stripe
-        highlight-current-row
         style="width: 100%"
-        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
       >
         <el-table-column type="index" label="排名" width="80" align="center">
           <template #default="scope">
@@ -83,17 +78,17 @@
         <el-table-column prop="merchantName" label="商户名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="successAmount" label="收款金额" width="150" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.successAmount) }}
+            <span class="amount-cell income">{{ formatAmount(row.successAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="fee" label="手续费" width="150" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.fee) }}
+            <span class="amount-cell outcome">{{ formatAmount(row.fee) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="netAmount" label="入账金额" width="150" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.netAmount) }}
+            <span class="amount-cell income">{{ formatAmount(row.netAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="orderCount" label="成功单数/总笔数" width="150" align="center">
@@ -121,7 +116,6 @@
           :page-sizes="[10, 20, 50, 100]"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
-          background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
@@ -308,69 +302,88 @@ const getSuccessRateType = (rate) => {
 }
 </script>
 
-<style scoped lang="scss">
-.app-container {
+<style scoped>
+.merchant-rank-container {
   padding: 16px;
 }
 
 .filter-container {
   margin-bottom: 16px;
-  
-  .search-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px 0;
-  }
 }
 
-.table-container {
+.filter-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-row .el-form-item {
+  margin-bottom: 0;
+  margin-right: 20px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 16px;
-  
-  .table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    
-    .refresh-btn {
-      margin-right: 10px;
-    }
-  }
-  
-  .rank-tag {
-    font-weight: bold;
-    width: 30px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-  }
+}
+
+.table-toolbar .left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.table-toolbar .right .el-button {
+  margin-left: 8px;
 }
 
 .pagination-container {
   display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.amount-cell {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+}
+
+.amount-cell.income {
+  color: #67c23a;
+}
+
+.amount-cell.outcome {
+  color: #f56c6c;
+}
+
+.rank-tag {
+  font-weight: bold;
+  width: 30px;
+  height: 24px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  margin-top: 20px;
-}
-
-:deep(.el-table) {
-  border-radius: 4px;
-  
-  &::before {
-    height: 0;
-  }
-}
-
-:deep(.el-table .cell) {
-  padding-left: 10px;
-  padding-right: 10px;
-}
-
-:deep(.el-card__header) {
-  padding: 12px 20px;
-}
-
-:deep(.el-card__body) {
-  padding: 16px;
+  margin: 0 auto;
 }
 </style> 

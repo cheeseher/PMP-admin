@@ -1,70 +1,70 @@
 <!-- 数据统计/商户余额快照 - 展示商户余额实时数据 -->
 <template>
-  <div class="statistics-merchant-balance">
+  <div class="merchant-balance-container">
     <!-- 搜索表单 -->
-    <el-card shadow="never" class="search-card">
-      <el-form :model="searchForm" inline class="search-form">
-        <el-form-item label="商户名称">
-          <el-input 
-            v-model="searchForm.merchantName" 
-            placeholder="请输入商户名称" 
-            clearable 
-            style="width: 168px" 
-          />
-        </el-form-item>
-        <el-form-item label="余额范围">
-          <el-input-number
-            v-model="searchForm.minBalance"
-            :precision="2"
-            :step="1000"
-            :min="0"
-            placeholder="最小金额"
-            style="width: 120px"
-            controls-position="right"
-          />
-          <span class="separator">-</span>
-          <el-input-number
-            v-model="searchForm.maxBalance"
-            :precision="2"
-            :step="1000"
-            :min="0"
-            placeholder="最大金额"
-            style="width: 120px"
-            controls-position="right"
-          />
-        </el-form-item>
-        <el-form-item label="快照时间">
-          <el-date-picker
-            v-model="searchForm.snapshotTime"
-            type="datetime"
-            placeholder="请选择快照时间"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            style="width: 240px"
-            :shortcuts="dateShortcuts"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch" :loading="loading">
-            <el-icon><Search /></el-icon>查询
-          </el-button>
-          <el-button @click="handleReset">
-            <el-icon><RefreshRight /></el-icon>重置
-          </el-button>
-        </el-form-item>
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" inline class="filter-form">
+        <div class="filter-row">
+          <el-form-item label="商户名称：">
+            <el-input 
+              v-model="searchForm.merchantName" 
+              placeholder="请输入商户名称" 
+              clearable 
+              style="width: 220px" 
+            />
+          </el-form-item>
+          <el-form-item label="余额范围：">
+            <el-input-number
+              v-model="searchForm.minBalance"
+              :precision="2"
+              :step="1000"
+              :min="0"
+              placeholder="最小金额"
+              style="width: 120px"
+              controls-position="right"
+            />
+            <span class="separator">-</span>
+            <el-input-number
+              v-model="searchForm.maxBalance"
+              :precision="2"
+              :step="1000"
+              :min="0"
+              placeholder="最大金额"
+              style="width: 120px"
+              controls-position="right"
+            />
+          </el-form-item>
+          <el-form-item label="快照时间：">
+            <el-date-picker
+              v-model="searchForm.snapshotTime"
+              type="datetime"
+              placeholder="请选择快照时间"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              style="width: 240px"
+              :shortcuts="dateShortcuts"
+            />
+          </el-form-item>
+        </div>
+        <div class="filter-buttons">
+          <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
+          <el-button plain :icon="RefreshRight" @click="handleReset">重置</el-button>
+        </div>
       </el-form>
     </el-card>
 
     <!-- 表格区域 -->
-    <el-card shadow="never" class="table-card">
-      <!-- 表格操作区 -->
-      <div class="table-header">
-        <div class="table-title">
-          <span>商户余额列表</span>
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
+        <div class="left">
+          <span class="table-title">商户余额列表</span>
           <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
         </div>
-        <div class="table-operations">
+        <div class="right">
           <el-button type="primary" :icon="Download" @click="handleExport">导出数据</el-button>
-          <el-button :icon="Refresh" @click="refreshData" :loading="loading">刷新</el-button>
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="refreshData" :loading="loading" />
+          </el-tooltip>
         </div>
       </div>
 
@@ -72,12 +72,9 @@
       <el-table 
         :data="tableData" 
         border 
+        stripe
         style="width: 100%" 
         v-loading="loading"
-        highlight-current-row
-        stripe
-        table-layout="auto"
-        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column prop="merchantId" label="商户ID" width="120" align="center" />
@@ -97,12 +94,8 @@
         <el-table-column prop="snapshotTime" label="备份时间" width="180" align="center" />
         <el-table-column label="操作" width="180" fixed="right" align="center">
           <template #default="{ row }">
-            <el-button type="primary" link @click="viewDetail(row)">
-              <el-icon><View /></el-icon>查看明细
-            </el-button>
-            <el-button type="success" link @click="viewHistory(row)">
-              <el-icon><Clock /></el-icon>历史记录
-            </el-button>
+            <el-button type="primary" link @click="viewDetail(row)">查看明细</el-button>
+            <el-button type="success" link @click="viewHistory(row)">历史记录</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -117,7 +110,6 @@
           layout="total, sizes, prev, pager, next, jumper"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
-          background
         />
       </div>
     </el-card>
@@ -148,12 +140,12 @@
       </div>
       
       <template #footer>
-        <span class="dialog-footer">
+        <div class="dialog-footer">
           <el-button @click="detailDialogVisible = false">关闭</el-button>
           <el-button type="primary" @click="printDetail">
             <el-icon><Printer /></el-icon>打印明细
           </el-button>
-        </span>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -427,97 +419,96 @@ onMounted(() => {
 })
 </script>
 
-<style scoped lang="scss">
-.statistics-merchant-balance {
-  .search-card {
-    margin-bottom: 16px;
-  }
-
-  .search-form {
-    display: flex;
-    flex-wrap: wrap;
-    
-    .separator {
-      margin: 0 8px;
-      color: #909399;
-    }
-  }
-  
-  .table-card {
-    margin-bottom: 16px;
-  }
-  
-  .table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    
-    .table-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 16px;
-      font-weight: 500;
-    }
-  }
-
-  .table-operations {
-    display: flex;
-    gap: 10px;
-  }
-
-  .amount-cell {
-    font-family: monospace;
-    font-weight: 500;
-    
-    &.income {
-      color: #67c23a;
-    }
-    
-    &.outcome {
-      color: #f56c6c;
-    }
-  }
-
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
-  }
-  
-  .merchant-detail-chart {
-    margin-top: 20px;
-    
-    .chart-title {
-      font-size: 14px;
-      font-weight: 500;
-      margin-bottom: 10px;
-      color: #303133;
-    }
-    
-    .balance-chart {
-      height: 250px;
-      background-color: #f9f9f9;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #909399;
-    }
-  }
+<style scoped>
+.merchant-balance-container {
+  padding: 16px;
 }
 
-:deep(.el-form-item) {
-  margin-bottom: 18px;
-  margin-right: 18px;
+.filter-container {
+  margin-bottom: 16px;
 }
 
-:deep(.el-form-item:last-child) {
-  margin-right: 0;
+.filter-form {
+  display: flex;
+  flex-direction: column;
 }
 
-:deep(.el-date-editor.el-input__wrapper) {
-  --el-date-editor-width: auto;
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-row .el-form-item {
+  margin-bottom: 0;
+  margin-right: 20px;
+}
+
+.separator {
+  margin: 0 8px;
+  color: #909399;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.table-toolbar .left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.table-toolbar .right .el-button {
+  margin-left: 8px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.amount-cell {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+}
+
+.merchant-detail-chart {
+  margin-top: 20px;
+}
+
+.chart-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #606266;
+}
+
+.balance-chart {
+  height: 300px;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style> 

@@ -1,14 +1,16 @@
 <!-- 订单管理/商户提现审核 - 处理商户的提现申请 -->
 <template>
-  <div class="withdraw-list">
+  <div class="order-withdraw">
     <!-- 搜索表单 -->
-    <el-card shadow="never" class="search-card">
-      <div class="search-form">
-        <el-form :model="searchForm" inline>
-          <el-form-item label="提现单号">
-            <el-input v-model="searchForm.withdrawNo" placeholder="请输入提现单号" clearable />
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" inline class="multi-line-filter-form">
+        <!-- 第一行筛选项 -->
+        <div class="filter-line">
+          <el-form-item label="提现单号：">
+            <el-input v-model="searchForm.withdrawNo" placeholder="请输入提现单号" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="状态">
+          
+          <el-form-item label="状态：">
             <el-select v-model="searchForm.status" placeholder="请选择" style="width: 168px" clearable>
               <el-option label="全部状态" value="all" />
               <el-option label="待审核" value="PENDING" />
@@ -18,36 +20,41 @@
               <el-option label="打款失败" value="FAILED" />
             </el-select>
           </el-form-item>
-          <el-form-item label="日期范围">
+          
+          <el-form-item label="日期范围：">
             <el-date-picker
               v-model="searchForm.dateRange"
               type="daterange"
-              range-separator="~"
+              range-separator="至"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
               format="YYYY-MM-DD"
               value-format="YYYY-MM-DD"
             />
           </el-form-item>
-          <el-form-item label="商户ID">
-            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" clearable />
+        </div>
+
+        <!-- 第二行筛选项 -->
+        <div class="filter-line">
+          <el-form-item label="商户ID：">
+            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="商户名称">
-            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" clearable />
+          
+          <el-form-item label="商户名称：">
+            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="商户类型">
-            <el-input v-model="searchForm.merchantType" placeholder="请输入商户类型" clearable />
+          
+          <el-form-item label="商户类型：">
+            <el-input v-model="searchForm.merchantType" placeholder="请输入商户类型" style="width: 168px" clearable />
           </el-form-item>
-        </el-form>
-      </div>
-      <div class="second-row">
-        <el-form :model="searchForm" inline>
-          <el-form-item>
-            <el-button type="primary" icon="Search" @click="handleSearch">查询</el-button>
-            <el-button @click="handleReset">重置</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+          
+          <!-- 操作按钮组，靠右对齐 -->
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
+            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          </div>
+        </div>
+      </el-form>
     </el-card>
 
     <!-- 统计信息区域 -->
@@ -60,62 +67,64 @@
     </div>
 
     <!-- 数据表格 -->
-    <el-card shadow="never" class="table-card">
-      <div class="table-header">
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
         <div class="left">
-          <el-button type="primary" icon="Upload" @click="handleBatchApprove">批量通过</el-button>
-          <el-button type="danger" icon="Close" @click="handleBatchReject">批量拒绝</el-button>
+          <el-button type="primary" :icon="Check" @click="handleBatchApprove" :disabled="!hasSelected">批量通过</el-button>
+          <el-button type="danger" plain :icon="Close" @click="handleBatchReject" :disabled="!hasSelected">批量拒绝</el-button>
+          <el-button :icon="Download" plain @click="handleExport">导出</el-button>
+          <el-button :icon="Printer" plain>打印</el-button>
         </div>
         <div class="right">
-          <el-button-group>
-            <el-button icon="Printer">打印</el-button>
-            <el-button icon="Download" @click="handleExport">导出</el-button>
-            <el-button icon="Refresh">刷新</el-button>
-          </el-button-group>
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="refreshData" :loading="loading" />
+          </el-tooltip>
         </div>
       </div>
       
       <el-table
         :data="tableData"
         border
-        style="width: 100%"
-        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
+        stripe
+        v-loading="loading"
+        highlight-current-row
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="merchantId" label="商户ID" width="80" />
+        <el-table-column type="selection" width="55" fixed="left" />
+        <el-table-column prop="merchantId" label="商户ID" width="80" fixed="left" />
         <el-table-column prop="withdrawNo" label="提现订单号" width="140" />
-        <el-table-column prop="beforeAmount" label="提现前余额" width="120">
+        <el-table-column prop="beforeAmount" label="提现前余额" width="120" align="right">
           <template #default="scope">
-            {{ scope.row.beforeAmount }}
+            <span class="amount-cell">{{ scope.row.beforeAmount }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="frozenAmount" label="原始冻结" width="120">
+        <el-table-column prop="frozenAmount" label="原始冻结" width="120" align="right">
           <template #default="scope">
-            {{ scope.row.frozenAmount || '0.00' }}
+            <span class="amount-cell">{{ scope.row.frozenAmount || '0.00' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="amount" label="提现金额" width="120">
+        <el-table-column prop="amount" label="提现金额" width="120" align="right">
           <template #default="scope">
-            {{ scope.row.amount }}
+            <span class="amount-cell outcome">{{ scope.row.amount }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="fee" label="手续费" width="80">
+        <el-table-column prop="fee" label="手续费" width="80" align="right">
           <template #default="scope">
-            {{ scope.row.fee }}
+            <span class="amount-cell outcome">{{ scope.row.fee }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="afterAmount" label="提现后余额" width="120">
+        <el-table-column prop="afterAmount" label="提现后余额" width="120" align="right">
           <template #default="scope">
-            {{ scope.row.afterAmount }}
+            <span class="amount-cell">{{ scope.row.afterAmount }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="afterFrozen" label="提现后冻结" width="120">
+        <el-table-column prop="afterFrozen" label="提现后冻结" width="120" align="right">
           <template #default="scope">
-            {{ scope.row.afterFrozen || '0.00' }}
+            <span class="amount-cell">{{ scope.row.afterFrozen || '0.00' }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="remark" label="备注" width="150" />
+        <el-table-column prop="remark" label="备注" min-width="150" show-overflow-tooltip />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
             <el-tag 
@@ -127,30 +136,27 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="操作时间" width="140" />
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="scope">
             <el-button 
               v-if="scope.row.status === 'PENDING'" 
-              type="success" 
               link 
-              size="small" 
+              type="success"
               @click="handleApprove(scope.row)"
             >
               通过
             </el-button>
             <el-button 
               v-if="scope.row.status === 'PENDING'" 
-              type="danger" 
               link 
-              size="small" 
+              type="danger" 
               @click="handleReject(scope.row)"
             >
               拒绝
             </el-button>
             <el-button 
-              type="primary" 
               link 
-              size="small" 
+              type="primary" 
               @click="handleView(scope.row)"
             >
               详情
@@ -164,10 +170,9 @@
         <el-pagination
           v-model:current-page="pagination.currentPage"
           v-model:page-size="pagination.pageSize"
-          :page-sizes="[10, 20, 30, 50]"
+          :page-sizes="[10, 20, 50, 100]"
           :total="pagination.total"
           layout="total, sizes, prev, pager, next, jumper"
-          background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
@@ -210,38 +215,7 @@
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">确认</el-button>
-        </span>
-      </template>
-    </el-dialog>
-
-    <!-- 批量审核对话框 -->
-    <el-dialog
-      v-model="batchDialogVisible"
-      :title="batchDialogType === 'approve' ? '批量审核通过' : '批量审核拒绝'"
-      width="500px"
-    >
-      <p>您已选择 {{ selectedRows.length }} 条记录进行{{ batchDialogType === 'approve' ? '审核通过' : '审核拒绝' }}操作</p>
-      <el-form
-        ref="batchAuditFormRef"
-        :model="batchAuditForm"
-        :rules="auditRules"
-        label-width="100px"
-      >
-        <el-form-item label="审核意见" prop="remark">
-          <el-input
-            v-model="batchAuditForm.remark"
-            type="textarea"
-            :rows="3"
-            :placeholder="batchDialogType === 'approve' ? '请输入审核通过意见' : '请输入审核拒绝原因'"
-            style="width: 360px"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="batchDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleBatchSubmit">确认</el-button>
+          <el-button type="primary" @click="handleAuditSubmit" :loading="auditSubmitting">确认</el-button>
         </span>
       </template>
     </el-dialog>
@@ -250,7 +224,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Search, Refresh, Download, Close, View, Upload } from '@element-plus/icons-vue'
+import { Search, Refresh, Download, Close, View, Check } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 搜索表单数据
@@ -507,7 +481,7 @@ const handleBatchReject = () => {
 }
 
 // 提交审核
-const handleSubmit = async () => {
+const handleAuditSubmit = async () => {
   if (!auditFormRef.value) return
   await auditFormRef.value.validate((valid) => {
     if (valid) {
@@ -551,65 +525,102 @@ const handleCurrentChange = (val) => {
 }
 </script>
 
-<style scoped>
-.withdraw-list {
-  padding: 15px;
+<style lang="scss" scoped>
+.order-withdraw {
+  padding: 12px;
+
+  .filter-container {
+    margin-bottom: 16px;
+  }
+
+  .multi-line-filter-form .filter-line {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .multi-line-filter-form .filter-line:last-child {
+    margin-bottom: 0;
+  }
+
+  .multi-line-filter-form .el-form-item {
+    margin-bottom: 0;
+    margin-right: 20px;
+  }
+
+  .filter-buttons {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+  }
+
+  .filter-buttons .el-button + .el-button {
+    margin-left: 12px;
+  }
+
+  .stat-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .table-toolbar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .table-toolbar .left .el-button {
+    margin-right: 8px;
+  }
+
+  .table-toolbar .right .el-button {
+    margin-left: 8px;
+  }
+
+  .pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+
+  .amount-cell {
+    font-family: 'Roboto Mono', monospace;
+  }
+
+  .amount-cell.income {
+    color: #67C23A;
+  }
+
+  .amount-cell.outcome {
+    color: #F56C6C;
+  }
 }
 
-.search-card {
-  margin-bottom: 15px;
+:deep(.el-form-item) {
+  margin-bottom: 12px;
+  margin-right: 16px;
 }
 
-.search-form {
-  display: flex;
-  flex-wrap: wrap;
+:deep(.el-form-item:last-child) {
+  margin-right: 0;
+  margin-bottom: 0;
 }
 
-.second-row {
-  margin-top: 10px;
+:deep(.el-form-item__label) {
+  padding-right: 8px;
 }
 
-.stat-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
+:deep(.el-date-editor.el-input__wrapper) {
+  --el-date-editor-width: auto;
 }
 
-.table-card {
-  margin-bottom: 15px;
+:deep(.el-card__header) {
+  padding: 10px 16px;
 }
 
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-:deep(.el-tag) {
-  margin-right: 5px;
-}
-
-/* 修复表格内部标签居中问题 */
-:deep(.el-table .cell) {
-  display: flex;
-  align-items: center;
-}
-
-:deep(.el-table .cell .el-tag) {
-  margin: 0 auto;
+:deep(.el-card__body) {
+  padding: 12px;
 }
 </style> 

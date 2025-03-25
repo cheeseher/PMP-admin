@@ -1,114 +1,85 @@
 <!-- 商户产品列表页面 - 展示商户与产品关联信息 -->
 <template>
   <div class="merchant-product-list-container">
-    <!-- 搜索区域 -->
-    <div class="search-section">
-      <el-row :gutter="20">
-        <el-col :span="24">
-          <div class="search-header">搜索</div>
-        </el-col>
-      </el-row>
-      <el-row :gutter="20" class="search-form">
-        <el-col :span="6">
-          <div class="search-item">
-            <span class="label">ID</span>
-            <el-input v-model="searchForm.id" placeholder="请输入" clearable />
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="search-item">
-            <span class="label">商户账号</span>
-            <el-input v-model="searchForm.merchantNo" placeholder="请输入" clearable />
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="search-item">
-            <span class="label">商户名称</span>
-            <el-input v-model="searchForm.merchantName" placeholder="请输入" clearable />
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="search-item">
-            <span class="label">支付产品</span>
-            <el-input v-model="searchForm.product" placeholder="请输入" clearable />
-          </div>
-        </el-col>
-      </el-row>
-      <el-row :gutter="20" class="search-form" style="margin-top: 10px;">
-        <el-col :span="6">
-          <el-button type="primary" @click="handleSearch" class="search-btn">
-            <el-icon><Search /></el-icon>
-            查询
-          </el-button>
-          <el-button @click="handleReset" plain class="reset-btn">重置</el-button>
-        </el-col>
-      </el-row>
-    </div>
+    <!-- 搜索表单 -->
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" inline class="filter-form">
+        <div class="filter-row">
+          <el-form-item label="ID：">
+            <el-input v-model="searchForm.id" placeholder="请输入ID" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="商户账号：">
+            <el-input v-model="searchForm.merchantNo" placeholder="请输入商户账号" style="width: 220px" clearable />
+          </el-form-item>
+          <el-form-item label="商户名称：">
+            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
+          </el-form-item>
+          <el-form-item label="支付产品：">
+            <el-input v-model="searchForm.product" placeholder="请输入支付产品" style="width: 220px" clearable />
+          </el-form-item>
+        </div>
+        <div class="filter-buttons">
+          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+        </div>
+      </el-form>
+    </el-card>
 
-    <!-- 表格区域 -->
-    <div class="table-container">
+    <!-- 数据表格 -->
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
+        <div class="left">
+          <el-button type="primary" :icon="Plus">新增关联</el-button>
+        </div>
+        <div class="right">
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="fetchData" />
+          </el-tooltip>
+        </div>
+      </div>
+
       <el-table
         v-loading="loading"
         :data="tableData"
         border
         stripe
-        style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column prop="id" label="ID" width="80" align="center" sortable />
-        <el-table-column prop="merchantNo" label="商户账号" min-width="120" align="center" />
-        <el-table-column prop="merchantName" label="商户名称" min-width="150" align="center" />
-        <el-table-column prop="productName" label="支付产品名称" min-width="150" align="center" />
-        <el-table-column prop="productCode" label="支付产品编码" min-width="120" align="center" />
-        <el-table-column prop="rate" label="商户费率" width="100" align="center">
+        <el-table-column type="selection" width="55" fixed="left" />
+        <el-table-column prop="id" label="ID" width="80" sortable />
+        <el-table-column prop="merchantNo" label="商户账号" min-width="120" />
+        <el-table-column prop="merchantName" label="商户名称" min-width="150" />
+        <el-table-column prop="productName" label="支付产品名称" min-width="150" />
+        <el-table-column prop="productCode" label="支付产品编码" min-width="120" />
+        <el-table-column prop="rate" label="商户费率" width="100" align="right">
           <template #default="scope">
-            {{ scope.row.rate.toFixed(2) }}%
+            <span class="rate-cell">{{ scope.row.rate.toFixed(2) }}%</span>
           </template>
         </el-table-column>
-        <el-table-column prop="weight" label="权重" width="80" align="center" />
-        <el-table-column prop="remark" label="备注" min-width="150" align="left" :show-overflow-tooltip="true" />
+        <el-table-column prop="weight" label="权重" width="80" />
+        <el-table-column prop="remark" label="备注" min-width="150" show-overflow-tooltip />
       </el-table>
-    </div>
 
-    <!-- 分页区域 -->
-    <div class="pagination-container">
-      <el-pagination
-        background
-        layout="prev, pager, next, total"
-        :current-page="currentPage"
-        :page-size="pageSize"
-        :total="total"
-        @current-change="handleCurrentChange"
-        :pager-count="7"
-      >
-        <template #jumper>
-          <span class="page-info">
-            到第
-            <el-input v-model="jumpPage" class="page-jump-input" @keyup.enter="handleJumpPage" />
-            页
-          </span>
-        </template>
-        <template #total>
-          <span class="total-info">共 {{ total }} 条</span>
-        </template>
-      </el-pagination>
-      <div class="page-size-selector">
-        <span>每页显示</span>
-        <el-select v-model="pageSize" @change="handleSizeChange" class="page-size-select">
-          <el-option :value="10" label="10条/页" />
-          <el-option :value="20" label="20条/页" />
-          <el-option :value="30" label="30条/页" />
-          <el-option :value="50" label="50条/页" />
-        </el-select>
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
       </div>
-    </div>
+    </el-card>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { merchantProductList } from '@/data/merchantProductData'
 
@@ -127,7 +98,7 @@ const selectedRows = ref([])
 
 // 分页
 const currentPage = ref(1)
-const pageSize = ref(30)
+const pageSize = ref(10)
 const total = ref(0)
 const jumpPage = ref('')
 
@@ -202,21 +173,6 @@ const handleCurrentChange = (val) => {
   fetchData()
 }
 
-// 跳转到指定页
-const handleJumpPage = () => {
-  if (!jumpPage.value) return
-  
-  const page = parseInt(jumpPage.value)
-  if (isNaN(page) || page < 1 || page > Math.ceil(total.value / pageSize.value)) {
-    ElMessage.warning('请输入有效页码')
-    return
-  }
-  
-  currentPage.value = page
-  fetchData()
-  jumpPage.value = ''
-}
-
 // 页面加载时获取数据
 onMounted(() => {
   fetchData()
@@ -225,106 +181,61 @@ onMounted(() => {
 
 <style scoped>
 .merchant-product-list-container {
-  padding: 0;
-  background-color: #f0f2f5;
-}
-
-.search-section {
-  background-color: #fff;
-  border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-  margin-bottom: 16px;
   padding: 16px;
 }
 
-.search-header {
-  font-size: 16px;
-  font-weight: 500;
+.filter-container {
   margin-bottom: 16px;
 }
 
-.search-form {
+.filter-form {
   display: flex;
+  flex-direction: column;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
 }
 
-.search-item {
+.filter-row .el-form-item {
+  margin-bottom: 0;
+  margin-right: 20px;
+}
+
+.filter-buttons {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
-.label {
-  min-width: 60px;
-  text-align: right;
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
-.search-btn {
-  margin-left: 16px;
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
 }
 
-.reset-btn {
+.table-toolbar .left .el-button {
+  margin-right: 8px;
+}
+
+.table-toolbar .right .el-button {
   margin-left: 8px;
-}
-
-.table-container {
-  background-color: #fff;
-  border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-  padding: 16px;
-  margin-bottom: 16px;
 }
 
 .pagination-container {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #fff;
-  border-radius: 4px;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-  padding: 12px 16px;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
-.page-info {
-  display: flex;
-  align-items: center;
-  margin-left: 16px;
-}
-
-.page-jump-input {
-  width: 50px;
-  margin: 0 8px;
-}
-
-.total-info {
-  margin-left: 16px;
-}
-
-.page-size-selector {
-  display: flex;
-  align-items: center;
-}
-
-.page-size-select {
-  width: 100px;
-  margin-left: 8px;
-}
-
-:deep(.el-pagination) {
-  justify-content: flex-start;
-}
-
-:deep(.el-pagination__sizes) {
-  margin-right: 0;
-}
-
-:deep(.el-table th) {
-  background-color: #f5f7fa;
-  color: #606266;
+.rate-cell {
+  font-family: 'Roboto Mono', monospace;
   font-weight: 500;
-}
-
-:deep(.el-pagination__total) {
-  margin-right: 0;
 }
 </style> 

@@ -7,61 +7,52 @@
       <div class="description">管理系统支持的所有支付类型以及配置信息</div>
     </div>
 
-    <!-- 搜索区域 -->
-    <el-card class="search-card" shadow="never">
-      <el-form :model="searchForm" inline>
-        <el-form-item label="类型ID">
-          <el-input v-model="searchForm.id" placeholder="请输入类型ID" clearable></el-input>
+    <!-- 搜索表单 -->
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" inline class="filter-form">
+        <el-form-item label="类型ID：">
+          <el-input v-model="searchForm.id" placeholder="请输入类型ID" style="width: 168px" clearable />
         </el-form-item>
-        <el-form-item label="类型名称">
-          <el-input v-model="searchForm.typeName" placeholder="请输入类型名称" clearable></el-input>
+        <el-form-item label="类型名称：">
+          <el-input v-model="searchForm.typeName" placeholder="请输入类型名称" style="width: 220px" clearable />
         </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon> 查询
-          </el-button>
-          <el-button @click="handleReset">
-            <el-icon><Refresh /></el-icon> 重置
-          </el-button>
-        </el-form-item>
+        <div class="filter-buttons">
+          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+        </div>
       </el-form>
     </el-card>
 
     <!-- 数据表格 -->
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>支付类型列表</span>
-          <div class="header-operations">
-            <el-button type="primary" @click="handleAdd">
-              <el-icon><Plus /></el-icon> 新增
-            </el-button>
-            <el-button type="danger" @click="handleBatchDelete">
-              <el-icon><Delete /></el-icon> 批量删除
-            </el-button>
-          </div>
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
+        <div class="left">
+          <el-button type="primary" :icon="Plus" @click="handleAdd">新增</el-button>
+          <el-button :icon="Delete" plain :disabled="selectedRows.length === 0" @click="handleBatchDelete">批量删除</el-button>
         </div>
-      </template>
+        <div class="right">
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="fetchData" />
+          </el-tooltip>
+        </div>
+      </div>
 
       <el-table 
         :data="tableData" 
         border 
+        stripe
         v-loading="loading"
-        @selection-change="handleSelectionChange"
-        style="width: 100%">
-        <el-table-column type="selection" width="55" align="center" />
-        <el-table-column prop="id" label="ID" width="80" align="center" />
+        @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="55" fixed="left" />
+        <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="typeName" label="类型名称" min-width="150" show-overflow-tooltip />
         <el-table-column prop="createTime" label="创建时间" width="180" show-overflow-tooltip />
         <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
-        <el-table-column label="操作" width="150" fixed="right" align="center">
+        <el-table-column label="操作" width="150" fixed="right">
           <template #default="scope">
-            <el-button type="primary" link @click="handleEdit(scope.row)">
-              <el-icon><Edit /></el-icon> 编辑
-            </el-button>
-            <el-button type="danger" link @click="handleDelete(scope.row)">
-              <el-icon><Delete /></el-icon> 删除
-            </el-button>
+            <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -363,42 +354,68 @@ const handleCurrentChange = (val) => {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .payment-type-container {
-  padding: 20px;
+  padding: 16px;
+}
 
-  .page-header {
-    margin-bottom: 20px;
-    
-    .title {
-      font-size: 20px;
-      font-weight: 600;
-      color: #303133;
-      margin-bottom: 8px;
-    }
+.page-header {
+  margin-bottom: 16px;
+}
 
-    .description {
-      color: #606266;
-      font-size: 14px;
-    }
-  }
+.page-header .title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 8px;
+}
 
-  .search-card {
-    margin-bottom: 20px;
-  }
+.page-header .description {
+  color: #606266;
+  font-size: 14px;
+}
 
-  .table-card {
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-  }
+.filter-container {
+  margin-bottom: 16px;
+}
 
-  .pagination-container {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-  }
+.filter-form {
+  display: flex;
+  align-items: center;
+}
+
+.filter-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 20px;
+}
+
+.filter-buttons {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.table-toolbar .left .el-button {
+  margin-right: 8px;
+}
+
+.table-toolbar .right .el-button {
+  margin-left: 8px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 </style> 

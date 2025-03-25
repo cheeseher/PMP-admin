@@ -2,46 +2,47 @@
 <template>
   <div class="supplier-channel-container">
     <!-- 搜索区域 -->
-    <div class="search-section">
-      <div class="search-row">
-        <div class="search-item">
-          <span class="label">ID</span>
-          <el-input v-model="searchForm.id" placeholder="请输入" clearable />
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" inline class="filter-form">
+        <div class="filter-row">
+          <el-form-item label="ID：">
+            <el-input v-model="searchForm.id" placeholder="请输入ID" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="通道名称：">
+            <el-input v-model="searchForm.channelName" placeholder="请输入通道名称" style="width: 220px" clearable />
+          </el-form-item>
+          <el-form-item label="通道编码：">
+            <el-input v-model="searchForm.channelCode" placeholder="请输入通道编码" style="width: 220px" clearable />
+          </el-form-item>
         </div>
-        <div class="search-item">
-          <span class="label">通道名称</span>
-          <el-input v-model="searchForm.channelName" placeholder="请输入" clearable />
+        
+        <div class="filter-buttons">
+          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
         </div>
-        <div class="search-item">
-          <span class="label">通道编码</span>
-          <el-input v-model="searchForm.channelCode" placeholder="请输入" clearable />
+      </el-form>
+    </el-card>
+
+    <!-- 数据展示区域 -->
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
+        <div class="left">
+          <el-button type="primary" :icon="Plus" @click="handleAdd">批量添加</el-button>
+          <el-button type="success" :icon="Check" :disabled="selectedRows.length === 0" @click="handleBatchEnable">批量启用</el-button>
+          <el-button type="danger" :icon="Close" :disabled="selectedRows.length === 0" @click="handleBatchDisable">批量禁用</el-button>
         </div>
-        <div class="search-actions">
-          <el-button type="primary" :icon="Search" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+        <div class="right">
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="fetchData" />
+          </el-tooltip>
         </div>
       </div>
-    </div>
 
-    <!-- 操作按钮区域 -->
-    <div class="action-buttons">
-      <el-button type="primary" @click="handleAdd">
-        <el-icon><Plus /></el-icon>批量添加
-      </el-button>
-      <el-button type="success" @click="handleBatchEnable" :disabled="selectedRows.length === 0">
-        <el-icon><Check /></el-icon>批量启用
-      </el-button>
-      <el-button type="danger" @click="handleBatchDisable" :disabled="selectedRows.length === 0">
-        <el-icon><Close /></el-icon>批量禁用
-      </el-button>
-    </div>
-
-    <!-- 表格区域 -->
-    <div class="table-container">
+      <!-- 表格 -->
       <el-table
         v-loading="tableLoading"
         :data="tableData"
-        style="width: 100%"
         border
         stripe
         @selection-change="handleSelectionChange"
@@ -50,9 +51,9 @@
         <el-table-column label="ID" prop="id" width="60" align="center" />
         <el-table-column label="通道名称" prop="channelName" min-width="120" />
         <el-table-column label="通道编码" prop="channelCode" width="100" align="center" />
-        <el-table-column label="通道费率" width="90" align="center">
+        <el-table-column label="通道费率" width="90" align="right">
           <template #default="scope">
-            {{ scope.row.rate.toFixed(2) }}
+            <span class="rate-cell">{{ scope.row.rate.toFixed(2) }}%</span>
           </template>
         </el-table-column>
         <el-table-column label="上游通道名称" prop="supplier" min-width="120" />
@@ -63,7 +64,6 @@
           <template #default="scope">
             <el-tag
               :type="scope.row.enabled ? 'success' : 'danger'"
-              effect="light"
               size="small"
             >
               {{ scope.row.enabled ? '启用' : '禁用' }}
@@ -92,7 +92,7 @@
         </el-table-column>
       </el-table>
 
-      <!-- 分页区域 -->
+      <!-- 分页 -->
       <div class="pagination-container">
         <el-pagination
           v-model:current-page="currentPage"
@@ -100,26 +100,26 @@
           :page-sizes="[10, 20, 30, 50]"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
-          background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
       </div>
-    </div>
+    </el-card>
 
     <!-- 添加/编辑对话框 -->
     <el-dialog
-      v-model="dialogVisible"
       :title="dialogType === 'add' ? '添加通道' : '编辑通道'"
-      width="600px"
+      v-model="dialogVisible"
+      width="550px"
       destroy-on-close
+      :close-on-click-modal="false"
     >
       <el-form
         ref="formRef"
         :model="channelForm"
         :rules="rules"
-        label-width="100px"
-        style="max-width: 500px; margin: 0 auto;"
+        label-width="120px"
+        class="channel-form"
       >
         <el-form-item label="通道名称" prop="channelName">
           <el-input v-model="channelForm.channelName" placeholder="请输入通道名称" />
@@ -133,11 +133,11 @@
             :precision="2" 
             :step="0.1" 
             :min="0"
-            style="width: 100%;"
+            style="width: 100%"
           />
         </el-form-item>
         <el-form-item label="上游通道名称" prop="supplier">
-          <el-select v-model="channelForm.supplier" placeholder="请选择上游通道" clearable style="width: 100%;">
+          <el-select v-model="channelForm.supplier" placeholder="请选择上游通道" clearable style="width: 100%">
             <el-option
               v-for="item in supplierOptions"
               :key="item.value"
@@ -150,7 +150,7 @@
           <el-input v-model="channelForm.supplierCode" placeholder="请输入上游通道编码" disabled />
         </el-form-item>
         <el-form-item label="支付类型" prop="payType">
-          <el-select v-model="channelForm.payType" placeholder="请选择支付类型" clearable style="width: 168px;">
+          <el-select v-model="channelForm.payType" placeholder="请选择支付类型" clearable style="width: 100%">
             <el-option
               v-for="item in payTypeOptions"
               :key="item.value"
@@ -160,7 +160,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="分组" prop="category">
-          <el-select v-model="channelForm.category" placeholder="请选择分组" clearable style="width: 168px;">
+          <el-select v-model="channelForm.category" placeholder="请选择分组" clearable style="width: 100%">
             <el-option
               v-for="item in categoryOptions"
               :key="item.value"
@@ -178,10 +178,10 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <span class="dialog-footer">
+        <div class="dialog-footer">
           <el-button @click="dialogVisible = false">取消</el-button>
           <el-button type="primary" @click="handleSubmitForm">确认</el-button>
-        </span>
+        </div>
       </template>
     </el-dialog>
   </div>
@@ -189,7 +189,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from 'vue'
-import { Search, Plus, Check, Close } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, Check, Close } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { channelList, payTypeOptions, categoryOptions } from '@/data/channelData'
 import { supplierList } from '@/data/supplierData'
@@ -201,15 +201,10 @@ const searchForm = reactive({
   channelCode: ''
 })
 
-// 表格数据
+// 表格数据相关
 const tableData = ref([])
 const tableLoading = ref(false)
-
-// 选中的行
 const selectedRows = ref([])
-const handleSelectionChange = (selection) => {
-  selectedRows.value = selection
-}
 
 // 分页相关
 const currentPage = ref(1)
@@ -261,8 +256,8 @@ watch(() => channelForm.supplier, (newVal) => {
   }
 })
 
-// 搜索方法
-const handleSearch = () => {
+// 获取数据
+const fetchData = () => {
   tableLoading.value = true
   
   // 模拟API调用
@@ -288,8 +283,12 @@ const handleSearch = () => {
     total.value = filteredData.length
     
     tableLoading.value = false
-    ElMessage.success('查询成功')
-  }, 500)
+  }, 300)
+}
+
+// 搜索方法
+const handleSearch = () => {
+  fetchData()
 }
 
 // 重置搜索条件
@@ -297,7 +296,7 @@ const handleReset = () => {
   Object.keys(searchForm).forEach(key => {
     searchForm[key] = ''
   })
-  handleSearch()
+  fetchData()
 }
 
 // 添加通道
@@ -453,79 +452,96 @@ const handleSubmitForm = () => {
 // 每页条数改变
 const handleSizeChange = (size) => {
   pageSize.value = size
-  handleSearch()
+  fetchData()
 }
 
 // 页码改变
 const handleCurrentChange = (page) => {
   currentPage.value = page
-  handleSearch()
+  fetchData()
 }
 
 // 页面加载时获取数据
 onMounted(() => {
-  // 模拟从服务器获取数据
-  tableLoading.value = true
-  setTimeout(() => {
-    tableData.value = channelList
-    total.value = channelList.length
-    tableLoading.value = false
-  }, 500)
+  fetchData()
 })
 </script>
 
 <style scoped>
 .supplier-channel-container {
-  padding: 20px;
-}
-
-.search-section {
-  background-color: #fff;
   padding: 16px;
-  margin-bottom: 20px;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
 }
 
-.search-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: center;
-}
-
-.search-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.search-item .label {
-  min-width: 70px;
-  color: #606266;
-}
-
-.search-actions {
-  margin-left: auto;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 10px;
+.filter-container {
   margin-bottom: 16px;
 }
 
-.table-container {
-  background-color: #fff;
-  padding: 16px;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-  margin-bottom: 20px;
+.filter-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-row .el-form-item {
+  margin-bottom: 0;
+  margin-right: 20px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.table-toolbar .left .el-button {
+  margin-right: 8px;
+}
+
+.table-toolbar .right .el-button {
+  margin-left: 8px;
 }
 
 .pagination-container {
   display: flex;
-  justify-content: center;
-  margin-top: 20px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.rate-cell {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+}
+
+.channel-form .el-form-item {
+  margin-bottom: 20px;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+:deep(.el-input-number .el-input__inner) {
+  text-align: left;
+}
+
+:deep(.el-switch__label) {
+  font-weight: 400;
 }
 </style> 

@@ -1,11 +1,11 @@
 <!-- 数据统计/平台分润统计 - 统计平台收益数据 -->
 <template>
-  <div class="statistics-platform-profit">
+  <div class="platform-profit-container">
     <!-- 搜索表单 -->
-    <el-card shadow="never" class="search-card">
-      <div class="search-form">
-        <el-form :model="searchForm" inline>
-          <el-form-item label="日期范围">
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" inline class="filter-form">
+        <div class="filter-row">
+          <el-form-item label="日期范围：">
             <el-date-picker
               v-model="searchForm.dateRange"
               type="daterange"
@@ -17,29 +17,28 @@
               style="width: 360px"
             />
           </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleSearch" :loading="loading">
-              <el-icon><Search /></el-icon>查询
-            </el-button>
-            <el-button @click="handleReset">
-              <el-icon><Refresh /></el-icon>重置
-            </el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+        </div>
+        <div class="filter-buttons">
+          <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
+          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+        </div>
+      </el-form>
     </el-card>
 
     <!-- 数据表格 -->
-    <el-card shadow="never" class="table-card">
-      <div class="table-header">
-        <div class="table-title">
-          <span>平台分润列表</span>
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
+        <div class="left">
+          <span class="table-title">平台分润列表</span>
           <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
         </div>
-        <div class="table-operations">
+        <div class="right">
           <el-button :icon="Printer" plain>打印</el-button>
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
-          <el-button :icon="Refresh" @click="refreshData" :loading="loading">刷新</el-button>
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="refreshData" :loading="loading" />
+          </el-tooltip>
         </div>
       </div>
       
@@ -48,9 +47,7 @@
         border
         v-loading="loading"
         stripe
-        highlight-current-row
         style="width: 100%"
-        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column prop="date" label="日期" width="120" align="center" />
@@ -99,7 +96,6 @@
           :page-sizes="[10, 20, 50, 100]"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
-          background
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
@@ -109,7 +105,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -262,79 +258,78 @@ const getSuccessRateType = (rate) => {
 }
 </script>
 
-<style scoped lang="scss">
-.statistics-platform-profit {
-  .search-card {
-    margin-bottom: 16px;
-  }
-
-  .search-form {
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .table-card {
-    margin-bottom: 16px;
-  }
-  
-  .table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    
-    .table-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 16px;
-      font-weight: 500;
-    }
-  }
-
-  .table-operations {
-    display: flex;
-    gap: 10px;
-  }
-
-  .amount-cell {
-    font-family: monospace;
-    font-weight: 500;
-    
-    &.income {
-      color: #67c23a;
-    }
-    
-    &.outcome {
-      color: #f56c6c;
-    }
-  }
-
-  .pagination-container {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
-  }
-}
-
-:deep(.el-form-item) {
-  margin-bottom: 18px;
-  margin-right: 18px;
-}
-
-:deep(.el-form-item:last-child) {
-  margin-right: 0;
-}
-
-:deep(.el-date-editor.el-input__wrapper) {
-  --el-date-editor-width: auto;
-}
-
-:deep(.el-card__header) {
-  padding: 12px 20px;
-}
-
-:deep(.el-card__body) {
+<style scoped>
+.platform-profit-container {
   padding: 16px;
+}
+
+.filter-container {
+  margin-bottom: 16px;
+}
+
+.filter-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-row .el-form-item {
+  margin-bottom: 0;
+  margin-right: 20px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.table-toolbar .left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.table-toolbar .right .el-button {
+  margin-left: 8px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.amount-cell {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+}
+
+.amount-cell.income {
+  color: #67c23a;
+}
+
+.amount-cell.outcome {
+  color: #f56c6c;
 }
 </style> 

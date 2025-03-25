@@ -3,74 +3,46 @@
   <div class="order-recharge">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="multi-line-filter-form">
-        <!-- 第一行筛选项 -->
-        <div class="filter-line">
-          <el-form-item label="充值订单号：">
-            <el-input v-model="searchForm.rechargeNo" placeholder="请输入充值订单号" style="width: 220px" clearable />
-          </el-form-item>
-          
-          <el-form-item label="状态：">
-            <el-select v-model="searchForm.status" placeholder="请选择" style="width: 168px" clearable>
-              <el-option label="全部状态" value="all" />
-              <el-option label="待支付" value="pending" />
-              <el-option label="支付中" value="processing" />
-              <el-option label="充值成功" value="success" />
-              <el-option label="充值失败" value="failed" />
-            </el-select>
-          </el-form-item>
-          
-          <el-form-item label="日期范围：">
-            <el-date-picker
-              v-model="searchForm.dateRange"
-              type="daterange"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-            />
-          </el-form-item>
-        </div>
-
-        <!-- 第二行筛选项 -->
-        <div class="filter-line">
-          <el-form-item label="商户ID：">
-            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
-          </el-form-item>
-          
-          <el-form-item label="商户名称：">
-            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
-          </el-form-item>
-          
-          <el-form-item label="商户类型：">
-            <el-input v-model="searchForm.merchantType" placeholder="请输入商户类型" style="width: 168px" clearable />
-          </el-form-item>
-          
-          <!-- 操作按钮组，靠右对齐 -->
-          <div class="filter-buttons">
-            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
-            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
-          </div>
+      <el-form :model="searchForm" inline class="filter-form">
+        <el-form-item label="充值订单号：">
+          <el-input v-model="searchForm.rechargeNo" placeholder="请输入充值订单号" style="width: 220px" clearable />
+        </el-form-item>
+        
+        <el-form-item label="状态：">
+          <el-select v-model="searchForm.status" placeholder="请选择" style="width: 168px" clearable>
+            <el-option label="全部状态" value="all" />
+            <el-option label="未确认" value="pending" />
+            <el-option label="成功" value="success" />
+            <el-option label="失败" value="failed" />
+          </el-select>
+        </el-form-item>
+        
+        <el-form-item label="日期范围：">
+          <el-date-picker
+            v-model="searchForm.dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            :shortcuts="dateShortcuts"
+            style="width: 340px"
+          />
+        </el-form-item>
+        
+        <div class="filter-buttons">
+          <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
+          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
         </div>
       </el-form>
     </el-card>
-
-    <!-- 统计信息区域 -->
-    <div class="stat-tags">
-      <el-tag type="success" effect="plain">总充值笔数：1000</el-tag>
-      <el-tag type="success" effect="plain">总充值金额：{{ formatAmount(3500000) }}</el-tag>
-      <el-tag type="success" effect="plain">成功笔数：850</el-tag>
-      <el-tag type="success" effect="plain">成功金额：{{ formatAmount(3000000) }}</el-tag>
-      <el-tag type="success" effect="plain">充值成功率：85.00%</el-tag>
-    </div>
 
     <!-- 数据表格 -->
     <el-card shadow="never">
       <!-- 表格工具栏 -->
       <div class="table-toolbar">
         <div class="left">
-          <el-button type="primary" :icon="Plus" @click="handleAdd">发起充值</el-button>
           <el-button :icon="Download" plain @click="handleExport">导出</el-button>
           <el-button :icon="Printer" plain>打印</el-button>
         </div>
@@ -217,12 +189,64 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 // 搜索表单数据
 const searchForm = reactive({
   rechargeNo: '',
-  merchantId: '',
-  merchantName: '',
-  merchantType: '',
   status: '',
   dateRange: []
 })
+
+// 日期快捷选项
+const dateShortcuts = [
+  {
+    text: '今天',
+    value: () => {
+      const today = new Date()
+      return [today, today]
+    }
+  },
+  {
+    text: '昨天',
+    value: () => {
+      const yesterday = new Date()
+      yesterday.setDate(yesterday.getDate() - 1)
+      return [yesterday, yesterday]
+    }
+  },
+  {
+    text: '最近7天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 6)
+      return [start, end]
+    }
+  },
+  {
+    text: '最近30天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 29)
+      return [start, end]
+    }
+  },
+  {
+    text: '本月',
+    value: () => {
+      const now = new Date()
+      const start = new Date(now.getFullYear(), now.getMonth(), 1)
+      const end = new Date()
+      return [start, end]
+    }
+  },
+  {
+    text: '上月',
+    value: () => {
+      const now = new Date()
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+      const end = new Date(now.getFullYear(), now.getMonth(), 0)
+      return [start, end]
+    }
+  }
+]
 
 // 表格数据
 const tableData = ref([
@@ -335,7 +359,6 @@ const rechargeRules = {
 const getStatusType = (status) => {
   const map = {
     pending: 'warning',
-    processing: 'info',
     success: 'success',
     failed: 'danger'
   }
@@ -344,10 +367,9 @@ const getStatusType = (status) => {
 
 const getStatusText = (status) => {
   const map = {
-    pending: '待支付',
-    processing: '处理中',
-    success: '充值成功',
-    failed: '充值失败'
+    pending: '未确认',
+    success: '成功',
+    failed: '失败'
   }
   return map[status] || '未知状态'
 }
@@ -362,9 +384,6 @@ const handleSearch = () => {
 const handleReset = () => {
   Object.assign(searchForm, {
     rechargeNo: '',
-    merchantId: '',
-    merchantName: '',
-    merchantType: '',
     status: '',
     dateRange: []
   })
@@ -456,17 +475,13 @@ const formatAmount = (amount) => {
   margin-bottom: 16px;
 }
 
-.multi-line-filter-form .filter-line {
+.filter-form {
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
-.multi-line-filter-form .filter-line:last-child {
-  margin-bottom: 0;
-}
-
-.multi-line-filter-form .el-form-item {
+.filter-form .el-form-item {
   margin-bottom: 0;
   margin-right: 20px;
 }
@@ -479,13 +494,6 @@ const formatAmount = (amount) => {
 
 .filter-buttons .el-button + .el-button {
   margin-left: 12px;
-}
-
-.stat-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 16px;
 }
 
 .table-toolbar {

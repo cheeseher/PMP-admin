@@ -83,12 +83,16 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="merchantId" label="商户" width="80" />
-        <el-table-column prop="merchantName" label="商户名称" width="120" />
-        <el-table-column prop="withdrawNo" label="提现单号" width="140" />
+        <el-table-column prop="merchantId" label="商户ID" width="80" />
+        <el-table-column prop="withdrawNo" label="提现订单号" width="140" />
         <el-table-column prop="beforeAmount" label="提现前余额" width="120">
           <template #default="scope">
             {{ scope.row.beforeAmount }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="frozenAmount" label="原始冻结" width="120">
+          <template #default="scope">
+            {{ scope.row.frozenAmount || '0.00' }}
           </template>
         </el-table-column>
         <el-table-column prop="amount" label="提现金额" width="120">
@@ -106,6 +110,12 @@
             {{ scope.row.afterAmount }}
           </template>
         </el-table-column>
+        <el-table-column prop="afterFrozen" label="提现后冻结" width="120">
+          <template #default="scope">
+            {{ scope.row.afterFrozen || '0.00' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="remark" label="备注" width="150" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
             <el-tag 
@@ -116,7 +126,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="remark" label="备注" width="150" />
         <el-table-column prop="createTime" label="操作时间" width="140" />
         <el-table-column label="操作" width="120" fixed="right">
           <template #default="scope">
@@ -261,9 +270,11 @@ const tableData = ref([
     merchantName: '测试',
     withdrawNo: '202503141823',
     beforeAmount: '10000.00',
+    frozenAmount: '1000.00',
     amount: '5000.00',
     fee: '25.00',
     afterAmount: '4975.00',
+    afterFrozen: '500.00',
     status: 'PENDING',
     remark: '日常提现',
     createTime: '2025-03-14 18:23:15'
@@ -273,9 +284,11 @@ const tableData = ref([
     merchantName: '示例商户',
     withdrawNo: '202503141830',
     beforeAmount: '50000.00',
+    frozenAmount: '5000.00',
     amount: '20000.00',
     fee: '100.00',
     afterAmount: '29900.00',
+    afterFrozen: '3000.00',
     status: 'APPROVED',
     remark: '大额提现，已人工核实',
     createTime: '2025-03-14 18:30:25'
@@ -285,9 +298,11 @@ const tableData = ref([
     merchantName: '新商户',
     withdrawNo: '202503141845',
     beforeAmount: '15000.00',
+    frozenAmount: '2000.00',
     amount: '5000.00',
     fee: '25.00',
     afterAmount: '9975.00',
+    afterFrozen: '1000.00',
     status: 'REJECTED',
     remark: '风控拦截，疑似套现',
     createTime: '2025-03-14 18:45:30'
@@ -297,9 +312,11 @@ const tableData = ref([
     merchantName: '测试',
     withdrawNo: '202503141900',
     beforeAmount: '8500.00',
+    frozenAmount: '500.00',
     amount: '3000.00',
     fee: '15.00',
     afterAmount: '5485.00',
+    afterFrozen: '0.00',
     status: 'PAID',
     remark: '已完成打款',
     createTime: '2025-03-14 19:00:10'
@@ -309,9 +326,11 @@ const tableData = ref([
     merchantName: '示例商户',
     withdrawNo: '202503141915',
     beforeAmount: '30000.00',
+    frozenAmount: '3000.00',
     amount: '10000.00',
     fee: '50.00',
     afterAmount: '19950.00',
+    afterFrozen: '1000.00',
     status: 'FAILED',
     remark: '银行账户错误，打款失败',
     createTime: '2025-03-14 19:15:45'

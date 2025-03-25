@@ -61,28 +61,26 @@
         v-loading="loading"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="date" label="日期" width="120" />
         <el-table-column prop="productId" label="产品ID" width="80" />
         <el-table-column prop="productName" label="产品名称" width="150" />
-        <el-table-column prop="merchantName" label="商户名称" width="150" />
-        <el-table-column prop="orderCount" label="订单笔数" width="120">
-          <template #default="{ row }">
-            <span>{{ formatNumber(row.orderCount) }}笔</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="orderAmount" label="订单金额" width="150">
-          <template #default="{ row }">
-            {{ formatAmount(row.orderAmount) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="successCount" label="成功笔数" width="120">
-          <template #default="{ row }">
-            <span>{{ formatNumber(row.successCount) }}笔</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="successAmount" label="成功金额" width="150">
+        <el-table-column prop="successAmount" label="收款金额" width="150">
           <template #default="{ row }">
             {{ formatAmount(row.successAmount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="feeAmount" label="手续费" width="150">
+          <template #default="{ row }">
+            {{ formatAmount(row.feeAmount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="netAmount" label="入账金额" width="150">
+          <template #default="{ row }">
+            {{ formatAmount(row.netAmount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="orderCount" label="成功单数/总笔数" width="150">
+          <template #default="{ row }">
+            <span>{{ formatNumber(row.successCount) }}/{{ formatNumber(row.orderCount) }}笔</span>
           </template>
         </el-table-column>
         <el-table-column prop="successRate" label="成功率" width="120">
@@ -95,7 +93,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="remark" label="备注" min-width="150" />
       </el-table>
 
       <!-- 分页 -->
@@ -147,6 +144,8 @@ const tableData = ref([
     successCount: 980,
     successAmount: 49000.00,
     successRate: 0.98,
+    feeAmount: 490.00,
+    netAmount: 48510.00,
     remark: ''
   },
   {
@@ -159,6 +158,8 @@ const tableData = ref([
     successCount: 825,
     successAmount: 41250.00,
     successRate: 0.97,
+    feeAmount: 412.50,
+    netAmount: 40837.50,
     remark: ''
   },
   {
@@ -171,6 +172,8 @@ const tableData = ref([
     successCount: 485,
     successAmount: 72750.00,
     successRate: 0.97,
+    feeAmount: 727.50,
+    netAmount: 72022.50,
     remark: ''
   },
   {
@@ -183,6 +186,8 @@ const tableData = ref([
     successCount: 180,
     successAmount: 27000.00,
     successRate: 0.90,
+    feeAmount: 270.00,
+    netAmount: 26730.00,
     remark: ''
   },
   {
@@ -195,6 +200,8 @@ const tableData = ref([
     successCount: 920,
     successAmount: 46000.00,
     successRate: 0.97,
+    feeAmount: 460.00,
+    netAmount: 45540.00,
     remark: ''
   }
 ])

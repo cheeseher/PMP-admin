@@ -70,35 +70,32 @@
         v-loading="loading"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="date" label="日期" width="120" />
-        <el-table-column prop="channelId" label="通道ID" width="80" />
+        <el-table-column prop="channelId" label="供应商通道ID" width="120" />
         <el-table-column prop="channelName" label="通道名称" width="150" />
-        <el-table-column prop="payType" label="支付类型" width="120" />
-        <el-table-column prop="status" label="通道状态" width="100">
+        <el-table-column prop="payType" label="通道编码" width="120" />
+        <el-table-column prop="successAmount" label="成功金额" width="150">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)" size="small">
-              {{ getStatusText(row.status) }}
-            </el-tag>
+            {{ formatAmount(row.successAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="orderCount" label="订单笔数" width="120">
-          <template #default="{ row }">
-            <span>{{ formatNumber(row.orderCount) }}笔</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="orderAmount" label="订单金额" width="150">
+        <el-table-column prop="orderAmount" label="总金额" width="150">
           <template #default="{ row }">
             {{ formatAmount(row.orderAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="successCount" label="成功笔数" width="120">
+        <el-table-column prop="fee" label="通道成本" width="150">
+          <template #default="{ row }">
+            {{ formatAmount(row.fee) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="successCount" label="成功单数" width="120">
           <template #default="{ row }">
             <span>{{ formatNumber(row.successCount) }}笔</span>
           </template>
         </el-table-column>
-        <el-table-column prop="successAmount" label="成功金额" width="150">
+        <el-table-column prop="orderCount" label="总笔数" width="120">
           <template #default="{ row }">
-            {{ formatAmount(row.successAmount) }}
+            <span>{{ formatNumber(row.orderCount) }}笔</span>
           </template>
         </el-table-column>
         <el-table-column prop="successRate" label="成功率" width="120">
@@ -111,12 +108,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="fee" label="手续费" width="130">
-          <template #default="{ row }">
-            {{ formatAmount(row.fee) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="remark" label="备注" min-width="150" />
       </el-table>
 
       <!-- 分页 -->

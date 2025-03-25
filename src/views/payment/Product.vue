@@ -14,8 +14,12 @@
           <el-input v-model="searchForm.id" placeholder="请输入" clearable style="width: 240px" />
         </div>
         <div class="search-item">
-          <span class="search-label">产品</span>
+          <span class="search-label">支付产品名称</span>
           <el-input v-model="searchForm.productName" placeholder="请输入" clearable style="width: 240px" />
+        </div>
+        <div class="search-item">
+          <span class="search-label">支付产品编码</span>
+          <el-input v-model="searchForm.productCode" placeholder="请输入" clearable style="width: 240px" />
         </div>
         <el-button type="primary" :icon="Search" @click="handleSearch">搜索</el-button>
         <el-button @click="handleReset">重置</el-button>
@@ -46,26 +50,10 @@
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column prop="productName" label="产品名称" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="productCode" label="产品编码" min-width="120" show-overflow-tooltip />
-        <el-table-column label="支付类型" width="120" align="center">
-          <template #default="scope">
-            <el-tag 
-              :type="scope.row.payType === 'ALIPAY' ? 'primary' : scope.row.payType === 'WECHAT' ? 'success' : 'warning'"
-              size="small"
-              effect="plain"
-            >
-              {{ scope.row.payType === 'ALIPAY' ? '支付宝' : scope.row.payType === 'WECHAT' ? '微信' : '银联' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="feeRate" label="费率" width="100" align="center">
-          <template #default="scope">
-            {{ (scope.row.feeRate * 100).toFixed(2) }}%
-          </template>
-        </el-table-column>
-        <el-table-column label="备注" prop="remark" min-width="150" show-overflow-tooltip />
-        <el-table-column label="状态" width="100" align="center">
+        <el-table-column prop="productName" label="支付产品名称" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="productCode" label="支付产品编码" min-width="150" show-overflow-tooltip />
+        <el-table-column label="备注" prop="remark" min-width="200" show-overflow-tooltip />
+        <el-table-column label="是否启用" width="100" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 'ONLINE' ? 'success' : 'info'" size="small">
               {{ scope.row.status === 'ONLINE' ? '启用' : '禁用' }}
@@ -115,37 +103,19 @@
     >
       <el-form 
         :model="productForm" 
-        label-width="100px" 
+        label-width="120px" 
         :rules="formRules"
         ref="productFormRef"
         status-icon
       >
-        <el-form-item label="产品名称" prop="productName">
-          <el-input v-model="productForm.productName" placeholder="请输入产品名称" />
+        <el-form-item label="支付产品名称" prop="productName">
+          <el-input v-model="productForm.productName" placeholder="请输入支付产品名称" />
         </el-form-item>
-        <el-form-item label="产品编码" prop="productCode">
+        <el-form-item label="支付产品编码" prop="productCode">
           <el-input 
             v-model="productForm.productCode" 
-            placeholder="请输入产品编码"
+            placeholder="请输入支付产品编码"
             :disabled="formType === 'edit'"
-          />
-        </el-form-item>
-        <el-form-item label="支付类型" prop="payType">
-          <el-select v-model="productForm.payType" placeholder="请选择" style="width: 168px">
-            <el-option label="支付宝" value="ALIPAY" />
-            <el-option label="微信" value="WECHAT" />
-            <el-option label="银联" value="UNIONPAY" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="费率" prop="feeRate">
-          <el-input-number
-            v-model="productForm.feeRate"
-            :min="0"
-            :max="1"
-            :precision="4"
-            :step="0.0001"
-            style="width: 168px"
-            controls-position="right"
           />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
@@ -158,7 +128,7 @@
             show-word-limit
           />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
+        <el-form-item label="是否启用" prop="status">
           <el-radio-group v-model="productForm.status">
             <el-radio label="ONLINE">启用</el-radio>
             <el-radio label="OFFLINE">禁用</el-radio>
@@ -183,7 +153,8 @@ import { useCleanup } from '@/utils/cleanupUtils'
 
 const searchForm = reactive({
   id: '',
-  productName: ''
+  productName: '',
+  productCode: ''
 })
 
 const tableData = ref([
@@ -243,24 +214,39 @@ const submitLoading = ref(false)
 
 const formRules = {
   productName: [
-    { required: true, message: '请输入产品名称', trigger: 'blur' },
+    { required: true, message: '请输入支付产品名称', trigger: 'blur' },
     { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
   ],
   productCode: [
-    { required: true, message: '请输入产品编码', trigger: 'blur' },
+    { required: true, message: '请输入支付产品编码', trigger: 'blur' },
     { pattern: /^[A-Za-z0-9_]+$/, message: '只能包含字母、数字和下划线', trigger: 'blur' }
-  ],
-  payType: [
-    { required: true, message: '请选择支付类型', trigger: 'change' }
-  ],
-  feeRate: [
-    { required: true, message: '请输入费率', trigger: 'blur' }
   ]
 }
 
 const handleSearch = () => {
-  // TODO: 实现搜索逻辑
-  console.log('搜索条件：', searchForm)
+  loading.value = true
+  
+  setTimeout(() => {
+    let filteredData = [...tableData.value]
+    
+    if (searchForm.id) {
+      filteredData = filteredData.filter(item => 
+        item.id.toString().includes(searchForm.id))
+    }
+    
+    if (searchForm.productName) {
+      filteredData = filteredData.filter(item => 
+        item.productName.toLowerCase().includes(searchForm.productName.toLowerCase()))
+    }
+    
+    if (searchForm.productCode) {
+      filteredData = filteredData.filter(item => 
+        item.productCode.toLowerCase().includes(searchForm.productCode.toLowerCase()))
+    }
+    
+    tableData.value = filteredData
+    loading.value = false
+  }, 500)
 }
 
 const handleReset = () => {
@@ -274,9 +260,12 @@ const handleAdd = () => {
   if (productFormRef.value) {
     productFormRef.value.resetFields()
   }
-  Object.keys(productForm).forEach(key => {
-    productForm[key] = key === 'feeRate' ? 0 : key === 'status' ? 'ONLINE' : ''
-  })
+  
+  productForm.productName = ''
+  productForm.productCode = ''
+  productForm.remark = ''
+  productForm.status = 'ONLINE'
+  
   formDialogVisible.value = true
 }
 

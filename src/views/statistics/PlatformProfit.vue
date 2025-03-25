@@ -69,34 +69,42 @@
         :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
         v-loading="loading"
       >
-        <el-table-column prop="date" label="日期" width="120" />
-        <el-table-column prop="merchantId" label="商户ID" width="120" />
-        <el-table-column prop="merchantName" label="商户名称" width="150" />
-        <el-table-column prop="payType" label="支付类型" width="120" />
-        <el-table-column prop="orderAmount" label="交易金额" width="150">
+        <el-table-column prop="date" label="日期（天）" width="120" />
+        <el-table-column prop="successAmount" label="成功收款金额" width="150">
           <template #default="{ row }">
-            {{ formatAmount(row.orderAmount) }}
+            {{ formatAmount(row.successAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="profitAmount" label="分润金额" width="150">
+        <el-table-column prop="channelCost" label="通道成本" width="150">
           <template #default="{ row }">
-            {{ formatAmount(row.profitAmount) }}
+            {{ formatAmount(row.channelCost) }}
           </template>
         </el-table-column>
-        <el-table-column prop="profitRate" label="分润比例" width="100">
+        <el-table-column prop="profitAfterChannel" label="除通道成本后利润" width="150">
           <template #default="{ row }">
-            {{ (row.profitRate * 100).toFixed(2) }}%
+            {{ formatAmount(row.profitAfterChannel) }}
           </template>
         </el-table-column>
-        <el-table-column prop="settleStatus" label="结算状态" width="100">
+        <el-table-column prop="fee" label="手续费" width="150">
           <template #default="{ row }">
-            <el-tag :type="getSettleStatusType(row.settleStatus)" size="small">
-              {{ getSettleStatusText(row.settleStatus) }}
+            {{ formatAmount(row.fee) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="orderCount" label="成功单数/总笔数" width="150">
+          <template #default="{ row }">
+            <span>{{ formatNumber(row.successCount) }}/{{ formatNumber(row.orderCount) }}笔</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="successRate" label="成功率" width="120">
+          <template #default="{ row }">
+            <el-tag 
+              :type="getSuccessRateType(row.successRate)"
+              size="small"
+            >
+              {{ (row.successRate * 100).toFixed(2) }}%
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="settleTime" label="结算时间" width="150" />
-        <el-table-column prop="remark" label="备注" min-width="150" />
       </el-table>
 
       <!-- 分页 -->
@@ -131,7 +139,58 @@ const searchForm = reactive({
 })
 
 // 表格数据
-const tableData = ref([])
+const tableData = ref([
+  {
+    date: '2024-03-14',
+    successAmount: 50000.00,
+    channelCost: 250.00,
+    profitAfterChannel: 49750.00,
+    fee: 250.00,
+    orderCount: 1000,
+    successCount: 980,
+    successRate: 0.98
+  },
+  {
+    date: '2024-03-13',
+    successAmount: 48000.00,
+    channelCost: 240.00,
+    profitAfterChannel: 47760.00,
+    fee: 240.00,
+    orderCount: 960,
+    successCount: 940,
+    successRate: 0.98
+  },
+  {
+    date: '2024-03-12',
+    successAmount: 45000.00,
+    channelCost: 225.00,
+    profitAfterChannel: 44775.00,
+    fee: 225.00,
+    orderCount: 900,
+    successCount: 880,
+    successRate: 0.98
+  },
+  {
+    date: '2024-03-11',
+    successAmount: 42000.00,
+    channelCost: 210.00,
+    profitAfterChannel: 41790.00,
+    fee: 210.00,
+    orderCount: 840,
+    successCount: 820,
+    successRate: 0.98
+  },
+  {
+    date: '2024-03-10',
+    successAmount: 40000.00,
+    channelCost: 200.00,
+    profitAfterChannel: 39800.00,
+    fee: 200.00,
+    orderCount: 800,
+    successCount: 780,
+    successRate: 0.98
+  }
+])
 const loading = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -154,6 +213,13 @@ const getSettleStatusText = (status) => {
     failed: '结算失败'
   }
   return map[status] || '未知'
+}
+
+// 获取成功率类型
+const getSuccessRateType = (rate) => {
+  if (rate >= 0.95) return 'success'
+  if (rate >= 0.9) return 'warning'
+  return 'danger'
 }
 
 // 搜索方法
@@ -209,6 +275,11 @@ const formatAmount = (amount) => {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })
+}
+
+// 格式化数字
+const formatNumber = (number) => {
+  return number.toLocaleString('zh-CN')
 }
 </script>
 

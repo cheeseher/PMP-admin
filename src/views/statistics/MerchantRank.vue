@@ -80,26 +80,28 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="merchantName" label="商户名称" width="150" />
         <el-table-column prop="merchantId" label="商户ID" width="120" />
-        <el-table-column prop="orderCount" label="订单笔数" width="120">
-          <template #default="{ row }">
-            <span>{{ formatNumber(row.orderCount) }}笔</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="orderAmount" label="订单金额" width="150">
-          <template #default="{ row }">
-            {{ formatAmount(row.orderAmount) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="successCount" label="成功笔数" width="120">
-          <template #default="{ row }">
-            <span>{{ formatNumber(row.successCount) }}笔</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="successAmount" label="成功金额" width="150">
+        <el-table-column prop="merchantNo" label="商户号" width="120" />
+        <el-table-column prop="merchantAccount" label="商户账号" width="150" />
+        <el-table-column prop="merchantName" label="商户名称" width="150" />
+        <el-table-column prop="successAmount" label="收款金额" width="150">
           <template #default="{ row }">
             {{ formatAmount(row.successAmount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="fee" label="手续费" width="150">
+          <template #default="{ row }">
+            {{ formatAmount(row.fee) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="netAmount" label="入账金额" width="150">
+          <template #default="{ row }">
+            {{ formatAmount(row.netAmount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="orderCount" label="成功单数/总笔数" width="150">
+          <template #default="{ row }">
+            <span>{{ formatNumber(row.successCount) }}/{{ formatNumber(row.orderCount) }}笔</span>
           </template>
         </el-table-column>
         <el-table-column prop="successRate" label="成功率" width="120">
@@ -110,11 +112,6 @@
             >
               {{ (row.successRate * 100).toFixed(2) }}%
             </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="fee" label="手续费" width="150">
-          <template #default="{ row }">
-            {{ formatAmount(row.fee) }}
           </template>
         </el-table-column>
       </el-table>
@@ -153,54 +150,64 @@ const searchForm = reactive({
 // 表格数据
 const tableData = ref([
   {
-    merchantName: '优质商户A',
     merchantId: 'M2024031401',
+    merchantNo: 'M001',
+    merchantAccount: '6222021234567890123',
+    merchantName: '优质商户A',
     orderCount: 1000,
-    orderAmount: 50000.00,
     successCount: 980,
     successAmount: 49000.00,
     successRate: 0.98,
-    fee: 245.00
+    fee: 245.00,
+    netAmount: 48755.00
   },
   {
-    merchantName: '优质商户B',
     merchantId: 'M2024031402',
+    merchantNo: 'M002',
+    merchantAccount: '6222021234567890124',
+    merchantName: '优质商户B',
     orderCount: 850,
-    orderAmount: 42500.00,
     successCount: 825,
     successAmount: 41250.00,
     successRate: 0.97,
-    fee: 206.25
+    fee: 206.25,
+    netAmount: 41043.75
   },
   {
-    merchantName: '标准商户C',
     merchantId: 'M2024031403',
+    merchantNo: 'M003',
+    merchantAccount: '6222021234567890125',
+    merchantName: '标准商户C',
     orderCount: 750,
-    orderAmount: 37500.00,
     successCount: 720,
     successAmount: 36000.00,
     successRate: 0.96,
-    fee: 180.00
+    fee: 180.00,
+    netAmount: 35820.00
   },
   {
-    merchantName: '标准商户D',
     merchantId: 'M2024031404',
+    merchantNo: 'M004',
+    merchantAccount: '6222021234567890126',
+    merchantName: '标准商户D',
     orderCount: 600,
-    orderAmount: 30000.00,
     successCount: 570,
     successAmount: 28500.00,
     successRate: 0.95,
-    fee: 142.50
+    fee: 142.50,
+    netAmount: 28357.50
   },
   {
-    merchantName: '新商户E',
     merchantId: 'M2024031405',
+    merchantNo: 'M005',
+    merchantAccount: '6222021234567890127',
+    merchantName: '新商户E',
     orderCount: 500,
-    orderAmount: 25000.00,
     successCount: 450,
     successAmount: 22500.00,
     successRate: 0.90,
-    fee: 112.50
+    fee: 112.50,
+    netAmount: 22387.50
   }
 ])
 

@@ -27,16 +27,16 @@
             />
           </el-form-item>
           <el-form-item label="平台单号">
-            <el-input v-model="searchForm.platformOrderNo" placeholder="请输入平台单号" style="width: 168px" clearable />
+            <el-input v-model="searchForm.orderNo" placeholder="请输入平台单号" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="商户单号">
+            <el-input v-model="searchForm.merchantOrderNo" placeholder="请输入商户单号" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="商户ID">
             <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="商户名称">
-            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="商户类型">
-            <el-input v-model="searchForm.merchantType" placeholder="请输入商户类型" style="width: 168px" clearable />
+          <el-form-item label="商户账号">
+            <el-input v-model="searchForm.merchantName" placeholder="请输入商户账号" style="width: 168px" clearable />
           </el-form-item>
         </el-form>
       </div>
@@ -45,18 +45,7 @@
           <el-form-item label="上游单号">
             <el-input v-model="searchForm.upstreamOrderNo" placeholder="请输入上游单号" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="产品">
-            <el-select v-model="searchForm.product" placeholder="请选择" style="width: 168px" clearable>
-              <el-option label="全部产品" value="all" />
-              <el-option label="支付宝" value="alipay" />
-              <el-option label="微信支付" value="wxpay" />
-              <el-option label="银联" value="unionpay" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="产品编码">
-            <el-input v-model="searchForm.productCode" placeholder="请输入产品编码" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="上游">
+          <el-form-item label="上游通道名称">
             <el-select v-model="searchForm.upstream" placeholder="请选择" style="width: 168px" clearable>
               <el-option label="全部上游" value="all" />
               <el-option label="上游A" value="A" />
@@ -64,23 +53,28 @@
               <el-option label="上游C" value="C" />
             </el-select>
           </el-form-item>
-          <el-form-item label="上游通道">
-            <el-select v-model="searchForm.upstreamChannel" placeholder="请选择" style="width: 168px" clearable>
-              <el-option label="全部通道" value="all" />
-              <el-option label="通道1" value="1" />
-              <el-option label="通道2" value="2" />
-              <el-option label="通道3" value="3" />
-            </el-select>
+          <el-form-item label="上游通道编码">
+            <el-input v-model="searchForm.upstreamChannelCode" placeholder="请输入上游通道编码" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="通道编码">
             <el-input v-model="searchForm.channelCode" placeholder="请输入通道编码" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="通道状态">
-            <el-select v-model="searchForm.channelStatus" placeholder="请选择" style="width: 168px" clearable>
+          <el-form-item label="支付产品名称">
+            <el-select v-model="searchForm.productName" placeholder="请选择" style="width: 168px" clearable>
+              <el-option label="全部产品" value="all" />
+              <el-option label="支付宝" value="alipay" />
+              <el-option label="微信支付" value="wxpay" />
+              <el-option label="银联" value="unionpay" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="支付产品编码">
+            <el-input v-model="searchForm.productCode" placeholder="请输入支付产品编码" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="推送状态">
+            <el-select v-model="searchForm.pushStatus" placeholder="请选择" style="width: 168px" clearable>
               <el-option label="全部状态" value="all" />
-              <el-option label="成功" value="success" />
-              <el-option label="失败" value="failed" />
-              <el-option label="处理中" value="processing" />
+              <el-option label="已推送" value="true" />
+              <el-option label="未推送" value="false" />
             </el-select>
           </el-form-item>
           <el-form-item>
@@ -131,30 +125,68 @@
       >
         <el-table-column type="selection" width="55" />
         <el-table-column prop="merchantId" label="商户ID" width="80" />
-        <el-table-column prop="merchantName" label="商户名称" width="120" />
-        <el-table-column prop="upstream" label="上游" width="100" />
-        <el-table-column prop="orderNo" label="平台单号" width="120" />
-        <el-table-column prop="productCode" label="产品编码" width="100" />
-        <el-table-column prop="productName" label="产品名称" width="120" />
-        <el-table-column prop="orderAmount" label="订单金额" width="120">
+        <el-table-column prop="merchantName" label="商户账号" width="120" />
+        <el-table-column prop="upstream" label="上游通道名称" width="120" />
+        <el-table-column prop="channelCode" label="通道编码" width="100" />
+        <el-table-column prop="productName" label="支付产品名称" width="120" />
+        <el-table-column prop="productCode" label="支付产品编码" width="100" />
+        <el-table-column prop="orderAmount" label="订单金额" width="100">
           <template #default="scope">
             {{ formatAmount(scope.row.orderAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="orderStatus" label="订单状态" width="90">
+        <el-table-column prop="createTime" label="订单创建时间" width="150" />
+        <el-table-column prop="completeTime" label="订单完成时间" width="150" />
+        <el-table-column prop="pushStatus" label="推送状态" width="90" align="center">
           <template #default="scope">
             <el-tag 
-              :type="getStatusType(scope.row.orderStatus)" 
+              :type="scope.row.pushStatus ? 'success' : 'info'" 
               size="small"
             >
-              {{ getStatusText(scope.row.orderStatus) }}
+              {{ scope.row.pushStatus ? '已推送' : '未推送' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="140" />
-        <el-table-column prop="completeTime" label="完成时间" width="140" />
-        <el-table-column prop="remarkStatus" label="备注状态" width="100" />
-        <el-table-column prop="remarkInfo" label="备注信息" min-width="160" />
+        <el-table-column prop="pushResult" label="推送结果" width="90" align="center">
+          <template #default="scope">
+            <el-tag 
+              :type="scope.row.pushResult === 'success' ? 'success' : scope.row.pushResult === 'failed' ? 'danger' : 'info'" 
+              size="small"
+            >
+              {{ scope.row.pushResult === 'success' ? '成功' : scope.row.pushResult === 'failed' ? '失败' : '-' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="orderNo" label="平台单号" width="120" />
+        <el-table-column prop="merchantOrderNo" label="商户单号" width="120" />
+        <el-table-column prop="isNextDay" label="隔日补单" width="90" align="center">
+          <template #default="scope">
+            <el-tag 
+              :type="scope.row.isNextDay ? 'warning' : 'info'" 
+              size="small"
+            >
+              {{ scope.row.isNextDay ? '是' : '否' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="receiveAmount" label="入账金额" width="100" align="right">
+          <template #default="scope">
+            {{ formatAmount(scope.row.receiveAmount || scope.row.orderAmount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="fee" label="手续费" width="100" align="right">
+          <template #default="scope">
+            {{ formatAmount(scope.row.fee || 0) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="channelCost" label="通道成本" width="100" align="right">
+          <template #default="scope">
+            {{ formatAmount(scope.row.channelCost || 0) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="upstreamOrderNo" label="上游单号" width="120" />
+        <el-table-column prop="upstreamChannelCode" label="上游通道编码" width="120" />
+        <el-table-column prop="remarkInfo" label="备注" min-width="150" />
         <el-table-column label="操作" width="90" fixed="right">
           <template #default="scope">
             <el-button type="primary" link size="small" @click="handleOperate(scope.row)">
@@ -190,308 +222,97 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 const searchForm = reactive({
   today: 'today',
   dateRange: ['2025-03-24', '2025-03-24'],
-  platformOrderNo: '',
+  orderNo: '',
+  merchantOrderNo: '',
   merchantId: '',
   merchantName: '',
-  merchantType: '',
   upstreamOrderNo: '',
-  product: '',
+  productName: '',
   productCode: '',
   upstream: '',
-  upstreamChannel: '',
+  upstreamChannelCode: '',
   channelCode: '',
-  channelStatus: ''
+  pushStatus: ''
 })
 
 // 表格数据
 const tableData = ref([
   {
     merchantId: '1',
-    merchantName: '测试',
+    merchantName: '测试账号',
     upstream: '新吓你',
+    channelCode: 'wx_h5',
     orderNo: '102',
+    merchantOrderNo: 'MO20230314001',
     productCode: '8888',
     productName: '淘宝产品',
     orderAmount: '100.00',
+    receiveAmount: '98.50',
+    fee: '1.50',
+    channelCost: '0.80',
+    upstreamOrderNo: 'UP20230314001',
+    upstreamChannelCode: 'wxpay_001',
+    pushStatus: true,
+    pushResult: 'success',
+    isNextDay: false,
     orderStatus: 'success',
     createTime: '2023-03-14 17:31:32',
     completeTime: '2025-03-22 13:20:31',
-    remarkStatus: '',
-    remarkInfo: ''
+    remarkInfo: '正常订单'
   },
   {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '100.00',
-    orderStatus: 'success',
-    createTime: '2024-10-31 15:53:19',
-    completeTime: '2025-02-26 12:26:28',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '100.00',
-    orderStatus: 'success',
-    createTime: '2024-10-31 15:53:16',
-    completeTime: '2024-10-31 15:54:56',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '300.00',
-    orderStatus: 'pending',
-    createTime: '2024-10-31 15:53:15',
-    completeTime: '',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '300.00',
-    orderStatus: 'success',
-    createTime: '2024-10-31 15:53:14',
-    completeTime: '2024-10-31 15:54:56',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '100.00',
-    orderStatus: 'pending',
-    createTime: '2024-10-31 15:53:10',
-    completeTime: '',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
+    merchantId: '2',
+    merchantName: '商户二号',
+    upstream: '通道A',
+    channelCode: 'alipay_h5',
+    orderNo: '103',
+    merchantOrderNo: 'MO20240228001',
+    productCode: '9999',
+    productName: '支付宝产品',
     orderAmount: '200.00',
-    orderStatus: 'pending',
-    createTime: '2024-10-31 15:53:08',
-    completeTime: '',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '500.00',
+    receiveAmount: '196.00',
+    fee: '4.00',
+    channelCost: '2.60',
+    upstreamOrderNo: 'UP20240228001',
+    upstreamChannelCode: 'alipay_001',
+    pushStatus: true,
+    pushResult: 'failed',
+    isNextDay: true,
     orderStatus: 'success',
-    createTime: '2024-10-31 15:53:06',
-    completeTime: '2024-10-31 15:54:56',
-    remarkStatus: '',
-    remarkInfo: ''
+    createTime: '2024-02-28 10:25:16',
+    completeTime: '2024-02-28 10:30:45',
+    remarkInfo: '补单'
   },
   {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
+    merchantId: '3',
+    merchantName: '测试三号',
+    upstream: '通道B',
+    channelCode: 'union_qr',
+    orderNo: '104',
+    merchantOrderNo: 'MO20240331001',
+    productCode: '7777',
+    productName: '银联产品',
     orderAmount: '300.00',
-    orderStatus: 'success',
-    createTime: '2024-10-31 15:53:03',
-    completeTime: '2024-10-31 15:54:56',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '300.00',
+    receiveAmount: '294.00',
+    fee: '6.00',
+    channelCost: '3.50',
+    upstreamOrderNo: 'UP20240331001',
+    upstreamChannelCode: 'union_002',
+    pushStatus: false,
+    pushResult: '',
+    isNextDay: false,
     orderStatus: 'pending',
-    createTime: '2024-10-31 15:53:03',
+    createTime: '2024-03-31 14:22:10',
     completeTime: '',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '500.00',
-    orderStatus: 'pending',
-    createTime: '2024-10-31 15:52:59',
-    completeTime: '',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '500.00',
-    orderStatus: 'pending',
-    createTime: '2024-10-31 15:52:58',
-    completeTime: '',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '500.00',
-    orderStatus: 'pending',
-    createTime: '2024-10-31 15:52:55',
-    completeTime: '',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '300.00',
-    orderStatus: 'success',
-    createTime: '2024-10-31 15:52:51',
-    completeTime: '2024-10-31 15:54:55',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '100.00',
-    orderStatus: 'pending',
-    createTime: '2024-10-31 15:52:49',
-    completeTime: '',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '100.00',
-    orderStatus: 'success',
-    createTime: '2024-10-31 15:52:46',
-    completeTime: '2024-10-31 15:54:55',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '500.00',
-    orderStatus: 'pending',
-    createTime: '2024-10-31 15:52:43',
-    completeTime: '',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '100.00',
-    orderStatus: 'pending',
-    createTime: '2024-10-31 15:52:43',
-    completeTime: '',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '100.00',
-    orderStatus: 'pending',
-    createTime: '2024-10-31 15:52:41',
-    completeTime: '',
-    remarkStatus: '',
-    remarkInfo: ''
-  },
-  {
-    merchantId: '1',
-    merchantName: '测试',
-    upstream: '新吓你',
-    orderNo: '0000',
-    productCode: '8888',
-    productName: '淘宝产品',
-    orderAmount: '500.00',
-    orderStatus: 'success',
-    createTime: '2024-10-31 15:52:40',
-    completeTime: '2024-10-31 15:54:55',
-    remarkStatus: '',
-    remarkInfo: ''
+    remarkInfo: '待处理'
   }
 ])
 
 // 分页数据
 const pagination = reactive({
   currentPage: 1,
-  pageSize: 30,
-  total: 8500
+  pageSize: 10,
+  total: 356
 })
 
 // 状态映射
@@ -541,6 +362,32 @@ const formatAmount = (amount) => {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })
+}
+
+// 处理导出功能
+const handleExport = () => {
+  ElMessage.success('订单数据导出中，请稍后...')
+}
+
+// 处理查询
+const handleSearch = () => {
+  ElMessage.success('正在查询数据，请稍后...')
+  // 实际项目中这里应该调用API接口获取数据
+}
+
+// 重置搜索条件
+const handleReset = () => {
+  // 重置搜索表单
+  Object.keys(searchForm).forEach(key => {
+    if (key === 'today') {
+      searchForm[key] = 'today'
+    } else if (key === 'dateRange') {
+      searchForm[key] = ['2025-03-24', '2025-03-24']
+    } else {
+      searchForm[key] = ''
+    }
+  })
+  ElMessage.success('搜索条件已重置')
 }
 </script>
 

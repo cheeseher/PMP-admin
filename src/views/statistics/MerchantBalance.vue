@@ -77,34 +77,21 @@
       table-layout="auto"
     >
       <el-table-column type="selection" width="55" align="center" />
-      <el-table-column prop="merchantName" label="商户名称" min-width="150" show-overflow-tooltip />
       <el-table-column prop="merchantId" label="商户ID" width="120" align="center" />
-      <el-table-column prop="balance" label="账户余额" width="150" align="right">
-        <template #default="{ row }">
-          <span class="amount-cell">{{ formatAmount(row.balance) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="frozenAmount" label="冻结金额" width="150" align="right">
-        <template #default="{ row }">
-          <span class="amount-cell">{{ formatAmount(row.frozenAmount) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="availableAmount" label="可用金额" width="150" align="right">
+      <el-table-column prop="merchantAccount" label="商户账号" width="150" align="center" />
+      <el-table-column prop="merchantName" label="商户名称" min-width="150" show-overflow-tooltip />
+      <el-table-column prop="date" label="日期" width="120" align="center" />
+      <el-table-column prop="availableAmount" label="可用余额" width="150" align="right">
         <template #default="{ row }">
           <span class="amount-cell">{{ formatAmount(row.availableAmount) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="todayIncome" label="今日收入" width="150" align="right">
+      <el-table-column prop="frozenAmount" label="冻结余额" width="150" align="right">
         <template #default="{ row }">
-          <span class="amount-cell income">{{ formatAmount(row.todayIncome) }}</span>
+          <span class="amount-cell">{{ formatAmount(row.frozenAmount) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="todayOutcome" label="今日支出" width="150" align="right">
-        <template #default="{ row }">
-          <span class="amount-cell outcome">{{ formatAmount(row.todayOutcome) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="snapshotTime" label="快照时间" width="180" align="center" />
+      <el-table-column prop="snapshotTime" label="备份时间" width="180" align="center" />
       <el-table-column label="操作" width="180" fixed="right" align="center">
         <template #default="{ row }">
           <el-button type="primary" link @click="viewDetail(row)">
@@ -233,9 +220,17 @@ const balanceChartRef = ref(null)
 
 // 初始化表格数据
 const initTableData = () => {
-  tableData.value = merchantBalanceData
+  // 模拟异步获取数据并添加日期字段
+  loading.value = true
+  const data = merchantBalanceData.map(item => ({
+    ...item,
+    date: item.snapshotTime ? item.snapshotTime.split(' ')[0] : '',
+    merchantAccount: `account${item.merchantId.substring(1)}`
+  }))
+  tableData.value = data
   // 更新总数据量
-  total.value = merchantBalanceData.length
+  total.value = data.length
+  loading.value = false
 }
 
 // 搜索方法

@@ -5,8 +5,8 @@
     <el-card shadow="never" class="search-card">
       <div class="search-form">
         <el-form :model="searchForm" inline>
-          <el-form-item label="充值单号">
-            <el-input v-model="searchForm.rechargeNo" placeholder="请输入充值单号" style="width: 168px" clearable />
+          <el-form-item label="充值订单号">
+            <el-input v-model="searchForm.rechargeNo" placeholder="请输入充值订单号" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="状态">
             <el-select v-model="searchForm.status" placeholder="请选择" style="width: 168px" clearable>
@@ -81,12 +81,16 @@
         :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
       >
         <el-table-column type="selection" width="55" />
-        <el-table-column prop="merchantId" label="商户" width="80" />
-        <el-table-column prop="merchantName" label="商户名称" width="120" />
-        <el-table-column prop="rechargeNo" label="充值单号" width="140" />
+        <el-table-column prop="merchantId" label="商户ID" width="80" />
+        <el-table-column prop="rechargeNo" label="充值订单号" width="140" />
         <el-table-column prop="beforeAmount" label="充值前余额" width="120">
           <template #default="scope">
             {{ formatAmount(scope.row.beforeAmount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="beforeFrozen" label="原始冻结" width="120">
+          <template #default="scope">
+            {{ formatAmount(scope.row.beforeFrozen || 0) }}
           </template>
         </el-table-column>
         <el-table-column prop="amount" label="充值金额" width="120">
@@ -99,6 +103,12 @@
             {{ formatAmount(scope.row.afterAmount) }}
           </template>
         </el-table-column>
+        <el-table-column prop="afterFrozen" label="充值后冻结" width="120">
+          <template #default="scope">
+            {{ formatAmount(scope.row.afterFrozen || 0) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="remark" label="备注" min-width="150" />
         <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
             <el-tag 
@@ -109,7 +119,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="remark" label="备注" min-width="150" />
         <el-table-column prop="createTime" label="操作时间" width="140" />
         <el-table-column label="操作" width="90" fixed="right">
           <template #default="scope">
@@ -164,6 +173,16 @@
             <template #prepend>¥</template>
           </el-input>
         </el-form-item>
+        <el-form-item label="原始冻结" prop="beforeFrozen">
+          <el-input v-model="rechargeForm.beforeFrozen" style="width: 360px" disabled>
+            <template #prepend>¥</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="充值后冻结" prop="afterFrozen">
+          <el-input v-model="rechargeForm.afterFrozen" style="width: 360px">
+            <template #prepend>¥</template>
+          </el-input>
+        </el-form-item>
         <el-form-item label="备注">
           <el-input
             v-model="rechargeForm.remark"
@@ -203,24 +222,28 @@ const searchForm = reactive({
 const tableData = ref([
   {
     merchantId: '1',
-    merchantName: '测试',
+    merchantName: '测试商户',
     rechargeNo: '202503141725',
     beforeAmount: '1000.00',
+    beforeFrozen: '100.00',
     amount: '500.00',
     afterAmount: '1500.00',
+    afterFrozen: '100.00',
     status: 'success',
-    remark: '',
+    remark: '常规充值',
     createTime: '2025-03-14 17:25:30'
   },
   {
     merchantId: '1',
-    merchantName: '测试',
+    merchantName: '测试商户',
     rechargeNo: '202503141726',
     beforeAmount: '1500.00',
+    beforeFrozen: '100.00',
     amount: '2000.00',
     afterAmount: '3500.00',
+    afterFrozen: '100.00',
     status: 'success',
-    remark: '',
+    remark: '运营活动充值',
     createTime: '2025-03-14 17:26:15'
   },
   {
@@ -228,8 +251,10 @@ const tableData = ref([
     merchantName: '示例商户',
     rechargeNo: '202503141728',
     beforeAmount: '5000.00',
+    beforeFrozen: '500.00',
     amount: '10000.00',
     afterAmount: '15000.00',
+    afterFrozen: '500.00',
     status: 'pending',
     remark: '紧急充值',
     createTime: '2025-03-14 17:28:45'
@@ -239,19 +264,23 @@ const tableData = ref([
     merchantName: '新商户',
     rechargeNo: '202503141730',
     beforeAmount: '0.00',
+    beforeFrozen: '0.00',
     amount: '50000.00',
     afterAmount: '50000.00',
+    afterFrozen: '0.00',
     status: 'success',
     remark: '首次充值',
     createTime: '2025-03-14 17:30:22'
   },
   {
     merchantId: '1',
-    merchantName: '测试',
+    merchantName: '测试商户',
     rechargeNo: '202503141732',
     beforeAmount: '3500.00',
+    beforeFrozen: '100.00',
     amount: '5000.00',
     afterAmount: '8500.00',
+    afterFrozen: '100.00',
     status: 'failed',
     remark: '支付超时',
     createTime: '2025-03-14 17:32:10'
@@ -271,6 +300,8 @@ const rechargeFormRef = ref(null)
 const rechargeForm = reactive({
   merchantId: '',
   amount: '',
+  beforeFrozen: '',
+  afterFrozen: '',
   remark: ''
 })
 
@@ -343,6 +374,8 @@ const handleAdd = () => {
   Object.assign(rechargeForm, {
     merchantId: '',
     amount: '',
+    beforeFrozen: '',
+    afterFrozen: '',
     remark: ''
   })
   dialogVisible.value = true
@@ -353,7 +386,15 @@ const handleSubmit = async () => {
   if (!rechargeFormRef.value) return
   await rechargeFormRef.value.validate((valid) => {
     if (valid) {
-      console.log('充值信息：', rechargeForm)
+      // 显示所有字段
+      console.log('充值信息：', {
+        merchantId: rechargeForm.merchantId,
+        amount: rechargeForm.amount,
+        beforeFrozen: rechargeForm.beforeFrozen || '0.00',
+        afterFrozen: rechargeForm.afterFrozen || '0.00',
+        remark: rechargeForm.remark
+      })
+      
       ElMessage.success('充值申请提交成功')
       dialogVisible.value = false
     }
@@ -362,10 +403,24 @@ const handleSubmit = async () => {
 
 // 查看详情
 const handleView = (row) => {
-  ElMessageBox.alert(`充值单号：${row.rechargeNo}<br>商户：${row.merchantName}<br>充值金额：${row.amount}<br>状态：${getStatusText(row.status)}`, '充值详情', {
-    dangerouslyUseHTMLString: true,
-    confirmButtonText: '确定'
-  })
+  ElMessageBox.alert(
+    `充值订单号：${row.rechargeNo}<br>
+    商户ID：${row.merchantId}<br>
+    商户名称：${row.merchantName}<br>
+    充值前余额：${formatAmount(row.beforeAmount)}<br>
+    原始冻结：${formatAmount(row.beforeFrozen || 0)}<br>
+    充值金额：${formatAmount(row.amount)}<br>
+    充值后余额：${formatAmount(row.afterAmount)}<br>
+    充值后冻结：${formatAmount(row.afterFrozen || 0)}<br>
+    备注：${row.remark || '-'}<br>
+    状态：${getStatusText(row.status)}<br>
+    操作时间：${row.createTime}`, 
+    '充值详情', 
+    {
+      dangerouslyUseHTMLString: true,
+      confirmButtonText: '确定'
+    }
+  )
 }
 
 // 分页事件处理

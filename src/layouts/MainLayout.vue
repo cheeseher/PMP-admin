@@ -36,9 +36,9 @@
               <el-icon><Document /></el-icon>
               <span>订单管理</span>
             </template>
-            <el-menu-item index="/order/recharge">商户充值列表</el-menu-item>
-            <el-menu-item index="/order/merchant">商户订单管理</el-menu-item>
-            <el-menu-item index="/order/withdraw">商户提现审核</el-menu-item>
+            <el-menu-item index="/order/recharge" @click="router.push('/order/recharge')">商户充值列表</el-menu-item>
+            <el-menu-item index="/order/merchant" @click="router.push('/order/merchant')">商户订单管理</el-menu-item>
+            <el-menu-item index="/order/withdraw" @click="router.push('/order/withdraw')">商户提现审核</el-menu-item>
           </el-sub-menu>
 
           <!-- 供应商管理 -->
@@ -139,6 +139,7 @@ const toggleSidebar = () => {
 
 // 菜单选择
 const handleSelect = (index) => {
+  console.log('菜单被点击:', index)  // 添加日志以跟踪点击事件
   router.push(index)
 }
 </script>

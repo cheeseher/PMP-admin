@@ -68,40 +68,40 @@
         :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
         v-loading="loading"
       >
-        <el-table-column prop="date" label="日期" width="120" />
         <el-table-column prop="merchantId" label="商户ID" width="120" />
+        <el-table-column prop="merchantAccount" label="商户账户" width="150" />
         <el-table-column prop="merchantName" label="商户名称" width="150" />
-        <el-table-column prop="outcomeType" label="出款类型" width="100">
+        <el-table-column prop="date" label="日期（天）" width="120" />
+        <el-table-column prop="successAmount" label="成功出款金额" width="150">
           <template #default="{ row }">
-            <el-tag :type="getOutcomeTypeTag(row.outcomeType)" size="small">
-              {{ getOutcomeTypeText(row.outcomeType) }}
-            </el-tag>
+            {{ formatAmount(row.successAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="amount" label="出款金额" width="150">
+        <el-table-column prop="supplementAmount" label="补单金额" width="150">
           <template #default="{ row }">
-            {{ formatAmount(row.amount) }}
+            {{ formatAmount(row.supplementAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="fee" label="手续费" width="130">
+        <el-table-column prop="totalAmount" label="总出款" width="150">
+          <template #default="{ row }">
+            {{ formatAmount(row.totalAmount) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="fee" label="手续费" width="150">
           <template #default="{ row }">
             {{ formatAmount(row.fee) }}
           </template>
         </el-table-column>
-        <el-table-column prop="actualAmount" label="实际到账" width="150">
+        <el-table-column prop="actualAmount" label="实际金额" width="150">
           <template #default="{ row }">
             {{ formatAmount(row.actualAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="auditStatus" label="审核状态" width="100">
+        <el-table-column prop="successCount" label="成功单数" width="120">
           <template #default="{ row }">
-            <el-tag :type="getAuditStatusTag(row.auditStatus)" size="small">
-              {{ getAuditStatusText(row.auditStatus) }}
-            </el-tag>
+            <span>{{ formatNumber(row.successCount) }}笔</span>
           </template>
         </el-table-column>
-        <el-table-column prop="auditTime" label="审核时间" width="150" />
-        <el-table-column prop="remark" label="备注" min-width="150" />
       </el-table>
 
       <!-- 分页 -->
@@ -136,7 +136,44 @@ const searchForm = reactive({
 })
 
 // 表格数据
-const tableData = ref([])
+const tableData = ref([
+  {
+    merchantId: 'M001',
+    merchantAccount: 'test001',
+    merchantName: '测试商户',
+    date: '2024-03-14',
+    successAmount: 50000.00,
+    supplementAmount: 1000.00,
+    totalAmount: 51000.00,
+    fee: 255.00,
+    actualAmount: 50745.00,
+    successCount: 980
+  },
+  {
+    merchantId: 'M002',
+    merchantAccount: 'test002',
+    merchantName: '示例商户',
+    date: '2024-03-14',
+    successAmount: 48000.00,
+    supplementAmount: 800.00,
+    totalAmount: 48800.00,
+    fee: 244.00,
+    actualAmount: 48556.00,
+    successCount: 940
+  },
+  {
+    merchantId: 'M003',
+    merchantAccount: 'test003',
+    merchantName: '演示商户',
+    date: '2024-03-14',
+    successAmount: 45000.00,
+    supplementAmount: 500.00,
+    totalAmount: 45500.00,
+    fee: 227.50,
+    actualAmount: 45272.50,
+    successCount: 880
+  }
+])
 const loading = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -233,6 +270,11 @@ const formatAmount = (amount) => {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   })
+}
+
+// 格式化数字
+const formatNumber = (num) => {
+  return num.toLocaleString('zh-CN')
 }
 </script>
 

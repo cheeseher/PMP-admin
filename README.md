@@ -14,8 +14,8 @@ src/
 │   ├── supplier/        # 供应商管理模块
 │   │   ├── SupplierList.vue   # 供应商列表
 │   │   └── Channel.vue        # 供应商通道列表
-│   ├── product/         # 商品管理模块
-│   │   └── ProductList.vue    # 商品列表
+│   ├── product/         # 商户管理模块
+│   │   └── ProductList.vue    # 商户列表
 │   ├── payment/         # 支付配置模块
 │   │   ├── Type.vue           # 支付类型管理
 │   │   └── Product.vue        # 支付产品管理
@@ -52,8 +52,8 @@ src/
 - 供应商列表：供应商信息管理、状态管理
 - 供应商通道列表：通道配置、费率设置、通道状态管理
 
-### 商品管理模块 (/product)
-- 商品列表：商品信息管理、添加/编辑商品、批量配置、状态管理
+### 商户管理模块 (/product)
+- 商户列表：商户信息管理、添加/编辑商户、批量配置、状态管理
 
 ### 支付配置模块 (/payment)
 - 支付类型管理：支付方式配置、状态管理
@@ -67,7 +67,7 @@ src/
 - 平台分润统计 (PlatformProfit.vue)：平台收益数据统计
 - 商户收款统计 (MerchantIncome.vue)：商户收入详细分析
 - 商户出款统计 (MerchantOutcome.vue)：商户出款数据统计
-- 商户余额快照 (MerchantBalance.vue)：商户余额实时统计
+- 商户余额快照 (MerchantBalance.vue)：商户账户余额实时监控，包含总体统计卡片、可用余额与冻结资金明细、余额趋势图表及历史记录查询功能，支持多维度筛选和数据导出
 
 ## 技术栈
 

@@ -54,6 +54,106 @@ export const merchantBalanceData = [
     todayIncome: 60000.00,
     todayOutcome: 35000.00,
     snapshotTime: '2024-03-14 15:30:00'
+  },
+  {
+    merchantName: '金鑫金融服务',
+    merchantId: 'M2024031406',
+    balance: 520000.00,
+    frozenAmount: 120000.00,
+    availableAmount: 400000.00,
+    todayIncome: 150000.00,
+    todayOutcome: 85000.00,
+    snapshotTime: '2024-03-14 15:30:00'
+  },
+  {
+    merchantName: '银河支付平台',
+    merchantId: 'M2024031407',
+    balance: 1200000.00,
+    frozenAmount: 300000.00,
+    availableAmount: 900000.00,
+    todayIncome: 500000.00,
+    todayOutcome: 200000.00,
+    snapshotTime: '2024-03-14 15:30:00'
+  },
+  {
+    merchantName: '翠竹电商平台',
+    merchantId: 'M2024031408',
+    balance: 98000.00,
+    frozenAmount: 8000.00,
+    availableAmount: 90000.00,
+    todayIncome: 35000.00,
+    todayOutcome: 12000.00,
+    snapshotTime: '2024-03-14 15:30:00'
+  },
+  {
+    merchantName: '海鸥跨境电商',
+    merchantId: 'M2024031409',
+    balance: 180000.00,
+    frozenAmount: 0.00,
+    availableAmount: 180000.00,
+    todayIncome: 45000.00,
+    todayOutcome: 15000.00,
+    snapshotTime: '2024-03-14 15:30:00'
+  },
+  {
+    merchantName: '紫荆科技服务',
+    merchantId: 'M2024031410',
+    balance: 65000.00,
+    frozenAmount: 5000.00,
+    availableAmount: 60000.00,
+    todayIncome: 20000.00,
+    todayOutcome: 10000.00,
+    snapshotTime: '2024-03-14 15:30:00'
+  },
+  {
+    merchantName: '北斗导航科技',
+    merchantId: 'M2024031411',
+    balance: 450000.00,
+    frozenAmount: 50000.00,
+    availableAmount: 400000.00,
+    todayIncome: 120000.00,
+    todayOutcome: 70000.00,
+    snapshotTime: '2024-03-14 15:30:00'
+  },
+  {
+    merchantName: '南极电子商务',
+    merchantId: 'M2024031412',
+    balance: 320000.00,
+    frozenAmount: 20000.00,
+    availableAmount: 300000.00,
+    todayIncome: 80000.00,
+    todayOutcome: 30000.00,
+    snapshotTime: '2024-03-14 15:30:00'
+  },
+  {
+    merchantName: '太阳能源科技',
+    merchantId: 'M2024031413',
+    balance: 750000.00,
+    frozenAmount: 150000.00,
+    availableAmount: 600000.00,
+    todayIncome: 250000.00,
+    todayOutcome: 100000.00,
+    snapshotTime: '2024-03-14 15:30:00'
+  },
+  {
+    merchantName: '月亮湾支付',
+    merchantId: 'M2024031414',
+    balance: 85000.00,
+    frozenAmount: 15000.00,
+    availableAmount: 70000.00,
+    todayIncome: 30000.00,
+    todayOutcome: 15000.00,
+    snapshotTime: '2024-03-14 15:30:00'
+  },
+  {
+    merchantName: '星星科技创新',
+    merchantId: 'M2024031415',
+    balance: 1800000.00,
+    frozenAmount: 300000.00,
+    availableAmount: 1500000.00,
+    todayIncome: 600000.00,
+    todayOutcome: 200000.00,
+    snapshotTime: '2024-03-14 15:30:00'
   }
 ];
 

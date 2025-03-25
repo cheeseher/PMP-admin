@@ -67,7 +67,7 @@
         :data="tableData"
         style="width: 100%"
         border
-        stripe
+        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
@@ -75,19 +75,19 @@
         <el-table-column label="上游" prop="supplier" min-width="120" />
         <el-table-column label="编码" prop="code" width="120" />
         <el-table-column label="商户号" prop="merchantNo" width="180" />
-        <el-table-column label="金额" prop="amount" width="120" align="right">
+        <el-table-column label="余额" prop="amount" width="120" align="right">
           <template #default="scope">
             <span class="amount-text">{{ formatAmount(scope.row.amount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="流转" prop="flow" width="120" align="right">
+        <el-table-column label="冻结" prop="freeze" width="120" align="right">
           <template #default="scope">
-            <span class="flow-text">{{ formatAmount(scope.row.flow) }}</span>
+            <span class="freeze-text">{{ formatAmount(scope.row.freeze || 0) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="提醒邮箱" prop="alertEmail" min-width="180">
+        <el-table-column label="提醒阈值" prop="alertThreshold" width="120" align="right">
           <template #default="scope">
-            {{ scope.row.alertEmail || '-' }}
+            <span class="threshold-text">{{ formatAmount(scope.row.alertThreshold || 0) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="备注" prop="remark" min-width="150">
@@ -97,7 +97,7 @@
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100" align="center">
+        <el-table-column label="是否启用" width="100" align="center">
           <template #default="scope">
             <el-tag
               :type="scope.row.enabled ? 'success' : 'danger'"
@@ -156,7 +156,7 @@
     <!-- 添加/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
-      :title="dialogType === 'add' ? '新增供应商' : '编辑供应商'"
+      :title="dialogType === 'add' ? '添加上游管理' : '编辑上游管理'"
       width="600px"
       destroy-on-close
     >
@@ -164,30 +164,62 @@
         ref="formRef"
         :model="supplierForm"
         :rules="rules"
-        label-width="100px"
+        label-width="120px"
         style="max-width: 500px; margin: 0 auto;"
       >
-        <el-form-item label="上游名称" prop="supplier">
-          <el-input v-model="supplierForm.supplier" placeholder="请输入上游名称" />
+        <el-form-item label="上游通道名称" prop="supplier">
+          <el-input v-model="supplierForm.supplier" placeholder="请输入上游通道名称" />
         </el-form-item>
-        <el-form-item label="上游编码" prop="code">
-          <el-input v-model="supplierForm.code" placeholder="请输入上游编码" />
+        <el-form-item label="上游通道编码" prop="code">
+          <el-input v-model="supplierForm.code" placeholder="请输入上游通道编码" />
         </el-form-item>
         <el-form-item label="商户号" prop="merchantNo">
           <el-input v-model="supplierForm.merchantNo" placeholder="请输入商户号" />
         </el-form-item>
-        <el-form-item label="提醒邮箱" prop="alertEmail">
-          <el-input v-model="supplierForm.alertEmail" placeholder="请输入提醒邮箱" />
+        <el-form-item label="余额">
+          <el-input-number v-model="supplierForm.amount" :precision="2" :min="0" :controls="false" style="width: 168px" />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
+        <el-form-item label="冻结">
+          <el-input-number v-model="supplierForm.freeze" :precision="2" :min="0" :controls="false" style="width: 168px" />
+        </el-form-item>
+        <el-form-item label="提醒阈值">
+          <el-input-number v-model="supplierForm.alertThreshold" :precision="2" :min="0" :controls="false" style="width: 168px" />
+        </el-form-item>
+        <el-form-item label="API密钥">
+          <el-input v-model="supplierForm.apiKey" placeholder="请输入API密钥" />
+        </el-form-item>
+        <el-form-item label="应用APPID">
+          <el-input v-model="supplierForm.appId" placeholder="请输入应用APPID" />
+        </el-form-item>
+        <el-form-item label="安全密钥">
+          <el-input v-model="supplierForm.securityKey" placeholder="请输入安全密钥" />
+        </el-form-item>
+        <el-form-item label="网关地址" prop="gatewayUrl">
+          <el-input v-model="supplierForm.gatewayUrl" placeholder="请输入网关地址" />
+        </el-form-item>
+        <el-form-item label="商户私钥">
+          <el-input v-model="supplierForm.privateKey" placeholder="请输入商户私钥" />
+        </el-form-item>
+        <el-form-item label="平台公钥">
+          <el-input v-model="supplierForm.publicKey" placeholder="请输入平台公钥" />
+        </el-form-item>
+        <el-form-item label="页面跳转网址">
+          <el-input v-model="supplierForm.returnUrl" placeholder="请输入页面跳转网址" />
+        </el-form-item>
+        <el-form-item label="异步通知网址" prop="notifyUrl">
+          <el-input v-model="supplierForm.notifyUrl" placeholder="请输入异步通知网址" />
+        </el-form-item>
+        <el-form-item label="备注">
           <el-input v-model="supplierForm.remark" type="textarea" placeholder="请输入备注" />
         </el-form-item>
+        <el-form-item label="回调白名单">
+          <el-input v-model="supplierForm.whiteList" placeholder="请输入回调白名单" />
+        </el-form-item>
         <el-form-item label="状态" prop="enabled">
-          <el-switch
-            v-model="supplierForm.enabled"
-            active-text="启用"
-            inactive-text="禁用"
-          />
+          <el-select v-model="supplierForm.enabled" placeholder="请选择状态" style="width: 168px">
+            <el-option label="启用" :value="true" />
+            <el-option label="禁用" :value="false" />
+          </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -211,11 +243,11 @@
           <span class="detail-value">{{ currentSupplier.id }}</span>
         </div>
         <div class="detail-item">
-          <span class="detail-label">上游名称：</span>
+          <span class="detail-label">上游通道名称：</span>
           <span class="detail-value">{{ currentSupplier.supplier }}</span>
         </div>
         <div class="detail-item">
-          <span class="detail-label">上游编码：</span>
+          <span class="detail-label">上游通道编码：</span>
           <span class="detail-value">{{ currentSupplier.code }}</span>
         </div>
         <div class="detail-item">
@@ -223,16 +255,40 @@
           <span class="detail-value">{{ currentSupplier.merchantNo }}</span>
         </div>
         <div class="detail-item">
-          <span class="detail-label">金额：</span>
+          <span class="detail-label">余额：</span>
           <span class="detail-value">{{ formatAmount(currentSupplier.amount) }}</span>
         </div>
         <div class="detail-item">
-          <span class="detail-label">流转：</span>
-          <span class="detail-value">{{ formatAmount(currentSupplier.flow) }}</span>
+          <span class="detail-label">冻结：</span>
+          <span class="detail-value">{{ formatAmount(currentSupplier.freeze || 0) }}</span>
         </div>
         <div class="detail-item">
-          <span class="detail-label">提醒邮箱：</span>
-          <span class="detail-value">{{ currentSupplier.alertEmail || '-' }}</span>
+          <span class="detail-label">提醒阈值：</span>
+          <span class="detail-value">{{ formatAmount(currentSupplier.alertThreshold || 5000) }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">API密钥：</span>
+          <span class="detail-value">{{ currentSupplier.apiKey || '-' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">应用APPID：</span>
+          <span class="detail-value">{{ currentSupplier.appId || '-' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">网关地址：</span>
+          <span class="detail-value">{{ currentSupplier.gatewayUrl || '-' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">异步通知网址：</span>
+          <span class="detail-value">{{ currentSupplier.notifyUrl || '-' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">页面跳转网址：</span>
+          <span class="detail-value">{{ currentSupplier.returnUrl || '-' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="detail-label">回调白名单：</span>
+          <span class="detail-value">{{ currentSupplier.whiteList || '-' }}</span>
         </div>
         <div class="detail-item">
           <span class="detail-label">备注：</span>
@@ -290,14 +346,28 @@ const supplierForm = reactive({
   supplier: '',
   code: '',
   merchantNo: '',
-  alertEmail: '',
+  apiKey: '',
+  appId: '',
+  securityKey: '',
+  gatewayUrl: '',
+  privateKey: '',
+  publicKey: '',
+  returnUrl: '',
+  notifyUrl: '',
+  whiteList: '',
   remark: '',
-  enabled: true
+  enabled: true,
+  amount: 0,
+  freeze: 0,
+  alertThreshold: 5000,
+  flow: 0
 })
 const rules = {
-  supplier: [{ required: true, message: '请输入上游名称', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入上游编码', trigger: 'blur' }],
-  merchantNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }]
+  supplier: [{ required: true, message: '请输入上游通道名称', trigger: 'blur' }],
+  code: [{ required: true, message: '请输入上游通道编码', trigger: 'blur' }],
+  merchantNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }],
+  gatewayUrl: [{ required: true, message: '请输入网关地址', trigger: 'blur' }],
+  notifyUrl: [{ required: true, message: '请输入异步通知网址', trigger: 'blur' }]
 }
 
 // 详情抽屉相关
@@ -470,12 +540,26 @@ const resetForm = () => {
     formRef.value.resetFields()
   }
   
-  Object.keys(supplierForm).forEach(key => {
-    if (key === 'enabled') {
-      supplierForm[key] = true
-    } else {
-      supplierForm[key] = ''
-    }
+  Object.assign(supplierForm, {
+    id: '',
+    supplier: '',
+    code: '',
+    merchantNo: '',
+    apiKey: '',
+    appId: '',
+    securityKey: '',
+    gatewayUrl: '',
+    privateKey: '',
+    publicKey: '',
+    returnUrl: '',
+    notifyUrl: '',
+    whiteList: '',
+    remark: '',
+    enabled: true,
+    amount: 0,
+    freeze: 0,
+    alertThreshold: 5000,
+    flow: 0
   })
 }
 

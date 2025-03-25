@@ -2,119 +2,68 @@
 <template>
   <div class="statistics-merchant-balance">
     <!-- 搜索表单 -->
-    <el-form :model="searchForm" inline class="search-form">
-      <el-form-item label="商户名称">
-        <el-input 
-          v-model="searchForm.merchantName" 
-          placeholder="请输入商户名称" 
-          clearable 
-          style="width: 168px" 
-        />
-      </el-form-item>
-      <el-form-item label="余额范围">
-        <el-input-number
-          v-model="searchForm.minBalance"
-          :precision="2"
-          :step="1000"
-          :min="0"
-          placeholder="最小金额"
-          style="width: 120px"
-        />
-        <span class="separator">-</span>
-        <el-input-number
-          v-model="searchForm.maxBalance"
-          :precision="2"
-          :step="1000"
-          :min="0"
-          placeholder="最大金额"
-          style="width: 120px"
-        />
-      </el-form-item>
-      <el-form-item label="快照时间">
-        <el-date-picker
-          v-model="searchForm.snapshotTime"
-          type="datetime"
-          placeholder="请选择快照时间"
-          value-format="YYYY-MM-DD HH:mm:ss"
-          style="width: 240px"
-        />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="handleSearch">查询</el-button>
-        <el-button @click="handleReset">重置</el-button>
-      </el-form-item>
-    </el-form>
+    <div class="search-container">
+      <el-form :model="searchForm" inline class="search-form">
+        <el-form-item label="商户名称">
+          <el-input 
+            v-model="searchForm.merchantName" 
+            placeholder="请输入商户名称" 
+            clearable 
+            style="width: 168px" 
+          />
+        </el-form-item>
+        <el-form-item label="余额范围">
+          <el-input-number
+            v-model="searchForm.minBalance"
+            :precision="2"
+            :step="1000"
+            :min="0"
+            placeholder="最小金额"
+            style="width: 120px"
+            controls-position="right"
+          />
+          <span class="separator">-</span>
+          <el-input-number
+            v-model="searchForm.maxBalance"
+            :precision="2"
+            :step="1000"
+            :min="0"
+            placeholder="最大金额"
+            style="width: 120px"
+            controls-position="right"
+          />
+        </el-form-item>
+        <el-form-item label="快照时间">
+          <el-date-picker
+            v-model="searchForm.snapshotTime"
+            type="datetime"
+            placeholder="请选择快照时间"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            style="width: 240px"
+            :shortcuts="dateShortcuts"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch" :loading="loading">
+            <el-icon><Search /></el-icon>查询
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><RefreshRight /></el-icon>重置
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </div>
 
-    <!-- 统计卡片 -->
-    <el-row :gutter="20" class="stat-cards">
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>总余额</span>
-              <el-tag size="small" type="success">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ formatAmount(totalBalance) }}</span>
-            <div class="trend">
-              <span :class="{ 'up': balanceTrend > 0, 'down': balanceTrend < 0 }">
-                {{ Math.abs(balanceTrend) }}%
-              </span>
-              <el-icon v-if="balanceTrend > 0"><ArrowUp /></el-icon>
-              <el-icon v-else-if="balanceTrend < 0"><ArrowDown /></el-icon>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>商户数量</span>
-              <el-tag size="small" type="info">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ merchantCount }}家</span>
-            <span class="rate">有余额商户</span>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>平均余额</span>
-              <el-tag size="small" type="warning">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ formatAmount(averageBalance) }}</span>
-            <span class="rate">每商户</span>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>冻结金额</span>
-              <el-tag size="small" type="danger">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ formatAmount(frozenAmount) }}</span>
-            <span class="rate">总计</span>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <!-- 操作栏 -->
-    <div class="table-operations">
-      <el-button type="primary" :icon="Download" @click="handleExport">导出数据</el-button>
-      <el-button :icon="Refresh" @click="refreshData">刷新</el-button>
+    <!-- 表格操作区 -->
+    <div class="table-header">
+      <div class="table-title">
+        <span>商户余额列表</span>
+        <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
+      </div>
+      <div class="table-operations">
+        <el-button type="primary" :icon="Download" @click="handleExport">导出数据</el-button>
+        <el-button :icon="Refresh" @click="refreshData" :loading="loading">刷新</el-button>
+      </div>
     </div>
 
     <!-- 数据表格 -->
@@ -124,40 +73,46 @@
       style="width: 100%" 
       v-loading="loading"
       highlight-current-row
+      stripe
+      table-layout="auto"
     >
-      <el-table-column type="selection" width="55" />
-      <el-table-column prop="merchantName" label="商户名称" min-width="150" />
-      <el-table-column prop="merchantId" label="商户ID" width="120" />
-      <el-table-column prop="balance" label="账户余额" width="150">
+      <el-table-column type="selection" width="55" align="center" />
+      <el-table-column prop="merchantName" label="商户名称" min-width="150" show-overflow-tooltip />
+      <el-table-column prop="merchantId" label="商户ID" width="120" align="center" />
+      <el-table-column prop="balance" label="账户余额" width="150" align="right">
         <template #default="{ row }">
           <span class="amount-cell">{{ formatAmount(row.balance) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="frozenAmount" label="冻结金额" width="150">
+      <el-table-column prop="frozenAmount" label="冻结金额" width="150" align="right">
         <template #default="{ row }">
           <span class="amount-cell">{{ formatAmount(row.frozenAmount) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="availableAmount" label="可用金额" width="150">
+      <el-table-column prop="availableAmount" label="可用金额" width="150" align="right">
         <template #default="{ row }">
           <span class="amount-cell">{{ formatAmount(row.availableAmount) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="todayIncome" label="今日收入" width="150">
+      <el-table-column prop="todayIncome" label="今日收入" width="150" align="right">
         <template #default="{ row }">
           <span class="amount-cell income">{{ formatAmount(row.todayIncome) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="todayOutcome" label="今日支出" width="150">
+      <el-table-column prop="todayOutcome" label="今日支出" width="150" align="right">
         <template #default="{ row }">
           <span class="amount-cell outcome">{{ formatAmount(row.todayOutcome) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="snapshotTime" label="快照时间" width="180" />
-      <el-table-column label="操作" width="150" fixed="right">
+      <el-table-column prop="snapshotTime" label="快照时间" width="180" align="center" />
+      <el-table-column label="操作" width="180" fixed="right" align="center">
         <template #default="{ row }">
-          <el-button type="primary" link @click="viewDetail(row)">查看明细</el-button>
-          <el-button type="success" link @click="viewHistory(row)">历史记录</el-button>
+          <el-button type="primary" link @click="viewDetail(row)">
+            <el-icon><View /></el-icon>查看明细
+          </el-button>
+          <el-button type="success" link @click="viewHistory(row)">
+            <el-icon><Clock /></el-icon>历史记录
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -172,6 +127,7 @@
         layout="total, sizes, prev, pager, next, jumper"
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
+        background
       />
     </div>
 
@@ -180,6 +136,7 @@
       v-model="detailDialogVisible"
       title="商户余额明细"
       width="800px"
+      destroy-on-close
     >
       <el-descriptions :column="2" border>
         <el-descriptions-item label="商户名称" :span="2">{{ currentMerchant.merchantName }}</el-descriptions-item>
@@ -188,16 +145,23 @@
         <el-descriptions-item label="账户余额">{{ formatAmount(currentMerchant.balance) }}</el-descriptions-item>
         <el-descriptions-item label="可用金额">{{ formatAmount(currentMerchant.availableAmount) }}</el-descriptions-item>
         <el-descriptions-item label="冻结金额">{{ formatAmount(currentMerchant.frozenAmount) }}</el-descriptions-item>
-        <el-descriptions-item label="今日流水">
+        <el-descriptions-item label="今日流水" :span="2">
           <el-tag type="success">收入: {{ formatAmount(currentMerchant.todayIncome) }}</el-tag>
           <el-tag type="danger" style="margin-left: 10px;">支出: {{ formatAmount(currentMerchant.todayOutcome) }}</el-tag>
         </el-descriptions-item>
       </el-descriptions>
       
+      <div class="merchant-detail-chart">
+        <div class="chart-title">余额变化趋势 (近7日)</div>
+        <div ref="balanceChartRef" class="balance-chart"></div>
+      </div>
+      
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="detailDialogVisible = false">关闭</el-button>
-          <el-button type="primary" @click="printDetail">打印明细</el-button>
+          <el-button type="primary" @click="printDetail">
+            <el-icon><Printer /></el-icon>打印明细
+          </el-button>
         </span>
       </template>
     </el-dialog>
@@ -206,7 +170,17 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ArrowUp, ArrowDown, Download, Refresh } from '@element-plus/icons-vue'
+import { 
+  ArrowUp, 
+  ArrowDown, 
+  Download, 
+  Refresh, 
+  Search, 
+  RefreshRight,
+  View,
+  Printer,
+  Clock
+} from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatAmount } from '@/utils/formatUtils'
 import { merchantBalanceData } from '@/data/statisticsData'
@@ -219,16 +193,29 @@ const searchForm = reactive({
   snapshotTime: ''
 })
 
-// 统计数据
-const totalBalance = ref(10000000.00)
-const merchantCount = ref(500)
-const frozenAmount = ref(200000.00)
-const balanceTrend = ref(5.8)
-
-// 计算平均余额
-const averageBalance = computed(() => {
-  return merchantCount.value ? totalBalance.value / merchantCount.value : 0
-})
+// 日期快捷选项
+const dateShortcuts = [
+  {
+    text: '今天',
+    value: new Date()
+  },
+  {
+    text: '昨天',
+    value: (() => {
+      const date = new Date()
+      date.setTime(date.getTime() - 3600 * 1000 * 24)
+      return date
+    })()
+  },
+  {
+    text: '一周前',
+    value: (() => {
+      const date = new Date()
+      date.setTime(date.getTime() - 3600 * 1000 * 24 * 7)
+      return date
+    })()
+  }
+]
 
 // 表格数据
 const tableData = ref([])
@@ -236,26 +223,19 @@ const tableData = ref([])
 // 分页相关
 const currentPage = ref(1)
 const pageSize = ref(10)
-const total = ref(100)
+const total = ref(0)
 const loading = ref(false)
 
 // 详情对话框相关
 const detailDialogVisible = ref(false)
 const currentMerchant = ref({})
+const balanceChartRef = ref(null)
 
 // 初始化表格数据
 const initTableData = () => {
   tableData.value = merchantBalanceData
   // 更新总数据量
   total.value = merchantBalanceData.length
-  
-  // 计算总余额和冻结金额
-  const totalBalanceSum = merchantBalanceData.reduce((sum, item) => sum + item.balance, 0)
-  const totalFrozenSum = merchantBalanceData.reduce((sum, item) => sum + item.frozenAmount, 0)
-  
-  totalBalance.value = totalBalanceSum
-  frozenAmount.value = totalFrozenSum
-  merchantCount.value = merchantBalanceData.length
 }
 
 // 搜索方法
@@ -296,7 +276,7 @@ const handleSearch = () => {
     
     loading.value = false
     ElMessage.success('查询成功')
-  }, 800)
+  }, 600)
 }
 
 // 重置方法
@@ -354,6 +334,81 @@ const refreshData = () => {
 const viewDetail = (row) => {
   currentMerchant.value = row
   detailDialogVisible.value = true
+  
+  // 模拟图表初始化，实际项目中可能需要使用echarts等图表库
+  setTimeout(() => {
+    if (balanceChartRef.value) {
+      // 模拟创建图表的样式展示
+      const chartContainer = balanceChartRef.value;
+      chartContainer.innerHTML = '';
+      chartContainer.style.display = 'flex';
+      chartContainer.style.flexDirection = 'column';
+      chartContainer.style.justifyContent = 'center';
+      chartContainer.style.alignItems = 'center';
+      
+      // 添加图表的文本提示
+      const chartText = document.createElement('div');
+      chartText.textContent = '余额趋势图 (模拟数据)';
+      chartText.style.color = '#606266';
+      chartText.style.marginBottom = '15px';
+      
+      // 创建模拟的图表条形展示
+      const chartBars = document.createElement('div');
+      chartBars.style.display = 'flex';
+      chartBars.style.alignItems = 'flex-end';
+      chartBars.style.height = '150px';
+      chartBars.style.width = '100%';
+      chartBars.style.justifyContent = 'space-around';
+      
+      // 创建7天的余额条形图
+      const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+      const values = [
+        row.balance * 0.85,
+        row.balance * 0.9,
+        row.balance * 0.95,
+        row.balance * 0.85,
+        row.balance * 0.92,
+        row.balance * 0.97,
+        row.balance
+      ];
+      
+      // 添加每天的余额柱状图
+      days.forEach((day, index) => {
+        const barContainer = document.createElement('div');
+        barContainer.style.display = 'flex';
+        barContainer.style.flexDirection = 'column';
+        barContainer.style.alignItems = 'center';
+        
+        const barHeight = (values[index] / row.balance) * 120;
+        const bar = document.createElement('div');
+        bar.style.width = '30px';
+        bar.style.height = `${barHeight}px`;
+        bar.style.backgroundColor = '#409EFF';
+        bar.style.borderRadius = '3px 3px 0 0';
+        
+        const label = document.createElement('div');
+        label.textContent = day;
+        label.style.marginTop = '5px';
+        label.style.fontSize = '12px';
+        label.style.color = '#606266';
+        
+        const value = document.createElement('div');
+        value.textContent = formatAmount(values[index]).replace('¥', '');
+        value.style.fontSize = '10px';
+        value.style.color = '#909399';
+        value.style.marginTop = '2px';
+        
+        barContainer.appendChild(bar);
+        barContainer.appendChild(label);
+        barContainer.appendChild(value);
+        
+        chartBars.appendChild(barContainer);
+      });
+      
+      chartContainer.appendChild(chartText);
+      chartContainer.appendChild(chartBars);
+    }
+  }, 100);
 }
 
 // 查看历史记录
@@ -375,11 +430,14 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .statistics-merchant-balance {
+  .search-container {
+    margin-bottom: 20px;
+  }
+
   .search-form {
     background-color: #fff;
     padding: 20px;
     border-radius: 4px;
-    margin-bottom: 20px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
 
     .separator {
@@ -387,59 +445,25 @@ onMounted(() => {
       color: #909399;
     }
   }
-
-  .stat-cards {
-    margin-bottom: 20px;
-
-    .el-card {
-      .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .card-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 0;
-
-        .amount {
-          font-size: 24px;
-          font-weight: bold;
-          color: #303133;
-        }
-
-        .rate {
-          font-size: 14px;
-          color: #909399;
-        }
-
-        .trend {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-
-          .up {
-            color: #67c23a;
-          }
-
-          .down {
-            color: #f56c6c;
-          }
-
-          .el-icon {
-            font-size: 16px;
-          }
-        }
-      }
+  
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    
+    .table-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 500;
     }
   }
 
   .table-operations {
-    margin-bottom: 16px;
     display: flex;
-    justify-content: flex-end;
+    gap: 10px;
   }
 
   .amount-cell {
@@ -462,6 +486,27 @@ onMounted(() => {
     background-color: #fff;
     border-radius: 4px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .merchant-detail-chart {
+    margin-top: 20px;
+    
+    .chart-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 10px;
+      color: #303133;
+    }
+    
+    .balance-chart {
+      height: 250px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #909399;
+    }
   }
 }
 </style> 

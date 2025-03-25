@@ -51,13 +51,13 @@
             <el-menu-item index="/supplier/channel">供应商通道管理</el-menu-item>
           </el-sub-menu>
 
-          <!-- 商品管理 -->
+          <!-- 商户管理 -->
           <el-sub-menu index="/product">
             <template #title>
-              <el-icon><ShoppingCart /></el-icon>
-              <span>商品管理</span>
+              <el-icon><Goods /></el-icon>
+              <span>商户管理</span>
             </template>
-            <el-menu-item index="/product/list">商品列表</el-menu-item>
+            <el-menu-item index="/product/list">商户列表</el-menu-item>
             <el-menu-item index="/product/merchant-products">商户产品列表</el-menu-item>
           </el-sub-menu>
 

@@ -46,15 +46,6 @@
       </div>
     </el-card>
 
-    <!-- 统计信息区域 -->
-    <div class="stat-tags">
-      <el-tag type="success" effect="plain">参与统计商户数：{{ formatNumber(100) }}</el-tag>
-      <el-tag type="success" effect="plain">总交易笔数：{{ formatNumber(10000) }}笔</el-tag>
-      <el-tag type="success" effect="plain">总交易金额：{{ formatAmount(5000000) }}</el-tag>
-      <el-tag type="success" effect="plain">平均成功率：98.50%</el-tag>
-      <el-tag type="success" effect="plain">总手续费：{{ formatAmount(25000) }}</el-tag>
-    </div>
-
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <div class="table-header">
@@ -307,13 +298,6 @@ const getRankType = (rank) => {
 .search-form {
   display: flex;
   flex-wrap: wrap;
-}
-
-.stat-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
 }
 
 .table-card {

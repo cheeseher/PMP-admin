@@ -39,16 +39,6 @@
       </div>
     </el-card>
 
-    <!-- 统计信息区域 -->
-    <div class="stat-tags">
-      <el-tag type="success" effect="plain">总交易笔数：{{ formatNumber(1000) }}笔</el-tag>
-      <el-tag type="success" effect="plain">总交易金额：{{ formatAmount(5000000) }}</el-tag>
-      <el-tag type="success" effect="plain">成功笔数：{{ formatNumber(980) }}笔</el-tag>
-      <el-tag type="success" effect="plain">成功金额：{{ formatAmount(4900000) }}</el-tag>
-      <el-tag type="success" effect="plain">成功率：98.00%</el-tag>
-      <el-tag type="success" effect="plain">总手续费：{{ formatAmount(25000) }}</el-tag>
-    </div>
-
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <div class="table-header">
@@ -299,13 +289,6 @@ const getSuccessRateType = (rate) => {
 .search-form {
   display: flex;
   flex-wrap: wrap;
-}
-
-.stat-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
 }
 
 .table-card {

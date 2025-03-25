@@ -59,18 +59,18 @@ const router = createRouter({
           ]
         },
 
-        // 商品管理
+        // 商户管理
         {
           path: '/product',
           name: 'Product',
           redirect: '/product/list',
-          meta: { title: '商品管理' },
+          meta: { title: '商户管理' },
           children: [
             {
               path: 'list',
               name: 'ProductList',
               component: () => import('@/views/product/ProductList.vue'),
-              meta: { title: '商品列表' }
+              meta: { title: '商户列表' }
             },
             {
               path: 'merchant-products',

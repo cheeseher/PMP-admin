@@ -1,4 +1,4 @@
-// 商品列表模拟数据
+// 商户列表模拟数据
 export const productList = [
   {
     id: 1,

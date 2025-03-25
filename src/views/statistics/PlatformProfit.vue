@@ -46,76 +46,6 @@
       </div>
     </el-card>
 
-    <!-- 统计卡片 -->
-    <el-row :gutter="20" class="stat-cards">
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>总交易金额</span>
-              <el-tag size="small" type="info">昨日</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ formatAmount(totalAmount) }}</span>
-            <div class="trend">
-              <span :class="{ 'up': amountTrend > 0, 'down': amountTrend < 0 }">
-                {{ Math.abs(amountTrend) }}%
-              </span>
-              <el-icon v-if="amountTrend > 0"><ArrowUp /></el-icon>
-              <el-icon v-else><ArrowDown /></el-icon>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>总分润金额</span>
-              <el-tag size="small" type="info">昨日</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ formatAmount(totalProfit) }}</span>
-            <div class="trend">
-              <span :class="{ 'up': profitTrend > 0, 'down': profitTrend < 0 }">
-                {{ Math.abs(profitTrend) }}%
-              </span>
-              <el-icon v-if="profitTrend > 0"><ArrowUp /></el-icon>
-              <el-icon v-else><ArrowDown /></el-icon>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>待结算金额</span>
-              <el-tag size="small" type="warning">实时</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ formatAmount(pendingAmount) }}</span>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>已结算金额</span>
-              <el-tag size="small" type="success">累计</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ formatAmount(settledAmount) }}</span>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <div class="table-header">
@@ -153,11 +83,9 @@
             {{ formatAmount(row.profitAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="profitRate" label="分润比例" width="120">
+        <el-table-column prop="profitRate" label="分润比例" width="100">
           <template #default="{ row }">
-            <el-tag type="info" size="small">
-              {{ (row.profitRate * 100).toFixed(2) }}%
-            </el-tag>
+            {{ (row.profitRate * 100).toFixed(2) }}%
           </template>
         </el-table-column>
         <el-table-column prop="settleStatus" label="结算状态" width="100">
@@ -167,7 +95,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="settleTime" label="结算时间" width="180" />
+        <el-table-column prop="settleTime" label="结算时间" width="150" />
         <el-table-column prop="remark" label="备注" min-width="150" />
       </el-table>
 
@@ -190,7 +118,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { ArrowUp, ArrowDown, Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
+import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 // 搜索表单数据
@@ -202,83 +130,12 @@ const searchForm = reactive({
   dateRange: []
 })
 
-// 统计数据
-const totalAmount = ref(1000000.00)
-const totalProfit = ref(50000.00)
-const pendingAmount = ref(20000.00)
-const settledAmount = ref(30000.00)
-const amountTrend = ref(12.5)
-const profitTrend = ref(-5.2)
-
 // 表格数据
-const tableData = ref([
-  {
-    date: '2024-03-14',
-    merchantId: 'M2024031401',
-    merchantName: '优质商户A',
-    payType: '支付宝',
-    orderAmount: 50000.00,
-    profitAmount: 2500.00,
-    profitRate: 0.05,
-    settleStatus: 'settled',
-    settleTime: '2024-03-14 15:30:00',
-    remark: ''
-  },
-  {
-    date: '2024-03-14',
-    merchantId: 'M2024031402',
-    merchantName: '优质商户B',
-    payType: '微信支付',
-    orderAmount: 42500.00,
-    profitAmount: 2125.00,
-    profitRate: 0.05,
-    settleStatus: 'settled',
-    settleTime: '2024-03-14 16:10:00',
-    remark: ''
-  },
-  {
-    date: '2024-03-14',
-    merchantId: 'M2024031403',
-    merchantName: '标准商户C',
-    payType: '银联',
-    orderAmount: 37500.00,
-    profitAmount: 1875.00,
-    profitRate: 0.05,
-    settleStatus: 'pending',
-    settleTime: '',
-    remark: '待系统结算'
-  },
-  {
-    date: '2024-03-14',
-    merchantId: 'M2024031404',
-    merchantName: '标准商户D',
-    payType: '快捷支付',
-    orderAmount: 30000.00,
-    profitAmount: 1500.00,
-    profitRate: 0.05,
-    settleStatus: 'pending',
-    settleTime: '',
-    remark: '待人工审核'
-  },
-  {
-    date: '2024-03-13',
-    merchantId: 'M2024031405',
-    merchantName: '新商户E',
-    payType: '支付宝',
-    orderAmount: 25000.00,
-    profitAmount: 1250.00,
-    profitRate: 0.05,
-    settleStatus: 'failed',
-    settleTime: '2024-03-13 23:50:00',
-    remark: '银行通道异常'
-  }
-])
-
-// 分页相关
+const tableData = ref([])
+const loading = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(100)
-const loading = ref(false)
 
 // 结算状态映射
 const getSettleStatusType = (status) => {
@@ -367,43 +224,6 @@ const formatAmount = (amount) => {
 .search-form {
   display: flex;
   flex-wrap: wrap;
-}
-
-.stat-cards {
-  margin-bottom: 15px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-}
-
-.amount {
-  font-size: 24px;
-  font-weight: bold;
-  color: #303133;
-}
-
-.trend {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.up {
-  color: #67c23a;
-}
-
-.down {
-  color: #f56c6c;
 }
 
 .table-card {

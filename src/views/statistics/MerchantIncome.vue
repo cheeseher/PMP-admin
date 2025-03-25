@@ -47,78 +47,6 @@
       </div>
     </el-card>
 
-    <!-- 统计卡片 -->
-    <el-row :gutter="20" class="stat-cards">
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>总收款金额</span>
-              <el-tag size="small" type="info">昨日</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ formatAmount(totalIncome) }}</span>
-            <div class="trend">
-              <span :class="{ 'up': incomeTrend > 0, 'down': incomeTrend < 0 }">
-                {{ Math.abs(incomeTrend) }}%
-              </span>
-              <el-icon v-if="incomeTrend > 0"><ArrowUp /></el-icon>
-              <el-icon v-else><ArrowDown /></el-icon>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>总订单笔数</span>
-              <el-tag size="small" type="info">昨日</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ formatNumber(totalOrders) }}笔</span>
-            <div class="trend">
-              <span :class="{ 'up': ordersTrend > 0, 'down': ordersTrend < 0 }">
-                {{ Math.abs(ordersTrend) }}%
-              </span>
-              <el-icon v-if="ordersTrend > 0"><ArrowUp /></el-icon>
-              <el-icon v-else><ArrowDown /></el-icon>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>成功订单数</span>
-              <el-tag size="small" type="success">昨日</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ formatNumber(successOrders) }}笔</span>
-            <span class="rate">成功率 {{ (successRate * 100).toFixed(2) }}%</span>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="6">
-        <el-card shadow="hover">
-          <template #header>
-            <div class="card-header">
-              <span>退款金额</span>
-              <el-tag size="small" type="danger">昨日</el-tag>
-            </div>
-          </template>
-          <div class="card-content">
-            <span class="amount">{{ formatAmount(refundAmount) }}</span>
-            <span class="rate">退款率 {{ (refundRate * 100).toFixed(2) }}%</span>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <div class="table-header">
@@ -176,9 +104,9 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="refundAmount" label="退款金额" width="150">
+        <el-table-column prop="fee" label="手续费" width="130">
           <template #default="{ row }">
-            {{ formatAmount(row.refundAmount) }}
+            {{ formatAmount(row.fee) }}
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="150" />
@@ -203,7 +131,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { ArrowUp, ArrowDown, Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
+import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 // 搜索表单数据
@@ -215,90 +143,36 @@ const searchForm = reactive({
   dateRange: []
 })
 
-// 统计数据
-const totalIncome = ref(1000000.00)
-const totalOrders = ref(5000)
-const successOrders = ref(4800)
-const refundAmount = ref(10000.00)
-const incomeTrend = ref(15.8)
-const ordersTrend = ref(-3.2)
-const successRate = ref(0.96)
-const refundRate = ref(0.02)
-
 // 表格数据
-const tableData = ref([
-  {
-    date: '2024-03-14',
-    merchantId: 'M2024031401',
-    merchantName: '优质商户A',
-    payType: '支付宝',
-    orderCount: 1000,
-    orderAmount: 50000.00,
-    successCount: 980,
-    successAmount: 49000.00,
-    successRate: 0.98,
-    refundAmount: 1000.00,
-    remark: ''
-  },
-  {
-    date: '2024-03-14',
-    merchantId: 'M2024031402',
-    merchantName: '优质商户B',
-    payType: '微信支付',
-    orderCount: 850,
-    orderAmount: 42500.00,
-    successCount: 825,
-    successAmount: 41250.00,
-    successRate: 0.97,
-    refundAmount: 500.00,
-    remark: ''
-  },
-  {
-    date: '2024-03-14',
-    merchantId: 'M2024031403',
-    merchantName: '标准商户C',
-    payType: '银联',
-    orderCount: 750,
-    orderAmount: 37500.00,
-    successCount: 720,
-    successAmount: 36000.00,
-    successRate: 0.96,
-    refundAmount: 750.00,
-    remark: '部分订单退款'
-  },
-  {
-    date: '2024-03-14',
-    merchantId: 'M2024031404',
-    merchantName: '标准商户D',
-    payType: '快捷支付',
-    orderCount: 600,
-    orderAmount: 30000.00,
-    successCount: 570,
-    successAmount: 28500.00,
-    successRate: 0.95,
-    refundAmount: 0.00,
-    remark: ''
-  },
-  {
-    date: '2024-03-13',
-    merchantId: 'M2024031405',
-    merchantName: '新商户E',
-    payType: '支付宝',
-    orderCount: 500,
-    orderAmount: 25000.00,
-    successCount: 450,
-    successAmount: 22500.00,
-    successRate: 0.90,
-    refundAmount: 2500.00,
-    remark: '系统故障导致用户重复支付，已退款'
-  }
-])
-
-// 分页相关
+const tableData = ref([])
+const loading = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(100)
-const loading = ref(false)
+
+// 初始化表格数据
+const initTableData = () => {
+  // 模拟异步获取数据
+  loading.value = true
+  tableData.value = [
+    // 这里是示例数据
+    {
+      date: '2024-03-14',
+      merchantId: 'M001',
+      merchantName: '测试商户',
+      payType: '支付宝',
+      orderCount: 120,
+      orderAmount: 56000,
+      successCount: 115,
+      successAmount: 53000,
+      successRate: 0.958,
+      fee: 265,
+      remark: ''
+    }
+    // 更多数据...
+  ]
+  loading.value = false
+}
 
 // 搜索方法
 const handleSearch = () => {
@@ -380,48 +254,6 @@ const getSuccessRateType = (rate) => {
 .search-form {
   display: flex;
   flex-wrap: wrap;
-}
-
-.stat-cards {
-  margin-bottom: 15px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 0;
-}
-
-.amount {
-  font-size: 24px;
-  font-weight: bold;
-  color: #303133;
-}
-
-.rate {
-  font-size: 14px;
-  color: #909399;
-}
-
-.trend {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.up {
-  color: #67c23a;
-}
-
-.down {
-  color: #f56c6c;
 }
 
 .table-card {

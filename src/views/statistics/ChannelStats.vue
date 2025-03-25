@@ -46,16 +46,6 @@
       </div>
     </el-card>
 
-    <!-- 统计信息区域 -->
-    <div class="stat-tags">
-      <el-tag type="success" effect="plain">总通道数量：{{ formatNumber(20) }}</el-tag>
-      <el-tag type="success" effect="plain">正常通道：{{ formatNumber(15) }}</el-tag>
-      <el-tag type="success" effect="plain">维护通道：{{ formatNumber(3) }}</el-tag>
-      <el-tag type="success" effect="plain">已关闭通道：{{ formatNumber(2) }}</el-tag>
-      <el-tag type="success" effect="plain">总订单笔数：{{ formatNumber(1000) }}笔</el-tag>
-      <el-tag type="success" effect="plain">成功订单金额：{{ formatAmount(4900000) }}</el-tag>
-    </div>
-
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <div class="table-header">
@@ -150,7 +140,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { useCleanup } from '@/utils/cleanupUtils'
+import { useCleanup } from '@/composables/useCleanup'
 
 // 获取清理工具
 const { safeTimeout } = useCleanup()
@@ -334,13 +324,6 @@ const getSuccessRateType = (rate) => {
 .search-form {
   display: flex;
   flex-wrap: wrap;
-}
-
-.stat-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
 }
 
 .table-card {

@@ -5,27 +5,6 @@
     <el-card shadow="never" class="search-card">
       <div class="search-form">
         <el-form :model="searchForm" inline>
-          <el-form-item label="商户ID">
-            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="商户名称">
-            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="支付类型">
-            <el-select v-model="searchForm.payType" placeholder="请选择支付类型" style="width: 168px" clearable>
-              <el-option label="支付宝" value="alipay" />
-              <el-option label="微信支付" value="wechat" />
-              <el-option label="银联" value="unionpay" />
-              <el-option label="快捷支付" value="quick" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="结算状态">
-            <el-select v-model="searchForm.settleStatus" placeholder="请选择结算状态" style="width: 168px" clearable>
-              <el-option label="待结算" value="pending" />
-              <el-option label="已结算" value="settled" />
-              <el-option label="结算失败" value="failed" />
-            </el-select>
-          </el-form-item>
           <el-form-item label="日期范围">
             <el-date-picker
               v-model="searchForm.dateRange"
@@ -39,8 +18,12 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-            <el-button :icon="Refresh" @click="handleReset">重置</el-button>
+            <el-button type="primary" @click="handleSearch" :loading="loading">
+              <el-icon><Search /></el-icon>查询
+            </el-button>
+            <el-button @click="handleReset">
+              <el-icon><Refresh /></el-icon>重置
+            </el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -49,53 +32,54 @@
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <div class="table-header">
-        <div class="left">
-          <el-button-group>
-            <el-button :icon="Refresh" @click="refreshData">刷新</el-button>
-          </el-button-group>
+        <div class="table-title">
+          <span>平台分润列表</span>
+          <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
         </div>
-        <div class="right">
-          <el-button-group>
-            <el-button icon="Printer">打印</el-button>
-            <el-button icon="Download" @click="handleExport">导出</el-button>
-          </el-button-group>
+        <div class="table-operations">
+          <el-button :icon="Printer" plain>打印</el-button>
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
+          <el-button :icon="Refresh" @click="refreshData" :loading="loading">刷新</el-button>
         </div>
       </div>
       
       <el-table
         :data="tableData"
         border
+        v-loading="loading"
+        stripe
+        highlight-current-row
         style="width: 100%"
         :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
-        v-loading="loading"
       >
-        <el-table-column prop="date" label="日期（天）" width="120" />
-        <el-table-column prop="successAmount" label="成功收款金额" width="150">
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column prop="date" label="日期" width="120" align="center" />
+        <el-table-column prop="successAmount" label="成功收款金额" width="150" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.successAmount) }}
+            <span class="amount-cell income">{{ formatAmount(row.successAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="channelCost" label="通道成本" width="150">
+        <el-table-column prop="channelCost" label="通道成本" width="150" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.channelCost) }}
+            <span class="amount-cell outcome">{{ formatAmount(row.channelCost) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="profitAfterChannel" label="除通道成本后利润" width="150">
+        <el-table-column prop="profitAfterChannel" label="除通道成本后利润" width="180" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.profitAfterChannel) }}
+            <span class="amount-cell income">{{ formatAmount(row.profitAfterChannel) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="fee" label="手续费" width="150">
+        <el-table-column prop="fee" label="手续费" width="150" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.fee) }}
+            <span class="amount-cell income">{{ formatAmount(row.fee) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="orderCount" label="成功单数/总笔数" width="150">
+        <el-table-column prop="orderCount" label="成功单数/总笔数" min-width="160" align="center">
           <template #default="{ row }">
             <span>{{ formatNumber(row.successCount) }}/{{ formatNumber(row.orderCount) }}笔</span>
           </template>
         </el-table-column>
-        <el-table-column prop="successRate" label="成功率" width="120">
+        <el-table-column prop="successRate" label="成功率" width="100" align="center">
           <template #default="{ row }">
             <el-tag 
               :type="getSuccessRateType(row.successRate)"
@@ -112,7 +96,7 @@
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 30, 50]"
+          :page-sizes="[10, 20, 50, 100]"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
           background
@@ -125,16 +109,12 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 搜索表单数据
 const searchForm = reactive({
-  merchantId: '',
-  merchantName: '',
-  payType: '',
-  settleStatus: '',
   dateRange: []
 })
 
@@ -191,53 +171,39 @@ const tableData = ref([
     successRate: 0.98
   }
 ])
-const loading = ref(false)
+
+// 分页相关
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(100)
+const loading = ref(false)
 
-// 结算状态映射
-const getSettleStatusType = (status) => {
-  const map = {
-    pending: 'warning',
-    settled: 'success',
-    failed: 'danger'
-  }
-  return map[status] || 'info'
-}
+// 初始化页面
+onMounted(() => {
+  fetchData()
+})
 
-const getSettleStatusText = (status) => {
-  const map = {
-    pending: '待结算',
-    settled: '已结算',
-    failed: '结算失败'
-  }
-  return map[status] || '未知'
-}
-
-// 获取成功率类型
-const getSuccessRateType = (rate) => {
-  if (rate >= 0.95) return 'success'
-  if (rate >= 0.9) return 'warning'
-  return 'danger'
+// 获取数据
+const fetchData = () => {
+  loading.value = true
+  // 这里是模拟请求
+  setTimeout(() => {
+    loading.value = false
+  }, 500)
 }
 
 // 搜索方法
 const handleSearch = () => {
+  currentPage.value = 1
   loading.value = true
-  // TODO: 调用接口获取数据
   setTimeout(() => {
     loading.value = false
     ElMessage.success('查询成功')
-  }, 1000)
+  }, 500)
 }
 
 // 重置方法
 const handleReset = () => {
-  searchForm.merchantId = ''
-  searchForm.merchantName = ''
-  searchForm.payType = ''
-  searchForm.settleStatus = ''
   searchForm.dateRange = []
   handleSearch()
 }
@@ -245,17 +211,23 @@ const handleReset = () => {
 // 分页方法
 const handleSizeChange = (val) => {
   pageSize.value = val
-  handleSearch()
+  fetchData()
 }
 
 const handleCurrentChange = (val) => {
   currentPage.value = val
-  handleSearch()
+  fetchData()
 }
 
 // 导出数据
 const handleExport = () => {
-  ElMessage.success('导出成功')
+  ElMessageBox.confirm('确定要导出当前筛选条件下的数据吗?', '导出确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info'
+  }).then(() => {
+    ElMessage.success('数据导出成功')
+  }).catch(() => {})
 }
 
 // 刷新数据
@@ -278,66 +250,73 @@ const formatAmount = (amount) => {
 }
 
 // 格式化数字
-const formatNumber = (number) => {
-  return number.toLocaleString('zh-CN')
+const formatNumber = (num) => {
+  return num.toLocaleString('zh-CN')
+}
+
+// 获取成功率类型
+const getSuccessRateType = (rate) => {
+  if (rate >= 0.95) return 'success'
+  if (rate >= 0.9) return 'warning'
+  return 'danger'
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .statistics-platform-profit {
-  padding: 15px;
+  .search-card {
+    margin-bottom: 16px;
+  }
+
+  .search-form {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .table-card {
+    margin-bottom: 16px;
+  }
+  
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    
+    .table-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+
+  .table-operations {
+    display: flex;
+    gap: 10px;
+  }
+
+  .amount-cell {
+    font-family: monospace;
+    font-weight: 500;
+    
+    &.income {
+      color: #67c23a;
+    }
+    
+    &.outcome {
+      color: #f56c6c;
+    }
+  }
+
+  .pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
 }
 
-.search-card {
-  margin-bottom: 15px;
-}
-
-.search-form {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.table-card {
-  margin-bottom: 15px;
-}
-
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-:deep(.el-tag) {
-  margin-right: 5px;
-}
-
-/* 修复表格内部标签居中问题 */
-:deep(.el-table .cell) {
-  display: flex;
-  align-items: center;
-}
-
-:deep(.el-table .cell .el-tag) {
-  margin: 0 auto;
-}
-
-/* 统一按钮组样式 */
-:deep(.el-button-group) {
-  margin-right: 10px;
-}
-
-:deep(.el-button-group:last-child) {
-  margin-right: 0;
-}
-
-/* 统一表单项样式 */
 :deep(.el-form-item) {
   margin-bottom: 18px;
   margin-right: 18px;
@@ -345,5 +324,17 @@ const formatNumber = (number) => {
 
 :deep(.el-form-item:last-child) {
   margin-right: 0;
+}
+
+:deep(.el-date-editor.el-input__wrapper) {
+  --el-date-editor-width: auto;
+}
+
+:deep(.el-card__header) {
+  padding: 12px 20px;
+}
+
+:deep(.el-card__body) {
+  padding: 16px;
 }
 </style> 

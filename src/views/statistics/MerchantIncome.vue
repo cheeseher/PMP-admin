@@ -40,7 +40,7 @@
             />
           </el-form-item>
           <el-form-item>
-            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
             <el-button :icon="Refresh" @click="handleReset">重置</el-button>
           </el-form-item>
         </el-form>
@@ -50,16 +50,14 @@
     <!-- 数据表格 -->
     <el-card shadow="never" class="table-card">
       <div class="table-header">
-        <div class="left">
-          <el-button-group>
-            <el-button :icon="Refresh" @click="refreshData">刷新</el-button>
-          </el-button-group>
+        <div class="table-title">
+          <span>商户收款列表</span>
+          <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
         </div>
-        <div class="right">
-          <el-button-group>
-            <el-button icon="Printer">打印</el-button>
-            <el-button icon="Download" @click="handleExport">导出</el-button>
-          </el-button-group>
+        <div class="table-operations">
+          <el-button :icon="Printer">打印</el-button>
+          <el-button :icon="Download" @click="handleExport">导出</el-button>
+          <el-button :icon="Refresh" @click="refreshData" :loading="loading">刷新</el-button>
         </div>
       </div>
       
@@ -69,37 +67,40 @@
         style="width: 100%"
         :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
         v-loading="loading"
+        highlight-current-row
+        stripe
       >
-        <el-table-column prop="merchantId" label="商户ID" width="120" />
-        <el-table-column prop="merchantAccount" label="商户账户" width="150" />
-        <el-table-column prop="merchantName" label="商户名" width="150" />
-        <el-table-column prop="date" label="日期" width="120" />
-        <el-table-column prop="successAmount" label="成功收款金额" width="150">
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column prop="merchantId" label="商户ID" width="120" align="center" />
+        <el-table-column prop="merchantAccount" label="商户账户" width="150" align="center" />
+        <el-table-column prop="merchantName" label="商户名" min-width="150" show-overflow-tooltip align="center" />
+        <el-table-column prop="date" label="日期" width="120" align="center" />
+        <el-table-column prop="successAmount" label="成功收款金额" width="150" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.successAmount) }}
+            <span class="amount-cell income">{{ formatAmount(row.successAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="supplementAmount" label="补单金额" width="150">
+        <el-table-column prop="supplementAmount" label="补单金额" width="150" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.supplementAmount) }}
+            <span class="amount-cell income">{{ formatAmount(row.supplementAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="totalAmount" label="总收款" width="150">
+        <el-table-column prop="totalAmount" label="总收款" width="150" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.totalAmount) }}
+            <span class="amount-cell income">{{ formatAmount(row.totalAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="fee" label="手续费" width="150">
+        <el-table-column prop="fee" label="手续费" width="150" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.fee) }}
+            <span class="amount-cell outcome">{{ formatAmount(row.fee) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="afterTaxAmount" label="税后金额" width="150">
+        <el-table-column prop="afterTaxAmount" label="税后金额" width="150" align="right">
           <template #default="{ row }">
-            {{ formatAmount(row.afterTaxAmount) }}
+            <span class="amount-cell income">{{ formatAmount(row.afterTaxAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="successCount" label="成功单数" width="120">
+        <el-table-column prop="successCount" label="成功单数" width="120" align="center">
           <template #default="{ row }">
             <span>{{ formatNumber(row.successCount) }}笔</span>
           </template>
@@ -274,61 +275,61 @@ const getSuccessRateType = (rate) => {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .statistics-merchant-income {
-  padding: 15px;
+  .search-card {
+    margin-bottom: 16px;
+  }
+
+  .search-form {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .table-card {
+    margin-bottom: 16px;
+  }
+
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    
+    .table-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+  }
+  
+  .table-operations {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .amount-cell {
+    font-family: monospace;
+    font-weight: 500;
+    
+    &.income {
+      color: #67c23a;
+    }
+    
+    &.outcome {
+      color: #f56c6c;
+    }
+  }
+
+  .pagination-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
 }
 
-.search-card {
-  margin-bottom: 15px;
-}
-
-.search-form {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.table-card {
-  margin-bottom: 15px;
-}
-
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.pagination-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-:deep(.el-tag) {
-  margin-right: 5px;
-}
-
-/* 修复表格内部标签居中问题 */
-:deep(.el-table .cell) {
-  display: flex;
-  align-items: center;
-}
-
-:deep(.el-table .cell .el-tag) {
-  margin: 0 auto;
-}
-
-/* 统一按钮组样式 */
-:deep(.el-button-group) {
-  margin-right: 10px;
-}
-
-:deep(.el-button-group:last-child) {
-  margin-right: 0;
-}
-
-/* 统一表单项样式 */
 :deep(.el-form-item) {
   margin-bottom: 18px;
   margin-right: 18px;
@@ -336,5 +337,9 @@ const getSuccessRateType = (rate) => {
 
 :deep(.el-form-item:last-child) {
   margin-right: 0;
+}
+
+:deep(.el-date-editor.el-input__wrapper) {
+  --el-date-editor-width: auto;
 }
 </style> 

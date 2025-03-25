@@ -2,7 +2,7 @@
 <template>
   <div class="statistics-merchant-balance">
     <!-- 搜索表单 -->
-    <div class="search-container">
+    <el-card shadow="never" class="search-card">
       <el-form :model="searchForm" inline class="search-form">
         <el-form-item label="商户名称">
           <el-input 
@@ -52,71 +52,75 @@
           </el-button>
         </el-form-item>
       </el-form>
-    </div>
+    </el-card>
 
-    <!-- 表格操作区 -->
-    <div class="table-header">
-      <div class="table-title">
-        <span>商户余额列表</span>
-        <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
+    <!-- 表格区域 -->
+    <el-card shadow="never" class="table-card">
+      <!-- 表格操作区 -->
+      <div class="table-header">
+        <div class="table-title">
+          <span>商户余额列表</span>
+          <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
+        </div>
+        <div class="table-operations">
+          <el-button type="primary" :icon="Download" @click="handleExport">导出数据</el-button>
+          <el-button :icon="Refresh" @click="refreshData" :loading="loading">刷新</el-button>
+        </div>
       </div>
-      <div class="table-operations">
-        <el-button type="primary" :icon="Download" @click="handleExport">导出数据</el-button>
-        <el-button :icon="Refresh" @click="refreshData" :loading="loading">刷新</el-button>
+
+      <!-- 数据表格 -->
+      <el-table 
+        :data="tableData" 
+        border 
+        style="width: 100%" 
+        v-loading="loading"
+        highlight-current-row
+        stripe
+        table-layout="auto"
+        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
+      >
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column prop="merchantId" label="商户ID" width="120" align="center" />
+        <el-table-column prop="merchantAccount" label="商户账号" width="150" align="center" />
+        <el-table-column prop="merchantName" label="商户名称" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="date" label="日期" width="120" align="center" />
+        <el-table-column prop="availableAmount" label="可用余额" width="150" align="right">
+          <template #default="{ row }">
+            <span class="amount-cell">{{ formatAmount(row.availableAmount) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="frozenAmount" label="冻结余额" width="150" align="right">
+          <template #default="{ row }">
+            <span class="amount-cell">{{ formatAmount(row.frozenAmount) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="snapshotTime" label="备份时间" width="180" align="center" />
+        <el-table-column label="操作" width="180" fixed="right" align="center">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="viewDetail(row)">
+              <el-icon><View /></el-icon>查看明细
+            </el-button>
+            <el-button type="success" link @click="viewHistory(row)">
+              <el-icon><Clock /></el-icon>历史记录
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          background
+        />
       </div>
-    </div>
-
-    <!-- 数据表格 -->
-    <el-table 
-      :data="tableData" 
-      border 
-      style="width: 100%" 
-      v-loading="loading"
-      highlight-current-row
-      stripe
-      table-layout="auto"
-    >
-      <el-table-column type="selection" width="55" align="center" />
-      <el-table-column prop="merchantId" label="商户ID" width="120" align="center" />
-      <el-table-column prop="merchantAccount" label="商户账号" width="150" align="center" />
-      <el-table-column prop="merchantName" label="商户名称" min-width="150" show-overflow-tooltip />
-      <el-table-column prop="date" label="日期" width="120" align="center" />
-      <el-table-column prop="availableAmount" label="可用余额" width="150" align="right">
-        <template #default="{ row }">
-          <span class="amount-cell">{{ formatAmount(row.availableAmount) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="frozenAmount" label="冻结余额" width="150" align="right">
-        <template #default="{ row }">
-          <span class="amount-cell">{{ formatAmount(row.frozenAmount) }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="snapshotTime" label="备份时间" width="180" align="center" />
-      <el-table-column label="操作" width="180" fixed="right" align="center">
-        <template #default="{ row }">
-          <el-button type="primary" link @click="viewDetail(row)">
-            <el-icon><View /></el-icon>查看明细
-          </el-button>
-          <el-button type="success" link @click="viewHistory(row)">
-            <el-icon><Clock /></el-icon>历史记录
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <!-- 分页 -->
-    <div class="pagination-container">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        background
-      />
-    </div>
+    </el-card>
 
     <!-- 明细查看对话框 -->
     <el-dialog
@@ -425,20 +429,22 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .statistics-merchant-balance {
-  .search-container {
-    margin-bottom: 20px;
+  .search-card {
+    margin-bottom: 16px;
   }
 
   .search-form {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-
+    display: flex;
+    flex-wrap: wrap;
+    
     .separator {
       margin: 0 8px;
       color: #909399;
     }
+  }
+  
+  .table-card {
+    margin-bottom: 16px;
   }
   
   .table-header {
@@ -475,12 +481,9 @@ onMounted(() => {
   }
 
   .pagination-container {
-    text-align: right;
-    margin-top: 20px;
-    padding: 16px 20px;
-    background-color: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
   }
   
   .merchant-detail-chart {
@@ -503,5 +506,18 @@ onMounted(() => {
       color: #909399;
     }
   }
+}
+
+:deep(.el-form-item) {
+  margin-bottom: 18px;
+  margin-right: 18px;
+}
+
+:deep(.el-form-item:last-child) {
+  margin-right: 0;
+}
+
+:deep(.el-date-editor.el-input__wrapper) {
+  --el-date-editor-width: auto;
 }
 </style> 

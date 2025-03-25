@@ -1,89 +1,94 @@
 <!-- 数据统计/产品跑量统计 - 统计分析产品交易数据 -->
 <template>
-  <div class="statistics-product">
+  <div class="app-container">
     <!-- 搜索表单 -->
-    <el-card shadow="never" class="search-card">
-      <div class="search-form">
-        <el-form :model="searchForm" inline>
-          <el-form-item label="产品ID">
-            <el-input v-model="searchForm.productId" placeholder="请输入产品ID" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="产品名称">
-            <el-input v-model="searchForm.productName" placeholder="请输入产品名称" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="商户">
-            <el-select v-model="searchForm.merchant" placeholder="请选择" style="width: 168px" clearable>
-              <el-option label="请选择" value="" />
-              <el-option v-for="item in merchantOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="日期范围">
-            <el-date-picker
-              v-model="searchForm.dateRange"
-              type="daterange"
-              range-separator="~"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-              style="width: 360px"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-            <el-button :icon="Refresh" @click="handleReset">重置</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
+    <el-card class="filter-container" shadow="never">
+      <el-form :model="searchForm" inline label-width="80px" label-position="left" class="search-form">
+        <el-form-item label="产品ID">
+          <el-input v-model="searchForm.productId" placeholder="请输入产品ID" style="width: 168px" clearable />
+        </el-form-item>
+        <el-form-item label="产品名称">
+          <el-input v-model="searchForm.productName" placeholder="请输入产品名称" style="width: 168px" clearable />
+        </el-form-item>
+        <el-form-item label="商户">
+          <el-select v-model="searchForm.merchant" placeholder="请选择商户" style="width: 168px" clearable>
+            <el-option v-for="item in merchantOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="日期范围">
+          <el-date-picker
+            v-model="searchForm.dateRange"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
+            style="width: 360px"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>查询
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><Refresh /></el-icon>重置
+          </el-button>
+        </el-form-item>
+      </el-form>
     </el-card>
 
     <!-- 数据表格 -->
-    <el-card shadow="never" class="table-card">
-      <div class="table-header">
-        <div class="left">
-          <el-button-group>
-            <el-button :icon="Refresh" @click="refreshData">刷新</el-button>
-          </el-button-group>
+    <el-card shadow="never" class="table-container">
+      <template #header>
+        <div class="table-header">
+          <div class="left">
+            <el-button @click="refreshData" class="refresh-btn">
+              <el-icon><Refresh /></el-icon>刷新数据
+            </el-button>
+          </div>
+          <div class="right">
+            <el-button icon="Printer" plain>打印</el-button>
+            <el-button type="primary" @click="handleExport">
+              <el-icon><Download /></el-icon>导出
+            </el-button>
+          </div>
         </div>
-        <div class="right">
-          <el-button-group>
-            <el-button icon="Printer">打印</el-button>
-            <el-button icon="Download" @click="handleExport">导出</el-button>
-          </el-button-group>
-        </div>
-      </div>
+      </template>
       
       <el-table
         :data="tableData"
         border
+        v-loading="loading"
+        stripe
+        highlight-current-row
         style="width: 100%"
         :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
-        v-loading="loading"
       >
-        <el-table-column type="selection" width="55" />
-        <el-table-column prop="productId" label="产品ID" width="80" />
-        <el-table-column prop="productName" label="产品名称" width="150" />
-        <el-table-column prop="successAmount" label="收款金额" width="150">
+        <el-table-column type="selection" width="50" align="center" />
+        <el-table-column prop="productId" label="产品ID" width="90" align="center" />
+        <el-table-column prop="productName" label="产品名称" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="successAmount" label="收款金额" width="150" align="right">
           <template #default="{ row }">
             {{ formatAmount(row.successAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="feeAmount" label="手续费" width="150">
+        <el-table-column prop="feeAmount" label="手续费" width="150" align="right">
           <template #default="{ row }">
             {{ formatAmount(row.feeAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="netAmount" label="入账金额" width="150">
+        <el-table-column prop="netAmount" label="入账金额" width="150" align="right">
           <template #default="{ row }">
             {{ formatAmount(row.netAmount) }}
           </template>
         </el-table-column>
-        <el-table-column prop="orderCount" label="成功单数/总笔数" width="150">
+        <el-table-column prop="orderCount" label="成功单数/总笔数" width="150" align="center">
           <template #default="{ row }">
             <span>{{ formatNumber(row.successCount) }}/{{ formatNumber(row.orderCount) }}笔</span>
           </template>
         </el-table-column>
-        <el-table-column prop="successRate" label="成功率" width="120">
+        <el-table-column prop="successRate" label="成功率" width="100" align="center">
           <template #default="{ row }">
             <el-tag 
               :type="getSuccessRateType(row.successRate)"
@@ -100,7 +105,7 @@
         <el-pagination
           v-model:current-page="currentPage"
           v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 30, 50]"
+          :page-sizes="[10, 20, 50, 100]"
           :total="total"
           layout="total, sizes, prev, pager, next, jumper"
           background
@@ -113,9 +118,9 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 商户选项
 const merchantOptions = [
@@ -212,14 +217,29 @@ const pageSize = ref(10)
 const total = ref(100)
 const loading = ref(false)
 
+// 初始化页面
+onMounted(() => {
+  fetchData()
+})
+
+// 获取数据
+const fetchData = () => {
+  loading.value = true
+  // 这里是模拟请求
+  setTimeout(() => {
+    loading.value = false
+  }, 500)
+}
+
 // 搜索方法
 const handleSearch = () => {
+  currentPage.value = 1
   loading.value = true
   // TODO: 调用接口获取数据
   setTimeout(() => {
     loading.value = false
     ElMessage.success('查询成功')
-  }, 1000)
+  }, 500)
 }
 
 // 重置方法
@@ -234,17 +254,23 @@ const handleReset = () => {
 // 分页方法
 const handleSizeChange = (val) => {
   pageSize.value = val
-  handleSearch()
+  fetchData()
 }
 
 const handleCurrentChange = (val) => {
   currentPage.value = val
-  handleSearch()
+  fetchData()
 }
 
 // 导出数据
 const handleExport = () => {
-  ElMessage.success('导出成功')
+  ElMessageBox.confirm('确定要导出当前筛选条件下的数据吗?', '导出确认', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info'
+  }).then(() => {
+    ElMessage.success('数据导出成功')
+  }).catch(() => {})
 }
 
 // 刷新数据
@@ -279,67 +305,59 @@ const getSuccessRateType = (rate) => {
 }
 </script>
 
-<style scoped>
-.statistics-product {
-  padding: 15px;
+<style scoped lang="scss">
+.app-container {
+  padding: 16px;
 }
 
-.search-card {
-  margin-bottom: 15px;
+.filter-container {
+  margin-bottom: 16px;
+  
+  .search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 0;
+  }
 }
 
-.search-form {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.table-card {
-  margin-bottom: 15px;
-}
-
-.table-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
+.table-container {
+  margin-bottom: 16px;
+  
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .refresh-btn {
+      margin-right: 10px;
+    }
+  }
 }
 
 .pagination-container {
-  margin-top: 20px;
   display: flex;
   justify-content: center;
+  margin-top: 20px;
 }
 
-:deep(.el-tag) {
-  margin-right: 5px;
+:deep(.el-table) {
+  border-radius: 4px;
+  
+  &::before {
+    height: 0;
+  }
 }
 
-/* 修复表格内部标签居中问题 */
 :deep(.el-table .cell) {
-  display: flex;
-  align-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
-:deep(.el-table .cell .el-tag) {
-  margin: 0 auto;
+:deep(.el-card__header) {
+  padding: 12px 20px;
 }
 
-/* 统一按钮组样式 */
-:deep(.el-button-group) {
-  margin-right: 10px;
-}
-
-:deep(.el-button-group:last-child) {
-  margin-right: 0;
-}
-
-/* 统一表单项样式 */
-:deep(.el-form-item) {
-  margin-bottom: 18px;
-  margin-right: 18px;
-}
-
-:deep(.el-form-item:last-child) {
-  margin-right: 0;
+:deep(.el-card__body) {
+  padding: 16px;
 }
 </style> 

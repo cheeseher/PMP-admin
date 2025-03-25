@@ -52,22 +52,22 @@
         style="width: 100%"
         v-loading="loading"
       >
-        <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="username" label="管理员账号" width="120" />
-        <el-table-column prop="realName" label="姓名" width="100" />
-        <el-table-column prop="roleName" label="角色" width="100" />
-        <el-table-column prop="mobile" label="手机号" width="120" />
-        <el-table-column prop="lastLoginTime" label="最后登录时间" width="160" />
-        <el-table-column prop="lastLoginIp" label="最后登录IP" width="120" />
-        <el-table-column prop="status" label="状态" width="80" align="center">
+        <el-table-column prop="id" label="ID" min-width="60" />
+        <el-table-column prop="username" label="管理员账号" min-width="120" />
+        <el-table-column prop="realName" label="姓名" min-width="100" />
+        <el-table-column prop="roleName" label="角色" min-width="100" />
+        <el-table-column prop="mobile" label="手机号" min-width="120" />
+        <el-table-column prop="lastLoginTime" label="最后登录时间" min-width="160" />
+        <el-table-column prop="lastLoginIp" label="最后登录IP" min-width="120" />
+        <el-table-column prop="status" label="状态" min-width="80" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 'enabled' ? 'success' : 'danger'" size="small">
               {{ scope.row.status === 'enabled' ? '启用' : '禁用' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="创建时间" width="160" />
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column prop="createTime" label="创建时间" min-width="160" />
+        <el-table-column label="操作" min-width="200" fixed="right">
           <template #default="scope">
             <el-button type="primary" link size="small" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button 

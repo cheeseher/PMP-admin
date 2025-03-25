@@ -5,28 +5,41 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="产品ID：">
-            <el-input v-model="searchForm.productId" placeholder="请输入产品ID" style="width: 168px" clearable />
-          </el-form-item>
           <el-form-item label="产品名称：">
             <el-input v-model="searchForm.productName" placeholder="请输入产品名称" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="商户：">
-            <el-select v-model="searchForm.merchant" placeholder="请选择商户" style="width: 168px" clearable>
-              <el-option v-for="item in merchantOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="日期范围：">
-            <el-date-picker
-              v-model="searchForm.dateRange"
-              type="daterange"
-              range-separator="~"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-              style="width: 360px"
-            />
+          <el-form-item label="时间筛选：">
+            <div class="time-filter-container">
+              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
+                <el-option label="自定义时间" value="custom" />
+                <el-option label="今日" value="today" />
+                <el-option label="昨日" value="yesterday" />
+                <el-option label="最近7天" value="last7days" />
+              </el-select>
+              <el-date-picker
+                v-if="searchForm.timeType === 'custom'"
+                v-model="searchForm.dateRange"
+                type="daterange"
+                range-separator="~"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                style="width: 240px; margin-left: 8px;"
+              />
+              <span class="merchant-label">商户：</span>
+              <el-select 
+                v-model="searchForm.merchantIds" 
+                placeholder="请选择商户" 
+                style="width: 168px;"
+                clearable 
+                multiple 
+                collapse-tags 
+                collapse-tags-tooltip
+              >
+                <el-option v-for="item in merchantOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </div>
           </el-form-item>
         </div>
         <div class="filter-buttons">
@@ -63,6 +76,7 @@
         <el-table-column type="selection" width="50" align="center" />
         <el-table-column prop="productId" label="产品ID" width="90" align="center" />
         <el-table-column prop="productName" label="产品名称" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="merchantName" label="商户名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="successAmount" label="收款金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell income">{{ formatAmount(row.successAmount) }}</span>
@@ -112,9 +126,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import dayjs from 'dayjs'
 
 // 商户选项
 const merchantOptions = [
@@ -123,12 +138,50 @@ const merchantOptions = [
   { label: '新商户', value: '3' }
 ]
 
+// 根据时间类型获取日期范围
+const getDateRangeByType = (type) => {
+  const today = dayjs()
+  
+  switch (type) {
+    case 'today':
+      return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    case 'yesterday':
+      const yesterday = today.subtract(1, 'day')
+      return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]
+    case 'thisWeek':
+      return [today.startOf('week').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    case 'lastWeek':
+      const lastWeekStart = today.subtract(1, 'week').startOf('week')
+      const lastWeekEnd = lastWeekStart.endOf('week')
+      return [lastWeekStart.format('YYYY-MM-DD'), lastWeekEnd.format('YYYY-MM-DD')]
+    case 'thisMonth':
+      return [today.startOf('month').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    case 'lastMonth':
+      const lastMonthStart = today.subtract(1, 'month').startOf('month')
+      const lastMonthEnd = lastMonthStart.endOf('month')
+      return [lastMonthStart.format('YYYY-MM-DD'), lastMonthEnd.format('YYYY-MM-DD')]
+    case 'last7days':
+      return [today.subtract(6, 'day').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    case 'last30days':
+      return [today.subtract(29, 'day').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    default:
+      return []
+  }
+}
+
 // 搜索表单数据
 const searchForm = reactive({
-  productId: '',
   productName: '',
-  merchant: '',
-  dateRange: []
+  merchantIds: [],
+  timeType: 'today',  // 默认为今日
+  dateRange: getDateRangeByType('today') // 初始化为今日
+})
+
+// 监听时间类型变化，自动设置日期范围
+watch(() => searchForm.timeType, (newType) => {
+  if (newType !== 'custom') {
+    searchForm.dateRange = getDateRangeByType(newType)
+  }
 })
 
 // 表格数据
@@ -222,6 +275,16 @@ const fetchData = () => {
   // 这里是模拟请求
   setTimeout(() => {
     loading.value = false
+    
+    // 在实际项目中，这里应该发送请求获取数据
+    console.log('查询参数：', {
+      ...searchForm,
+      pageSize: pageSize.value,
+      pageNum: currentPage.value,
+      startDate: searchForm.dateRange && searchForm.dateRange[0],
+      endDate: searchForm.dateRange && searchForm.dateRange[1]
+    })
+    
   }, 500)
 }
 
@@ -238,10 +301,10 @@ const handleSearch = () => {
 
 // 重置方法
 const handleReset = () => {
-  searchForm.productId = ''
   searchForm.productName = ''
-  searchForm.merchant = ''
-  searchForm.dateRange = []
+  searchForm.merchantIds = []
+  searchForm.timeType = 'today'
+  searchForm.dateRange = getDateRangeByType('today')
   handleSearch()
 }
 
@@ -372,5 +435,16 @@ const getSuccessRateType = (rate) => {
 
 .amount-cell.outcome {
   color: #f56c6c;
+}
+
+.time-filter-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.merchant-label {
+  margin: 0 8px 0 16px;
+  color: var(--el-text-color-regular);
 }
 </style> 

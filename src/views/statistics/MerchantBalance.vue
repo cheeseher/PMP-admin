@@ -34,15 +34,26 @@
               controls-position="right"
             />
           </el-form-item>
-          <el-form-item label="快照时间：">
-            <el-date-picker
-              v-model="searchForm.snapshotTime"
-              type="datetime"
-              placeholder="请选择快照时间"
-              value-format="YYYY-MM-DD HH:mm:ss"
-              style="width: 240px"
-              :shortcuts="dateShortcuts"
-            />
+        </div>
+        <div class="filter-row">
+          <el-form-item label="时间筛选：">
+            <div class="time-filter-container">
+              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
+                <el-option label="自定义时间" value="custom" />
+                <el-option label="今日" value="today" />
+                <el-option label="昨日" value="yesterday" />
+                <el-option label="最近7天" value="last7days" />
+              </el-select>
+              <el-date-picker
+                v-if="searchForm.timeType === 'custom'"
+                v-model="searchForm.snapshotTime"
+                type="datetime"
+                placeholder="请选择快照时间"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                style="width: 240px; margin-left: 8px;"
+                :shortcuts="dateShortcuts"
+              />
+            </div>
           </el-form-item>
         </div>
         <div class="filter-buttons">
@@ -152,7 +163,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { 
   ArrowUp, 
   ArrowDown, 
@@ -167,13 +178,38 @@ import {
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatAmount } from '@/utils/formatUtils'
 import { merchantBalanceData } from '@/data/statisticsData'
+import dayjs from 'dayjs'
+
+// 根据时间类型获取日期范围
+const getDateTimeByType = (type) => {
+  const today = dayjs()
+  
+  switch (type) {
+    case 'today':
+      return today.format('YYYY-MM-DD HH:mm:ss')
+    case 'yesterday':
+      return today.subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')
+    case 'last7days':
+      return today.subtract(6, 'day').format('YYYY-MM-DD HH:mm:ss')
+    default:
+      return ''
+  }
+}
 
 // 搜索表单数据
 const searchForm = reactive({
   merchantName: '',
   minBalance: null,
   maxBalance: null,
-  snapshotTime: ''
+  timeType: 'today',
+  snapshotTime: getDateTimeByType('today')
+})
+
+// 监听时间类型变化，自动设置日期
+watch(() => searchForm.timeType, (newType) => {
+  if (newType !== 'custom') {
+    searchForm.snapshotTime = getDateTimeByType(newType)
+  }
 })
 
 // 日期快捷选项
@@ -275,9 +311,9 @@ const handleReset = () => {
   searchForm.merchantName = ''
   searchForm.minBalance = null
   searchForm.maxBalance = null
-  searchForm.snapshotTime = ''
-  initTableData()
-  ElMessage.info('已重置搜索条件')
+  searchForm.timeType = 'today'
+  searchForm.snapshotTime = getDateTimeByType('today')
+  handleSearch()
 }
 
 // 分页方法

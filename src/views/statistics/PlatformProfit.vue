@@ -5,17 +5,26 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="日期范围：">
-            <el-date-picker
-              v-model="searchForm.dateRange"
-              type="daterange"
-              range-separator="~"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-              style="width: 360px"
-            />
+          <el-form-item label="时间筛选：">
+            <div class="time-filter-container">
+              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
+                <el-option label="自定义时间" value="custom" />
+                <el-option label="今日" value="today" />
+                <el-option label="昨日" value="yesterday" />
+                <el-option label="最近7天" value="last7days" />
+              </el-select>
+              <el-date-picker
+                v-if="searchForm.timeType === 'custom'"
+                v-model="searchForm.dateRange"
+                type="daterange"
+                range-separator="~"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                style="width: 240px; margin-left: 8px;"
+              />
+            </div>
           </el-form-item>
         </div>
         <div class="filter-buttons">
@@ -105,13 +114,39 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import dayjs from 'dayjs'
+
+// 根据时间类型获取日期范围
+const getDateRangeByType = (type) => {
+  const today = dayjs()
+  
+  switch (type) {
+    case 'today':
+      return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    case 'yesterday':
+      const yesterday = today.subtract(1, 'day')
+      return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]
+    case 'last7days':
+      return [today.subtract(6, 'day').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    default:
+      return []
+  }
+}
 
 // 搜索表单数据
 const searchForm = reactive({
-  dateRange: []
+  timeType: 'today',
+  dateRange: getDateRangeByType('today')
+})
+
+// 监听时间类型变化，自动设置日期范围
+watch(() => searchForm.timeType, (newType) => {
+  if (newType !== 'custom') {
+    searchForm.dateRange = getDateRangeByType(newType)
+  }
 })
 
 // 表格数据
@@ -200,7 +235,8 @@ const handleSearch = () => {
 
 // 重置方法
 const handleReset = () => {
-  searchForm.dateRange = []
+  searchForm.timeType = 'today'
+  searchForm.dateRange = getDateRangeByType('today')
   handleSearch()
 }
 
@@ -331,5 +367,11 @@ const getSuccessRateType = (rate) => {
 
 .amount-cell.outcome {
   color: #f56c6c;
+}
+
+.time-filter-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 </style> 

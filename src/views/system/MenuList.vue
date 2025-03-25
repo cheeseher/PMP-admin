@@ -26,15 +26,15 @@
         style="width: 100%"
         v-loading="loading"
       >
-        <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="menuName" label="菜单名称" width="150" />
-        <el-table-column prop="icon" label="图标" width="100">
+        <el-table-column prop="id" label="ID" min-width="60" />
+        <el-table-column prop="menuName" label="菜单名称" min-width="150" />
+        <el-table-column prop="icon" label="图标" min-width="100">
           <template #default="scope">
             <el-icon v-if="scope.row.icon"><component :is="scope.row.icon" /></el-icon>
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="type" label="类型" width="100">
+        <el-table-column prop="type" label="类型" min-width="100">
           <template #default="scope">
             <el-tag v-if="scope.row.type === 'directory'" type="primary" size="small">目录</el-tag>
             <el-tag v-else-if="scope.row.type === 'menu'" type="success" size="small">菜单</el-tag>
@@ -42,25 +42,25 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="path" label="路由路径" width="150" />
-        <el-table-column prop="component" label="组件路径" width="200" show-overflow-tooltip />
-        <el-table-column prop="permission" label="权限标识" width="150" show-overflow-tooltip />
-        <el-table-column prop="sort" label="排序" width="80" align="center" />
-        <el-table-column prop="visible" label="显示状态" width="100" align="center">
+        <el-table-column prop="path" label="路由路径" min-width="150" />
+        <el-table-column prop="component" label="组件路径" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="permission" label="权限标识" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="sort" label="排序" min-width="80" align="center" />
+        <el-table-column prop="visible" label="显示状态" min-width="100" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.visible ? 'success' : 'info'" size="small">
               {{ scope.row.visible ? '显示' : '隐藏' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="80" align="center">
+        <el-table-column prop="status" label="状态" min-width="80" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 'enabled' ? 'success' : 'danger'" size="small">
               {{ scope.row.status === 'enabled' ? '启用' : '禁用' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" min-width="200" fixed="right">
           <template #default="scope">
             <el-button type="primary" link size="small" @click="handleAdd(scope.row)">添加子菜单</el-button>
             <el-button type="primary" link size="small" @click="handleEdit(scope.row)">编辑</el-button>

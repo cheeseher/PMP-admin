@@ -5,8 +5,8 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="ID：">
-            <el-input v-model="searchForm.id" placeholder="请输入ID" style="width: 168px" clearable />
+          <el-form-item label="供应商通道ID：">
+            <el-input v-model="searchForm.id" placeholder="请输入供应商通道ID" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="通道名称：">
             <el-input v-model="searchForm.channelName" placeholder="请输入通道名称" style="width: 220px" clearable />
@@ -28,9 +28,9 @@
       <!-- 表格工具栏 -->
       <div class="table-toolbar">
         <div class="left">
-          <el-button type="primary" :icon="Plus" @click="handleAdd">批量添加</el-button>
-          <el-button type="success" :icon="Check" :disabled="selectedRows.length === 0" @click="handleBatchEnable">批量启用</el-button>
-          <el-button type="danger" :icon="Close" :disabled="selectedRows.length === 0" @click="handleBatchDisable">批量禁用</el-button>
+          <el-button type="primary" :icon="Plus" @click="handleAdd">新建</el-button>
+          <el-button type="warning" :icon="SetUp" :disabled="selectedRows.length === 0" @click="handleBatchSetCategory">批量设置分组</el-button>
+          <el-button type="danger" :icon="Delete" :disabled="selectedRows.length === 0" @click="handleBatchDelete">批量删除</el-button>
         </div>
         <div class="right">
           <el-tooltip content="刷新数据">
@@ -48,7 +48,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="ID" prop="id" width="60" align="center" />
+        <el-table-column label="供应商通道ID" prop="id" width="120" align="center" />
         <el-table-column label="通道名称" prop="channelName" min-width="120" />
         <el-table-column label="通道编码" prop="channelCode" width="100" align="center" />
         <el-table-column label="通道费率" width="90" align="right">
@@ -60,22 +60,21 @@
         <el-table-column label="上游通道编码" prop="supplierCode" width="120" align="center" />
         <el-table-column label="支付类型" prop="payType" width="100" align="center" />
         <el-table-column label="分组" prop="category" width="100" align="center" />
-        <el-table-column label="是否启用" width="80" align="center">
+        <el-table-column label="状态" width="80" align="center">
           <template #default="scope">
-            <el-tag
-              :type="scope.row.enabled ? 'success' : 'danger'"
-              size="small"
-            >
-              {{ scope.row.enabled ? '启用' : '禁用' }}
-            </el-tag>
+            <el-switch
+              v-model="scope.row.enabled"
+              @change="(val) => handleStatusChange(scope.row, val)"
+            />
           </template>
         </el-table-column>
+        <el-table-column label="备注" prop="remark" min-width="120" show-overflow-tooltip />
         <el-table-column label="操作" width="150" fixed="right" align="center">
           <template #default="scope">
             <el-button
               type="primary"
               link
-              size="small"
+              :icon="EditPen"
               @click="handleEdit(scope.row)"
             >
               编辑
@@ -83,10 +82,10 @@
             <el-button
               type="primary"
               link
-              size="small"
-              @click="handleToggleStatus(scope.row)"
+              :icon="DocumentCopy"
+              @click="handlePullOrder(scope.row)"
             >
-              {{ scope.row.enabled ? '禁用' : '启用' }}
+              拉单
             </el-button>
           </template>
         </el-table-column>
@@ -128,13 +127,16 @@
           <el-input v-model="channelForm.channelCode" placeholder="请输入通道编码" />
         </el-form-item>
         <el-form-item label="通道费率" prop="rate">
-          <el-input-number 
-            v-model="channelForm.rate" 
-            :precision="2" 
-            :step="0.1" 
-            :min="0"
-            style="width: 100%"
-          />
+          <div class="rate-input-group">
+            <el-input-number 
+              v-model="channelForm.rate" 
+              :precision="2" 
+              :step="0.1" 
+              :min="0"
+              style="width: calc(100% - 30px)"
+            />
+            <div class="rate-addon">%</div>
+          </div>
         </el-form-item>
         <el-form-item label="上游通道名称" prop="supplier">
           <el-select v-model="channelForm.supplier" placeholder="请选择上游通道" clearable style="width: 100%">
@@ -159,21 +161,35 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="分组" prop="category">
-          <el-select v-model="channelForm.category" placeholder="请选择分组" clearable style="width: 100%">
-            <el-option
-              v-for="item in categoryOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+        <el-form-item label="单笔最小金额" prop="minAmount">
+          <el-input-number 
+            v-model="channelForm.minAmount" 
+            :precision="2" 
+            :step="100" 
+            :min="0"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="单笔最大金额" prop="maxAmount">
+          <el-input-number 
+            v-model="channelForm.maxAmount" 
+            :precision="2" 
+            :step="1000" 
+            :min="0"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input 
+            v-model="channelForm.remark" 
+            type="textarea" 
+            :rows="3" 
+            placeholder="请输入备注信息"
+          />
         </el-form-item>
         <el-form-item label="状态" prop="enabled">
           <el-switch
             v-model="channelForm.enabled"
-            active-text="启用"
-            inactive-text="禁用"
           />
         </el-form-item>
       </el-form>
@@ -184,12 +200,73 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 批量设置分组对话框 -->
+    <el-dialog
+      title="批量设置分组"
+      v-model="batchCategoryDialogVisible"
+      width="450px"
+      destroy-on-close
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="batchCategoryFormRef"
+        :model="batchCategoryForm"
+        label-width="120px"
+      >
+        <el-form-item label="自定义分组" prop="category">
+          <el-input 
+            v-model="batchCategoryForm.category" 
+            placeholder="请输入自定义分组名称"
+            clearable
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="batchCategoryDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleSubmitBatchCategory">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 拉单测试对话框 -->
+    <el-dialog
+      title="拉单测试"
+      v-model="pullOrderDialogVisible"
+      width="450px"
+      destroy-on-close
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="pullOrderFormRef"
+        :model="pullOrderForm"
+        :rules="pullOrderRules"
+        label-width="120px"
+      >
+        <el-form-item label="下单金额" prop="amount">
+          <el-input-number 
+            v-model="pullOrderForm.amount" 
+            :precision="2" 
+            :step="100" 
+            :min="0"
+            style="width: 100%"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="pullOrderDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleSubmitPullOrder">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from 'vue'
-import { Search, Refresh, Plus, Check, Close } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, Check, Close, EditPen, DocumentCopy, SetUp, Delete } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { channelList, payTypeOptions, categoryOptions } from '@/data/channelData'
 import { supplierList } from '@/data/supplierData'
@@ -224,8 +301,29 @@ const channelForm = reactive({
   supplierCode: '',
   payType: '',
   category: '',
+  minAmount: 0.00,
+  maxAmount: 50000.00,
+  remark: '',
   enabled: true
 })
+
+// 批量设置分组相关
+const batchCategoryDialogVisible = ref(false)
+const batchCategoryFormRef = ref(null)
+const batchCategoryForm = reactive({
+  category: ''
+})
+
+// 拉单测试相关
+const pullOrderDialogVisible = ref(false)
+const pullOrderFormRef = ref(null)
+const currentChannel = ref(null)
+const pullOrderForm = reactive({
+  amount: 100.00
+})
+const pullOrderRules = {
+  amount: [{ required: true, message: '请输入下单金额', trigger: 'blur' }]
+}
 
 // 表单验证规则
 const rules = {
@@ -234,7 +332,8 @@ const rules = {
   rate: [{ required: true, message: '请输入通道费率', trigger: 'blur' }],
   supplier: [{ required: true, message: '请选择上游通道名称', trigger: 'change' }],
   payType: [{ required: true, message: '请选择支付类型', trigger: 'change' }],
-  category: [{ required: true, message: '请选择分组', trigger: 'change' }]
+  minAmount: [{ required: true, message: '请输入单笔最小金额', trigger: 'blur' }],
+  maxAmount: [{ required: true, message: '请输入单笔最大金额', trigger: 'blur' }]
 }
 
 // 上游选项
@@ -321,10 +420,9 @@ const handleEdit = (row) => {
   dialogVisible.value = true
 }
 
-// 切换状态
-const handleToggleStatus = (row) => {
-  const newStatus = !row.enabled
-  const action = newStatus ? '启用' : '禁用'
+// 状态切换处理
+const handleStatusChange = (row, newValue) => {
+  const action = newValue ? '启用' : '禁用'
   
   ElMessageBox.confirm(
     `确认${action}通道 "${row.channelName}"?`,
@@ -336,23 +434,68 @@ const handleToggleStatus = (row) => {
     }
   ).then(() => {
     // 模拟API调用
-    row.enabled = newStatus
     ElMessage.success(`${action}成功`)
   }).catch(() => {
+    // 取消操作，恢复原状态
+    row.enabled = !newValue
     ElMessage.info('已取消操作')
   })
 }
 
-// 批量启用
-const handleBatchEnable = () => {
+// 拉单处理
+const handlePullOrder = (row) => {
+  currentChannel.value = row
+  pullOrderForm.amount = row.minAmount > 0 ? row.minAmount : 100.00
+  pullOrderDialogVisible.value = true
+}
+
+// 提交拉单测试
+const handleSubmitPullOrder = () => {
+  pullOrderFormRef.value.validate((valid) => {
+    if (valid) {
+      const channelName = currentChannel.value.channelName
+      const amount = pullOrderForm.amount
+      
+      ElMessageBox.confirm(
+        `确认通过通道 "${channelName}" 拉取金额为 ${amount.toFixed(2)} 元的订单?`,
+        '拉单确认',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+        }
+      ).then(() => {
+        // 模拟API调用
+        ElMessage.success(`已开始拉单，请稍后查看结果`)
+        pullOrderDialogVisible.value = false
+      }).catch(() => {
+        ElMessage.info('已取消操作')
+      })
+    }
+  })
+}
+
+// 批量设置分组
+const handleBatchSetCategory = () => {
   if (selectedRows.value.length === 0) {
     ElMessage.warning('请至少选择一条记录')
     return
   }
   
+  batchCategoryForm.category = ''
+  batchCategoryDialogVisible.value = true
+}
+
+// 提交批量设置分组
+const handleSubmitBatchCategory = () => {
+  if (!batchCategoryForm.category) {
+    ElMessage.warning('请输入自定义分组名称')
+    return
+  }
+  
   ElMessageBox.confirm(
-    `确认批量启用已选中的 ${selectedRows.value.length} 条记录?`,
-    '批量启用',
+    `确认将选中的 ${selectedRows.value.length} 条记录的分组设置为 "${batchCategoryForm.category}"?`,
+    '批量设置分组',
     {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
@@ -363,39 +506,37 @@ const handleBatchEnable = () => {
     const ids = selectedRows.value.map(item => item.id)
     tableData.value.forEach(item => {
       if (ids.includes(item.id)) {
-        item.enabled = true
+        item.category = batchCategoryForm.category
       }
     })
-    ElMessage.success(`批量启用成功`)
+    ElMessage.success(`批量设置分组成功`)
+    batchCategoryDialogVisible.value = false
   }).catch(() => {
     ElMessage.info('已取消操作')
   })
 }
 
-// 批量禁用
-const handleBatchDisable = () => {
+// 批量删除
+const handleBatchDelete = () => {
   if (selectedRows.value.length === 0) {
     ElMessage.warning('请至少选择一条记录')
     return
   }
   
   ElMessageBox.confirm(
-    `确认批量禁用已选中的 ${selectedRows.value.length} 条记录?`,
-    '批量禁用',
+    `确认删除已选中的 ${selectedRows.value.length} 条记录? 此操作不可恢复!`,
+    '批量删除',
     {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
+      type: 'danger',
     }
   ).then(() => {
     // 模拟API调用
     const ids = selectedRows.value.map(item => item.id)
-    tableData.value.forEach(item => {
-      if (ids.includes(item.id)) {
-        item.enabled = false
-      }
-    })
-    ElMessage.success(`批量禁用成功`)
+    tableData.value = tableData.value.filter(item => !ids.includes(item.id))
+    total.value = tableData.value.length
+    ElMessage.success(`批量删除成功`)
   }).catch(() => {
     ElMessage.info('已取消操作')
   })
@@ -417,6 +558,9 @@ const resetForm = () => {
     supplierCode: '',
     payType: '',
     category: '',
+    minAmount: 0.00,
+    maxAmount: 50000.00,
+    remark: '',
     enabled: true
   })
 }
@@ -459,6 +603,11 @@ const handleSizeChange = (size) => {
 const handleCurrentChange = (page) => {
   currentPage.value = page
   fetchData()
+}
+
+// 表格选择变化处理
+const handleSelectionChange = (selection) => {
+  selectedRows.value = selection
 }
 
 // 页面加载时获取数据
@@ -541,7 +690,15 @@ onMounted(() => {
   text-align: left;
 }
 
-:deep(.el-switch__label) {
-  font-weight: 400;
+.rate-input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.rate-addon {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #606266;
 }
 </style> 

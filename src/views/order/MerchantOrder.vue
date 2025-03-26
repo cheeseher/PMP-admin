@@ -123,18 +123,67 @@
       </el-form>
     </el-card>
 
-    <!-- 统计信息区域 -->
-    <div class="stat-tags">
-      <el-tag type="success" effect="plain">总跑量：{{ formatAmount(0) }}</el-tag>
-      <el-tag type="success" effect="plain">总成功单数：0</el-tag>
-      <el-tag type="success" effect="plain">总折扣金额：{{ formatAmount(0) }}</el-tag>
-      <el-tag type="success" effect="plain">总利润：{{ formatAmount(0) }}</el-tag>
-      <el-tag type="success" effect="plain">成功率：0.00%</el-tag>
-      <el-tag type="success" effect="plain">成功金额：{{ formatAmount(0) }}</el-tag>
-      <el-tag type="success" effect="plain">成功单数：0</el-tag>
-      <el-tag type="success" effect="plain">补单单数：0</el-tag>
-      <el-tag type="success" effect="plain">商户折扣：{{ formatAmount(0) }}</el-tag>
-      <el-tag type="success" effect="plain">上游通道成本：{{ formatAmount(0) }}</el-tag>
+    <!-- 统计信息区域 - 卡片样式 -->
+    <div class="horizontal-stat-cards">
+      <!-- 总跑量 -->
+      <div class="mini-stat-card">
+        <div class="stat-header">总跑量</div>
+        <div class="stat-value">{{ formatAmount(0) }}</div>
+      </div>
+
+      <!-- 总成功单数 -->
+      <div class="mini-stat-card">
+        <div class="stat-header">总成功单数</div>
+        <div class="stat-value">0</div>
+      </div>
+
+      <!-- 总折扣金额 -->
+      <div class="mini-stat-card">
+        <div class="stat-header">总折扣金额</div>
+        <div class="stat-value">{{ formatAmount(0) }}</div>
+      </div>
+
+      <!-- 总利润 -->
+      <div class="mini-stat-card">
+        <div class="stat-header">总利润</div>
+        <div class="stat-value">{{ formatAmount(0) }}</div>
+      </div>
+
+      <!-- 成功率 -->
+      <div class="mini-stat-card">
+        <div class="stat-header">成功率</div>
+        <div class="stat-value">0.00%</div>
+      </div>
+
+      <!-- 成功金额 -->
+      <div class="mini-stat-card">
+        <div class="stat-header">成功金额</div>
+        <div class="stat-value">{{ formatAmount(0) }}</div>
+      </div>
+
+      <!-- 成功单数 -->
+      <div class="mini-stat-card">
+        <div class="stat-header">成功单数</div>
+        <div class="stat-value">0</div>
+      </div>
+
+      <!-- 补单单数 -->
+      <div class="mini-stat-card">
+        <div class="stat-header">补单单数</div>
+        <div class="stat-value">0</div>
+      </div>
+
+      <!-- 商户折扣 -->
+      <div class="mini-stat-card">
+        <div class="stat-header">商户折扣</div>
+        <div class="stat-value">{{ formatAmount(0) }}</div>
+      </div>
+
+      <!-- 上游通道成本 -->
+      <div class="mini-stat-card">
+        <div class="stat-header">上游通道成本</div>
+        <div class="stat-value">{{ formatAmount(0) }}</div>
+      </div>
     </div>
 
     <!-- 数据表格 -->
@@ -142,10 +191,12 @@
       <!-- 表格工具栏 -->
       <div class="table-toolbar">
         <div class="left">
-          <el-button :icon="Download" plain @click="handleExport">导出</el-button>
-          <el-button :icon="Printer" plain>打印</el-button>
+          <span class="table-title">商户订单列表</span>
+          <el-tag type="info" size="small" effect="plain">{{ pagination.total }}条记录</el-tag>
         </div>
         <div class="right">
+          <el-button :icon="Printer" plain>打印</el-button>
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="refreshData" />
           </el-tooltip>
@@ -259,7 +310,22 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Search, Refresh, Download, Printer, ArrowDown } from '@element-plus/icons-vue'
+import { 
+  Search, 
+  Refresh, 
+  Download, 
+  Printer, 
+  ArrowDown, 
+  Money, 
+  Document, 
+  Discount, 
+  TrendCharts, 
+  DataAnalysis, 
+  GoldMedal, 
+  CircleCheckFilled, 
+  Ticket, 
+  Service 
+} from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 加载状态
@@ -605,11 +671,77 @@ const openEditAmountDialog = () => {
   margin-top: 8px;
 }
 
-.stat-tags {
+.horizontal-stat-cards {
   display: flex;
-  flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.horizontal-stat-cards::-webkit-scrollbar {
+  height: 4px;
+}
+
+.horizontal-stat-cards::-webkit-scrollbar-thumb {
+  background-color: rgba(144, 147, 153, 0.3);
+  border-radius: 4px;
+}
+
+.horizontal-stat-cards::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+.mini-stat-card {
+  flex: 0 0 auto;
+  width: 140px;
+  padding: 8px 12px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s ease;
+  background-color: #ffffff;
+}
+
+.mini-stat-card:hover {
+  border-color: #dcdfe6;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.stat-header {
+  font-size: 12px;
+  color: #909399;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #303133;
+  font-family: 'Roboto Mono', monospace;
+}
+
+/* 媒体查询，适配小屏幕 */
+@media (max-width: 1200px) {
+  .horizontal-stat-cards {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .horizontal-stat-cards {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+  
+  .mini-stat-card {
+    width: 130px;
+  }
 }
 
 .table-toolbar {
@@ -618,8 +750,15 @@ const openEditAmountDialog = () => {
   margin-bottom: 16px;
 }
 
-.table-toolbar .left .el-button {
-  margin-right: 8px;
+.table-toolbar .left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-title {
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .table-toolbar .right .el-button {

@@ -43,10 +43,12 @@
       <!-- 表格工具栏 -->
       <div class="table-toolbar">
         <div class="left">
-          <el-button :icon="Download" plain @click="handleExport">导出</el-button>
-          <el-button :icon="Printer" plain>打印</el-button>
+          <span class="table-title">商户提现列表</span>
+          <el-tag type="info" size="small" effect="plain">{{ pagination.total }}条记录</el-tag>
         </div>
         <div class="right">
+          <el-button :icon="Printer" plain>打印</el-button>
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="refreshData" :loading="loading" />
           </el-tooltip>
@@ -194,7 +196,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Search, Refresh, Download, Close, View, Check } from '@element-plus/icons-vue'
+import { Search, Refresh, Download, Close, View, Check, Printer } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 搜索表单数据
@@ -579,8 +581,15 @@ const handleCurrentChange = (val) => {
     margin-bottom: 16px;
   }
 
-  .table-toolbar .left .el-button {
-    margin-right: 8px;
+  .table-toolbar .left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .table-title {
+    font-size: 16px;
+    font-weight: 500;
   }
 
   .table-toolbar .right .el-button {

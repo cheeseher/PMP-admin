@@ -5,40 +5,25 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="操作者：">
-            <el-input v-model="searchForm.operator" placeholder="请输入操作者" style="width: 168px" clearable />
+          <el-form-item label="订单号：">
+            <el-input v-model="searchForm.businessObject" placeholder="请输入订单号" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="业务类型：">
-            <el-select v-model="searchForm.businessType" placeholder="请选择" style="width: 168px" clearable>
-              <el-option label="全部类型" value="" />
-              <el-option label="商户充值" value="merchant_recharge" />
-              <el-option label="商户提现" value="merchant_withdraw" />
-              <el-option label="订单补单" value="order_supplement" />
-              <el-option label="费率调整" value="rate_adjust" />
-              <el-option label="商户注册" value="merchant_register" />
-              <el-option label="余额调整" value="balance_adjust" />
-            </el-select>
+          <el-form-item label="操作IP：">
+            <el-input v-model="searchForm.ip" placeholder="请输入操作IP" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="操作状态：">
-            <el-select v-model="searchForm.status" placeholder="请选择" style="width: 168px" clearable>
-              <el-option label="全部状态" value="" />
-              <el-option label="成功" value="success" />
-              <el-option label="失败" value="fail" />
-            </el-select>
+          <el-form-item label="日志内容：">
+            <el-input v-model="searchForm.description" placeholder="请输入日志内容" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="业务对象：">
-            <el-input v-model="searchForm.businessObject" placeholder="请输入业务对象" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="操作日期：">
+          <el-form-item label="日期范围：">
             <el-date-picker
               v-model="searchForm.dateRange"
               type="daterange"
-              range-separator="~"
+              range-separator="至"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
-              format="YYYY-MM-DD"
               value-format="YYYY-MM-DD"
-              style="width: 360px"
+              :shortcuts="dateShortcuts"
+              style="width: 280px"
             />
           </el-form-item>
         </div>
@@ -58,7 +43,6 @@
           <el-tag type="info" size="small" effect="plain">{{ pagination.total }}条记录</el-tag>
         </div>
         <div class="right">
-          <el-button type="danger" :icon="Delete" @click="handleClear">清空日志</el-button>
           <el-button :icon="Download" plain @click="handleExport">导出日志</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="refreshData" />
@@ -74,36 +58,21 @@
         v-loading="loading"
       >
         <el-table-column prop="id" label="序号" width="80" />
-        <el-table-column prop="businessModule" label="业务模块" width="120" />
-        <el-table-column prop="businessType" label="业务类型" width="120">
-          <template #default="scope">
-            <el-tag 
-              :type="getBusinessTypeTag(scope.row.businessType)" 
-              size="small"
-            >
-              {{ getBusinessTypeText(scope.row.businessType) }}
-            </el-tag>
+        <el-table-column prop="operationUser" label="操作人" width="120">
+          <template #default="{ row }">
+            <el-tooltip :content="row.operationRole" placement="top">
+              <span>{{ row.operationUser }}</span>
+            </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column prop="businessObject" label="业务对象" width="120" />
-        <el-table-column prop="description" label="业务描述" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="operationUser" label="操作人" width="120" />
-        <el-table-column prop="operationRole" label="操作角色" width="120" />
-        <el-table-column prop="beforeValue" label="操作前数据" width="120" show-overflow-tooltip />
-        <el-table-column prop="afterValue" label="操作后数据" width="120" show-overflow-tooltip />
-        <el-table-column prop="status" label="操作状态" width="80" align="center">
-          <template #default="scope">
-            <el-tag :type="scope.row.status === 'success' ? 'success' : 'danger'" size="small">
-              {{ scope.row.status === 'success' ? '成功' : '失败' }}
-            </el-tag>
+        <el-table-column prop="businessObject" label="操作的订单ID" width="180" />
+        <el-table-column prop="operationIp" label="操作IP" width="160">
+          <template #default="{ row }">
+            {{ row.operationIp || '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="operationTime" label="操作时间" width="160" />
-        <el-table-column label="操作" width="90" fixed="right">
-          <template #default="scope">
-            <el-button type="primary" link size="small" @click="handleView(scope.row)">详情</el-button>
-          </template>
-        </el-table-column>
+        <el-table-column prop="description" label="日志" min-width="300" show-overflow-tooltip />
+        <el-table-column prop="operationTime" label="操作时间" width="180" sortable />
       </el-table>
 
       <!-- 分页 -->
@@ -129,10 +98,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 搜索表单数据
 const searchForm = reactive({
-  operator: '',
-  businessType: '',
-  status: '',
   businessObject: '',
+  ip: '',
+  description: '',
   dateRange: []
 })
 
@@ -143,68 +111,12 @@ const loading = ref(false)
 const tableData = ref([
   {
     id: 1,
-    businessModule: '订单管理',
-    businessType: 'merchant_recharge',
-    businessObject: '商户ID:10001',
-    description: '为商户充值10000元',
     operationUser: 'admin',
     operationRole: '超级管理员',
-    beforeValue: '余额:5000.00',
-    afterValue: '余额:15000.00',
-    status: 'success',
-    operationTime: '2025-03-24 10:00:00'
-  },
-  {
-    id: 2,
-    businessModule: '订单管理',
-    businessType: 'merchant_withdraw',
-    businessObject: '商户ID:10002',
-    description: '商户提现5000元',
-    operationUser: 'admin',
-    operationRole: '超级管理员',
-    beforeValue: '余额:8000.00',
-    afterValue: '余额:3000.00',
-    status: 'success',
-    operationTime: '2025-03-24 11:15:30'
-  },
-  {
-    id: 3,
-    businessModule: '订单管理',
-    businessType: 'order_supplement',
-    businessObject: '订单号:202503241125',
-    description: '为订单手动补单',
-    operationUser: 'operator',
-    operationRole: '运营管理员',
-    beforeValue: '状态:未支付',
-    afterValue: '状态:已支付',
-    status: 'success',
-    operationTime: '2025-03-24 12:30:15'
-  },
-  {
-    id: 4,
-    businessModule: '商户管理',
-    businessType: 'rate_adjust',
-    businessObject: '商户ID:10003',
-    description: '调整商户费率',
-    operationUser: 'admin',
-    operationRole: '超级管理员',
-    beforeValue: '费率:0.6%',
-    afterValue: '费率:0.55%',
-    status: 'success',
-    operationTime: '2025-03-24 14:05:20'
-  },
-  {
-    id: 5,
-    businessModule: '商户管理',
-    businessType: 'balance_adjust',
-    businessObject: '商户ID:10004',
-    description: '手动调整商户余额',
-    operationUser: 'finance',
-    operationRole: '财务管理员',
-    beforeValue: '余额:2000.00',
-    afterValue: '余额:2500.00',
-    status: 'success',
-    operationTime: '2025-03-24 15:20:45'
+    businessObject: 'P20250304173132398356047',
+    operationIp: '192.168.1.1',
+    description: 'admin后台手动撤销了该订单，交易号：P20250304173132398356047 金额:100.00',
+    operationTime: '2025-03-04 17:31:32'
   }
 ])
 
@@ -212,7 +124,7 @@ const tableData = ref([
 const pagination = reactive({
   currentPage: 1,
   pageSize: 10,
-  total: 86
+  total: 1
 })
 
 // 业务类型映射
@@ -249,10 +161,9 @@ const handleSearch = () => {
 // 重置搜索条件
 const handleReset = () => {
   Object.assign(searchForm, {
-    operator: '',
-    businessType: '',
-    status: '',
     businessObject: '',
+    ip: '',
+    description: '',
     dateRange: []
   })
 }
@@ -269,24 +180,6 @@ const refreshData = () => {
 // 导出日志
 const handleExport = () => {
   ElMessage.success('日志导出中，请稍后...')
-}
-
-// 清空日志
-const handleClear = () => {
-  ElMessageBox.confirm(
-    '确定要清空所有业务日志吗？此操作不可恢复！', 
-    '警告', 
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  ).then(() => {
-    // 模拟API调用
-    ElMessage.success('业务日志已清空')
-  }).catch(() => {
-    ElMessage.info('已取消操作')
-  })
 }
 
 // 查看详情
@@ -383,5 +276,11 @@ const handleCurrentChange = (val) => {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
+}
+
+.ip-location {
+  color: #909399;
+  font-size: 12px;
+  margin-left: 4px;
 }
 </style> 

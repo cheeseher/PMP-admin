@@ -1,22 +1,20 @@
-<!-- 系统管理/权限管理 - 管理系统权限页面 -->
+<!-- 系统管理/权限管理 - 权限管理页面 -->
 <template>
   <div class="permission-list-container">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
+          <el-form-item label="权限ID：">
+            <el-input v-model="searchForm.id" placeholder="请输入权限ID" style="width: 168px" clearable />
+          </el-form-item>
           <el-form-item label="权限名称：">
-            <el-input v-model="searchForm.permissionName" placeholder="请输入权限名称" style="width: 168px" clearable />
+            <el-input v-model="searchForm.name" placeholder="请输入权限名称" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="权限编码：">
-            <el-input v-model="searchForm.permissionCode" placeholder="请输入权限编码" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="类型：">
-            <el-select v-model="searchForm.type" placeholder="请选择" style="width: 168px" clearable>
-              <el-option label="全部类型" value="all" />
-              <el-option label="菜单" value="menu" />
-              <el-option label="按钮" value="button" />
-              <el-option label="API" value="api" />
+          <el-form-item label="权限类型：">
+            <el-select v-model="searchForm.type" placeholder="请选择权限类型" style="width: 168px" clearable>
+              <el-option label="菜单权限" value="menu" />
+              <el-option label="按钮权限" value="button" />
             </el-select>
           </el-form-item>
         </div>
@@ -37,6 +35,7 @@
         </div>
         <div class="right">
           <el-button type="primary" :icon="Plus" @click="handleAdd">新增权限</el-button>
+          <el-button type="danger" :icon="Delete" plain :disabled="!selectedRows.length" @click="handleBatchDelete">批量删除</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="refreshData" />
           </el-tooltip>
@@ -47,36 +46,36 @@
         :data="tableData"
         border
         stripe
-        row-key="id"
-        :tree-props="{ children: 'children' }"
         style="width: 100%"
         v-loading="loading"
+        @selection-change="handleSelectionChange"
       >
-        <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="permissionName" label="权限名称" width="150" />
-        <el-table-column prop="permissionCode" label="权限编码" width="150" />
-        <el-table-column prop="type" label="类型" width="100">
-          <template #default="scope">
-            <el-tag v-if="scope.row.type === 'menu'" type="success" size="small">菜单</el-tag>
-            <el-tag v-else-if="scope.row.type === 'button'" type="warning" size="small">按钮</el-tag>
-            <el-tag v-else-if="scope.row.type === 'api'" type="info" size="small">API</el-tag>
-            <span v-else>-</span>
+        <el-table-column type="selection" width="55" fixed="left" />
+        <el-table-column prop="id" label="权限ID" width="80" />
+        <el-table-column prop="name" label="权限名称" min-width="120" />
+        <el-table-column prop="code" label="权限标识符" min-width="180" />
+        <el-table-column prop="type" label="权限类型" width="100">
+          <template #default="{ row }">
+            <el-tag :type="row.type === 'menu' ? 'success' : 'warning'" size="small">
+              {{ row.type === 'menu' ? '菜单权限' : '按钮权限' }}
+            </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="path" label="路径" width="150" />
-        <el-table-column prop="icon" label="图标" width="100">
-          <template #default="scope">
-            <el-icon v-if="scope.row.icon"><component :is="scope.row.icon" /></el-icon>
-            <span v-else>-</span>
+        <el-table-column prop="menuName" label="所属菜单" min-width="120">
+          <template #default="{ row }">
+            {{ row.type === 'button' ? row.menuName : '-' }}
           </template>
         </el-table-column>
-        <el-table-column prop="sort" label="排序" width="80" align="center" />
-        <el-table-column prop="description" label="描述" min-width="150" show-overflow-tooltip />
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="160" fixed="right">
           <template #default="scope">
-            <el-button type="primary" link size="small" @click="handleAdd(scope.row)">添加子权限</el-button>
-            <el-button type="primary" link size="small" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button type="danger" link size="small" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button type="primary" link :icon="Edit" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button 
+              type="danger" 
+              link 
+              :icon="Delete" 
+              @click="handleDelete(scope.row)"
+              :disabled="scope.row.isSystem"
+            >删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -94,98 +93,185 @@
         />
       </div>
     </el-card>
+
+    <!-- 权限表单对话框 -->
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogType === 'add' ? '新增权限' : '编辑权限'"
+      width="500px"
+      :close-on-click-modal="false"
+      destroy-on-close
+    >
+      <el-form
+        ref="permissionFormRef"
+        :model="permissionForm"
+        :rules="permissionFormRules"
+        label-width="100px"
+        label-position="right"
+      >
+        <el-form-item label="权限名称" prop="name">
+          <el-input v-model="permissionForm.name" placeholder="请输入权限名称" />
+        </el-form-item>
+        <el-form-item label="权限标识符" prop="code">
+          <el-input 
+            v-model="permissionForm.code" 
+            placeholder="请输入权限标识符"
+            :disabled="permissionForm.isSystem"
+          />
+        </el-form-item>
+        <el-form-item label="权限类型" prop="type">
+          <el-radio-group v-model="permissionForm.type" :disabled="dialogType === 'edit'">
+            <el-radio label="menu">菜单权限</el-radio>
+            <el-radio label="button">按钮权限</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item 
+          label="所属菜单" 
+          prop="menuId"
+          v-if="permissionForm.type === 'button'"
+        >
+          <el-select 
+            v-model="permissionForm.menuId" 
+            placeholder="请选择所属菜单"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="menu in menuOptions"
+              :key="menu.id"
+              :label="menu.name"
+              :value="menu.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="权限描述" prop="description">
+          <el-input
+            v-model="permissionForm.description"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入权限描述"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitForm" :loading="submitLoading">确定</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { Search, Refresh, Plus, Setting, Document, Menu } from '@element-plus/icons-vue'
+import { ref, reactive, computed } from 'vue'
+import { Search, Refresh, Plus, Delete, Edit } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 搜索表单数据
 const searchForm = reactive({
-  permissionName: '',
-  permissionCode: '',
+  id: '',
+  name: '',
   type: ''
 })
 
 // 加载状态
 const loading = ref(false)
+const submitLoading = ref(false)
 
 // 表格数据
 const tableData = ref([
   {
     id: 1,
-    permissionName: '系统管理',
-    permissionCode: 'system',
+    name: '仪表板',
+    code: 'MENU_DASHBOARD',
     type: 'menu',
-    path: '/system',
-    icon: 'Setting',
-    sort: 1,
-    description: '系统管理模块',
-    children: [
-      {
-        id: 11,
-        permissionName: '管理员管理',
-        permissionCode: 'system:admin',
-        type: 'menu',
-        path: '/system/admin',
-        icon: 'User',
-        sort: 1,
-        description: '管理员管理',
-        children: [
-          {
-            id: 111,
-            permissionName: '查看',
-            permissionCode: 'system:admin:view',
-            type: 'button',
-            path: '',
-            icon: '',
-            sort: 1,
-            description: '查看管理员列表'
-          },
-          {
-            id: 112,
-            permissionName: '新增',
-            permissionCode: 'system:admin:add',
-            type: 'button',
-            path: '',
-            icon: '',
-            sort: 2,
-            description: '新增管理员'
-          }
-        ]
-      },
-      {
-        id: 12,
-        permissionName: '角色管理',
-        permissionCode: 'system:role',
-        type: 'menu',
-        path: '/system/role',
-        icon: 'UserFilled',
-        sort: 2,
-        description: '角色管理'
-      }
-    ]
+    description: '系统仪表板',
+    isSystem: true,
+    createTime: '2024-03-20 08:00:00'
   },
   {
     id: 2,
-    permissionName: '商户管理',
-    permissionCode: 'product',
+    name: '订单管理',
+    code: 'MENU_ORDER',
     type: 'menu',
-    path: '/product',
-    icon: 'ShoppingBag',
-    sort: 2,
-    description: '商户管理模块'
+    description: '订单管理模块',
+    isSystem: true,
+    createTime: '2024-03-20 08:00:00'
+  },
+  {
+    id: 3,
+    name: '新增订单',
+    code: 'BTN_ORDER_ADD',
+    type: 'button',
+    menuId: 2,
+    menuName: '订单管理',
+    description: '新增订单按钮',
+    isSystem: false,
+    createTime: '2024-03-20 08:00:00'
   }
 ])
+
+// 菜单选项（用于按钮权限选择所属菜单）
+const menuOptions = computed(() => {
+  return tableData.value
+    .filter(item => item.type === 'menu')
+    .map(item => ({
+      id: item.id,
+      name: item.name
+    }))
+})
 
 // 分页数据
 const pagination = reactive({
   currentPage: 1,
   pageSize: 10,
-  total: 10
+  total: 3
 })
+
+// 多选相关
+const selectedRows = ref([])
+
+// 对话框相关
+const dialogVisible = ref(false)
+const dialogType = ref('add')
+const permissionFormRef = ref(null)
+
+// 表单数据
+const permissionForm = reactive({
+  id: '',
+  name: '',
+  code: '',
+  type: 'menu',
+  menuId: undefined,
+  description: '',
+  isSystem: false
+})
+
+// 表单验证规则
+const permissionFormRules = {
+  name: [
+    { required: true, message: '请输入权限名称', trigger: 'blur' },
+    { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+  ],
+  code: [
+    { required: true, message: '请输入权限标识符', trigger: 'blur' },
+    { pattern: /^[A-Z_]+$/, message: '标识符只能包含大写字母和下划线', trigger: 'blur' }
+  ],
+  type: [
+    { required: true, message: '请选择权限类型', trigger: 'change' }
+  ],
+  menuId: [
+    { required: true, message: '请选择所属菜单', trigger: 'change' }
+  ],
+  description: [
+    { max: 200, message: '描述不能超过200个字符', trigger: 'blur' }
+  ]
+}
+
+// 多选变化事件
+const handleSelectionChange = (selection) => {
+  selectedRows.value = selection
+}
 
 // 搜索处理
 const handleSearch = () => {
@@ -196,8 +282,8 @@ const handleSearch = () => {
 // 重置搜索条件
 const handleReset = () => {
   Object.assign(searchForm, {
-    permissionName: '',
-    permissionCode: '',
+    id: '',
+    name: '',
     type: ''
   })
 }
@@ -211,36 +297,175 @@ const refreshData = () => {
   }, 500)
 }
 
-// 添加权限
-const handleAdd = (row) => {
-  if (row) {
-    ElMessageBox.alert(`新增"${row.permissionName}"的子权限`, '提示', {
-      confirmButtonText: '确定'
-    })
-  } else {
-    ElMessageBox.alert('新增顶级权限', '提示', {
-      confirmButtonText: '确定'
-    })
-  }
+// 新增权限
+const handleAdd = () => {
+  dialogType.value = 'add'
+  resetForm()
+  dialogVisible.value = true
 }
 
 // 编辑权限
 const handleEdit = (row) => {
-  ElMessageBox.alert(`编辑权限：${row.permissionName}`, '提示', {
-    confirmButtonText: '确定'
+  dialogType.value = 'edit'
+  resetForm()
+  Object.assign(permissionForm, {
+    id: row.id,
+    name: row.name,
+    code: row.code,
+    type: row.type,
+    menuId: row.menuId,
+    description: row.description,
+    isSystem: row.isSystem
+  })
+  dialogVisible.value = true
+}
+
+// 重置表单
+const resetForm = () => {
+  Object.assign(permissionForm, {
+    id: '',
+    name: '',
+    code: '',
+    type: 'menu',
+    menuId: undefined,
+    description: '',
+    isSystem: false
+  })
+  if (permissionFormRef.value) {
+    permissionFormRef.value.resetFields()
+  }
+}
+
+// 提交表单
+const submitForm = () => {
+  if (!permissionFormRef.value) return
+
+  permissionFormRef.value.validate((valid) => {
+    if (valid) {
+      submitLoading.value = true
+
+      // 模拟API调用
+      setTimeout(() => {
+        if (dialogType.value === 'add') {
+          // 新增权限
+          const newPermission = {
+            id: Math.max(...tableData.value.map(item => item.id)) + 1,
+            name: permissionForm.name,
+            code: permissionForm.code,
+            type: permissionForm.type,
+            description: permissionForm.description,
+            isSystem: false,
+            createTime: new Date().toISOString().replace('T', ' ').substring(0, 19)
+          }
+
+          // 如果是按钮权限，添加菜单信息
+          if (permissionForm.type === 'button') {
+            const menu = menuOptions.value.find(item => item.id === permissionForm.menuId)
+            newPermission.menuId = permissionForm.menuId
+            newPermission.menuName = menu ? menu.name : ''
+          }
+
+          tableData.value.push(newPermission)
+          pagination.total += 1
+          ElMessage.success('新增权限成功')
+        } else {
+          // 更新权限
+          const index = tableData.value.findIndex(item => item.id === permissionForm.id)
+          if (index !== -1) {
+            const updatedPermission = {
+              ...tableData.value[index],
+              name: permissionForm.name,
+              code: permissionForm.code,
+              description: permissionForm.description
+            }
+
+            // 如果是按钮权限，更新菜单信息
+            if (permissionForm.type === 'button') {
+              const menu = menuOptions.value.find(item => item.id === permissionForm.menuId)
+              updatedPermission.menuId = permissionForm.menuId
+              updatedPermission.menuName = menu ? menu.name : ''
+            }
+
+            tableData.value[index] = updatedPermission
+            ElMessage.success('更新权限成功')
+          }
+        }
+
+        submitLoading.value = false
+        dialogVisible.value = false
+      }, 500)
+    }
   })
 }
 
 // 删除权限
 const handleDelete = (row) => {
-  if (row.children && row.children.length > 0) {
-    ElMessage.warning(`权限"${row.permissionName}"下还有子权限，不能删除`)
+  if (row.isSystem) {
+    ElMessage.warning('系统权限不能删除')
     return
   }
-  
+
   ElMessageBox.confirm(
-    `确定要删除权限 "${row.permissionName}" 吗？此操作不可恢复！`, 
-    '警告', 
+    `确定要删除权限 "${row.name}" 吗？此操作不可恢复！`,
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    // 如果是菜单权限，检查是否有关联的按钮权限
+    if (row.type === 'menu') {
+      const hasButtons = tableData.value.some(item => 
+        item.type === 'button' && item.menuId === row.id
+      )
+      if (hasButtons) {
+        ElMessage.warning('该菜单下还有按钮权限，请先删除按钮权限')
+        return
+      }
+    }
+
+    // 模拟API调用
+    tableData.value = tableData.value.filter(item => item.id !== row.id)
+    pagination.total -= 1
+    ElMessage.success(`已删除权限 "${row.name}"`)
+  }).catch(() => {
+    ElMessage.info('已取消操作')
+  })
+}
+
+// 批量删除
+const handleBatchDelete = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请至少选择一个权限')
+    return
+  }
+
+  // 检查是否包含系统权限
+  const hasSystem = selectedRows.value.some(row => row.isSystem)
+  if (hasSystem) {
+    ElMessage.warning('选中的权限中包含系统权限，不能删除')
+    return
+  }
+
+  // 检查是否有菜单权限包含按钮权限
+  const menuIds = selectedRows.value
+    .filter(row => row.type === 'menu')
+    .map(row => row.id)
+  
+  if (menuIds.length > 0) {
+    const hasButtons = tableData.value.some(item =>
+      item.type === 'button' && menuIds.includes(item.menuId)
+    )
+    if (hasButtons) {
+      ElMessage.warning('选中的菜单权限中有关联的按钮权限，请先删除按钮权限')
+      return
+    }
+  }
+
+  ElMessageBox.confirm(
+    `确定要删除选中的 ${selectedRows.value.length} 个权限吗？此操作不可恢复！`,
+    '警告',
     {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
@@ -248,7 +473,11 @@ const handleDelete = (row) => {
     }
   ).then(() => {
     // 模拟API调用
-    ElMessage.success(`已删除权限 "${row.permissionName}"`)
+    const selectedIds = selectedRows.value.map(row => row.id)
+    tableData.value = tableData.value.filter(item => !selectedIds.includes(item.id))
+    pagination.total -= selectedRows.value.length
+    ElMessage.success(`已删除 ${selectedRows.value.length} 个权限`)
+    selectedRows.value = []
   }).catch(() => {
     ElMessage.info('已取消操作')
   })
@@ -326,5 +555,10 @@ const handleCurrentChange = (val) => {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
 }
 </style> 

@@ -6,8 +6,8 @@
       <el-form :model="searchForm" inline class="filter-form">
         <!-- 第一行筛选项 -->
         <div class="filter-row">
-          <el-form-item label="ID：">
-            <el-input v-model="searchForm.id" placeholder="请输入ID" style="width: 168px" clearable />
+          <el-form-item label="商户ID：">
+            <el-input v-model="searchForm.id" placeholder="请输入商户ID" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="商户账户：">
             <el-input v-model="searchForm.productId" placeholder="请输入商户账户" style="width: 220px" clearable />
@@ -22,23 +22,16 @@
         
         <!-- 第二行筛选项 -->
         <div class="filter-row">
-          <el-form-item label="角色：">
-            <el-select v-model="searchForm.role" placeholder="请选择角色" style="width: 168px" clearable>
-              <el-option label="超级管理员" value="admin" />
-              <el-option label="普通用户" value="user" />
-              <el-option label="商户" value="merchant" />
-            </el-select>
-          </el-form-item>
           <el-form-item label="状态：">
             <el-select v-model="searchForm.verified" placeholder="请选择状态" style="width: 168px" clearable>
-              <el-option label="已验证" value="Y" />
-              <el-option label="未验证" value="N" />
+              <el-option label="开启" value="Y" />
+              <el-option label="关闭" value="N" />
             </el-select>
           </el-form-item>
           <el-form-item label="谷歌认证：">
             <el-select v-model="searchForm.googleAuth" placeholder="请选择状态" style="width: 168px" clearable>
-              <el-option label="已绑定" :value="true" />
-              <el-option label="未绑定" :value="false" />
+              <el-option label="开启" :value="true" />
+              <el-option label="关闭" :value="false" />
             </el-select>
           </el-form-item>
         </div>
@@ -58,7 +51,7 @@
         <div class="left">
           <el-button type="primary" :icon="Plus" @click="handleAdd">新增商户</el-button>
           <el-button :icon="Delete" plain :disabled="!selectedRows.length" @click="handleBatchDelete">批量删除</el-button>
-          <el-button :icon="Setting" plain :disabled="!selectedRows.length" @click="handleBatchConfig">批量配置</el-button>
+          <el-button :icon="Setting" plain :disabled="!selectedRows.length" @click="handleBatchConfig">批量配置产品</el-button>
         </div>
         <div class="right">
           <el-tooltip content="刷新数据">
@@ -76,7 +69,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" fixed="left" />
-        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="id" label="商户ID" width="80" />
         <el-table-column prop="productId" label="商户账户" min-width="120" />
         <el-table-column prop="productName" label="商户名称" min-width="150" />
         <el-table-column prop="productNo" label="商户号" min-width="120" />
@@ -90,16 +83,6 @@
             <span class="amount-cell">{{ formatAmount(scope.row.freeze || 0) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="agentBalance" label="代付余额" width="100" align="right">
-          <template #default="scope">
-            <span class="amount-cell">{{ formatAmount(scope.row.agentBalance || 0) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="agentFreeze" label="代付冻结" width="100" align="right">
-          <template #default="scope">
-            <span class="amount-cell">{{ formatAmount(scope.row.agentFreeze || 0) }}</span>
-          </template>
-        </el-table-column>
         <el-table-column prop="authIp" label="上次登录IP" width="140" />
         <el-table-column prop="loginCount" label="登录次数" width="100" />
         <el-table-column prop="googleAuth" label="谷歌认证" width="100">
@@ -108,7 +91,7 @@
               :type="scope.row.googleAuth ? 'success' : 'info'"
               size="small"
             >
-              {{ scope.row.googleAuth ? '已绑定' : '未绑定' }}
+              {{ scope.row.googleAuth ? '开启' : '关闭' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -120,19 +103,31 @@
         <el-table-column prop="role" label="角色" width="100" />
         <el-table-column prop="verified" label="状态" width="90">
           <template #default="scope">
-            <el-tag
-              :type="scope.row.verified === 'Y' ? 'success' : 'danger'"
-              size="small"
-            >
-              {{ scope.row.verified === 'Y' ? '已验证' : '未验证' }}
-            </el-tag>
+            <el-switch
+              v-model="scope.row.verified"
+              :active-value="'Y'"
+              :inactive-value="'N'"
+              @change="handleStatusChange(scope.row)"
+            />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="120" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button link type="primary" @click="handleConfig(scope.row)">配置</el-button>
-            <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            <el-dropdown @command="(command) => handleCommand(command, scope.row)">
+              <span class="el-dropdown-link">
+                操作<el-icon class="el-icon--right"><arrow-down /></el-icon>
+              </span>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="config">产品配置</el-dropdown-item>
+                  <el-dropdown-item command="edit">编辑商户</el-dropdown-item>
+                  <el-dropdown-item command="resetGoogle">重置谷歌</el-dropdown-item>
+                  <el-dropdown-item command="resetApiKey">重置APIKEY</el-dropdown-item>
+                  <el-dropdown-item command="unfreeze">余额解冻</el-dropdown-item>
+                  <el-dropdown-item command="balance">余额操作</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </template>
         </el-table-column>
       </el-table>
@@ -155,39 +150,85 @@
     <el-dialog
       :title="dialogTitle"
       v-model="dialogVisible"
-      width="550px"
+      width="650px"
       destroy-on-close
     >
       <el-form
         ref="productFormRef"
         :model="productForm"
         :rules="productRules"
-        label-width="100px"
+        label-width="120px"
         class="product-form"
       >
-        <el-form-item label="商户账户" prop="productId">
-          <el-input v-model="productForm.productId" placeholder="请输入商户账户" />
+        <el-form-item label="商户账号" prop="productId">
+          <el-input v-model="productForm.productId" placeholder="请输入商户账号" />
         </el-form-item>
         <el-form-item label="商户名称" prop="productName">
           <el-input v-model="productForm.productName" placeholder="请输入商户名称" />
         </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="productForm.password" type="password" placeholder="不填表示不更新密码" show-password />
+        </el-form-item>
+        <el-form-item label="手机" prop="mobile">
+          <el-input v-model="productForm.mobile" placeholder="请输入手机号" />
+        </el-form-item>
         <el-form-item label="商户号" prop="productNo">
           <el-input v-model="productForm.productNo" placeholder="请输入商户号" />
         </el-form-item>
-        <el-form-item label="余额">
-          <el-input-number v-model="productForm.balance" :precision="2" :min="0" :controls="false" style="width: 100%" />
+        <el-form-item label="API密钥" prop="apiKey">
+          <el-input v-model="productForm.apiKey" placeholder="请输入API密钥" />
         </el-form-item>
-        <el-form-item label="角色" prop="role">
-          <el-select v-model="productForm.role" placeholder="请选择角色" style="width: 100%">
-            <el-option label="超级管理员" value="admin" />
-            <el-option label="普通用户" value="user" />
-            <el-option label="商户" value="merchant" />
-          </el-select>
+        <el-form-item label="回调地址" prop="callbackUrl">
+          <el-input v-model="productForm.callbackUrl" placeholder="请输入回调地址" />
         </el-form-item>
-        <el-form-item label="验证状态">
+        <el-form-item label="提现密码" prop="withdrawPassword">
+          <el-input v-model="productForm.withdrawPassword" type="password" placeholder="不填表示不更新密码" show-password />
+        </el-form-item>
+        <el-form-item label="是否开启进单">
+          <el-switch v-model="productForm.enableDeposit" />
+        </el-form-item>
+        <el-form-item label="是否开启提现">
+          <el-switch v-model="productForm.enableWithdraw" />
+        </el-form-item>
+        <el-form-item label="是否区分手机系统">
+          <el-switch v-model="productForm.distinguishMobileOS" />
+        </el-form-item>
+        <el-form-item label="下单IP白名单" prop="depositIpWhitelist">
+          <el-input 
+            v-model="productForm.depositIpWhitelist" 
+            type="textarea" 
+            :rows="2" 
+            placeholder="多个IP请用英文逗号分隔" 
+          />
+        </el-form-item>
+        <el-form-item label="出款IP白名单" prop="withdrawIpWhitelist">
+          <el-input 
+            v-model="productForm.withdrawIpWhitelist" 
+            type="textarea" 
+            :rows="2" 
+            placeholder="多个IP请用英文逗号分隔" 
+          />
+        </el-form-item>
+        <el-form-item label="后台IP白名单" prop="adminIpWhitelist">
+          <el-input 
+            v-model="productForm.adminIpWhitelist" 
+            type="textarea" 
+            :rows="2" 
+            placeholder="多个IP请用英文逗号分隔" 
+          />
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input 
+            v-model="productForm.remark" 
+            type="textarea" 
+            :rows="2" 
+            placeholder="请输入备注信息" 
+          />
+        </el-form-item>
+        <el-form-item label="状态">
           <el-radio-group v-model="productForm.verified">
-            <el-radio label="Y">已验证</el-radio>
-            <el-radio label="N">未验证</el-radio>
+            <el-radio label="Y">开启</el-radio>
+            <el-radio label="N">关闭</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
@@ -201,9 +242,9 @@
     
     <!-- 批量配置对话框 -->
     <el-dialog
-      title="批量配置"
+      title="批量配置产品"
       v-model="batchConfigVisible"
-      width="400px"
+      width="650px"
       destroy-on-close
     >
       <el-form
@@ -211,11 +252,50 @@
         :model="batchConfigForm"
         label-width="100px"
       >
-        <el-form-item label="验证状态">
-          <el-radio-group v-model="batchConfigForm.verified">
-            <el-radio label="Y">已验证</el-radio>
-            <el-radio label="N">未验证</el-radio>
-          </el-radio-group>
+        <el-form-item label="已选商户">
+          <div class="selected-merchants">
+            <el-tag
+              v-for="merchant in selectedRows"
+              :key="merchant.id"
+              type="info"
+              effect="plain"
+              class="merchant-tag"
+            >
+              {{ merchant.productName }}
+            </el-tag>
+          </div>
+          <div class="form-tip">已选择 {{ selectedRows.length }} 个商户</div>
+        </el-form-item>
+        <el-form-item label="支付产品" prop="selectedProducts">
+          <el-select 
+            v-model="batchConfigForm.selectedProducts" 
+            multiple 
+            collapse-tags
+            collapse-tags-tooltip
+            placeholder="请选择支付产品"
+            style="width: 100%"
+          >
+            <el-option 
+              v-for="item in paymentProducts" 
+              :key="item.id" 
+              :label="item.productName" 
+              :value="item.id" 
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="商户费率" prop="rate">
+          <div class="rate-input-group">
+            <el-input-number 
+              v-model="batchConfigForm.rate" 
+              :precision="2" 
+              :step="0.1" 
+              :min="0" 
+              :max="20"
+              controls-position="right"
+              style="width: 180px"
+            />
+            <span class="rate-unit">%</span>
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -225,14 +305,130 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 产品配置弹窗 -->
+    <el-dialog
+      title="产品配置"
+      v-model="productConfigVisible"
+      width="650px"
+      destroy-on-close
+    >
+      <el-form
+        ref="productConfigFormRef"
+        :model="productConfigForm"
+        label-width="100px"
+      >
+        <el-form-item label="商户账号">
+          <el-input v-model="productConfigForm.productId" disabled />
+        </el-form-item>
+        <el-form-item label="商户名称">
+          <el-input v-model="productConfigForm.productName" disabled />
+        </el-form-item>
+        <el-form-item label="选择产品">
+          <el-select 
+            v-model="productConfigForm.selectedProducts" 
+            multiple 
+            collapse-tags
+            collapse-tags-tooltip
+            placeholder="请选择支付产品"
+            style="width: 100%"
+          >
+            <el-option 
+              v-for="item in paymentProducts" 
+              :key="item.id" 
+              :label="item.productName" 
+              :value="item.id" 
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="商户费率">
+          <div class="rate-input-group">
+            <el-input-number 
+              v-model="productConfigForm.batchRate" 
+              :precision="2" 
+              :step="0.1" 
+              :min="0" 
+              :max="20"
+              controls-position="right"
+              style="width: 180px"
+            />
+            <span class="rate-unit">%</span>
+          </div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="productConfigVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitProductConfig">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 余额操作弹窗 -->
+    <el-dialog
+      title="余额操作"
+      v-model="balanceOperationVisible"
+      width="500px"
+      destroy-on-close
+    >
+      <el-form
+        ref="balanceFormRef"
+        :model="balanceForm"
+        :rules="balanceRules"
+        label-width="100px"
+      >
+        <el-form-item label="商户账号">
+          <el-input v-model="balanceForm.productId" disabled />
+        </el-form-item>
+        <el-form-item label="商户名称">
+          <el-input v-model="balanceForm.productName" disabled />
+        </el-form-item>
+        <el-form-item label="当前余额">
+          <el-input v-model="balanceForm.currentBalance" disabled>
+            <template #append>元</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="操作类型" prop="operationType">
+          <el-radio-group v-model="balanceForm.operationType">
+            <el-radio label="add">增加余额</el-radio>
+            <el-radio label="subtract">减少余额</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="操作金额" prop="amount">
+          <el-input-number 
+            v-model="balanceForm.amount" 
+            :precision="2" 
+            :min="0"
+            :max="999999999"
+            controls-position="right"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input 
+            v-model="balanceForm.remark" 
+            type="textarea" 
+            :rows="3"
+            placeholder="请输入操作备注"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="balanceOperationVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitBalanceOperation">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { Search, Refresh, Plus, Delete, Setting, Edit } from '@element-plus/icons-vue'
+import { ref, reactive, onMounted, watch } from 'vue'
+import { Search, Refresh, Plus, Delete, Setting, Edit, ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { productList } from '@/data/productData'
+import { merchantProductList } from '@/data/merchantProductData'
 
 // 搜索表单
 const searchForm = reactive({
@@ -240,7 +436,6 @@ const searchForm = reactive({
   productId: '',
   productName: '',
   productNo: '',
-  role: '',
   verified: '',
   googleAuth: ''
 })
@@ -281,11 +476,6 @@ const fetchData = () => {
     if (searchForm.productNo) {
       filteredData = filteredData.filter(item => 
         item.productNo.toLowerCase().includes(searchForm.productNo.toLowerCase()))
-    }
-    
-    if (searchForm.role) {
-      filteredData = filteredData.filter(item => 
-        item.role === searchForm.role)
     }
     
     if (searchForm.verified) {
@@ -361,8 +551,7 @@ const productForm = reactive({
 const productRules = {
   productId: [{ required: true, message: '请输入商户账户', trigger: 'blur' }],
   productName: [{ required: true, message: '请输入商户名称', trigger: 'blur' }],
-  productNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }],
-  role: [{ required: true, message: '请选择角色', trigger: 'change' }]
+  productNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }]
 }
 
 const resetProductForm = () => {
@@ -374,10 +563,20 @@ const resetProductForm = () => {
     productId: '',
     productName: '',
     productNo: '',
+    password: '',
+    mobile: '',
+    apiKey: '',
+    callbackUrl: '',
+    withdrawPassword: '',
     balance: 0,
     freeze: 0,
-    agentBalance: 0,
-    agentFreeze: 0,
+    enableDeposit: true,
+    enableWithdraw: true,
+    distinguishMobileOS: false,
+    depositIpWhitelist: '',
+    withdrawIpWhitelist: '',
+    adminIpWhitelist: '',
+    remark: '',
     role: 'merchant',
     googleAuth: false,
     verified: 'N'
@@ -421,8 +620,6 @@ const submitForm = async () => {
           authIp: '',
           loginCount: 0,
           freeze: productForm.freeze || 0,
-          agentBalance: productForm.agentBalance || 0,
-          agentFreeze: productForm.agentFreeze || 0,
           registerTime: new Date().toLocaleString('zh-CN', {
             year: 'numeric',
             month: '2-digit',
@@ -512,7 +709,188 @@ const handleBatchDelete = () => {
 
 // 配置商户
 const handleConfig = (row) => {
-  ElMessage.info(`正在配置商户：${row.productName}`)
+  productConfigForm.merchantId = row.id
+  productConfigForm.productId = row.productId
+  productConfigForm.productName = row.productName
+  productConfigForm.selectedProducts = []
+  productConfigForm.productRates = []
+  
+  // 获取商户已关联的产品
+  const existingProducts = merchantProductList.filter(item => 
+    item.merchantNo === row.productNo || item.merchantName === row.productName
+  )
+  
+  if (existingProducts.length > 0) {
+    // 如果有已关联产品，加载它们
+    productConfigForm.productRates = existingProducts.map(item => ({
+      productId: paymentProducts.value.find(p => p.productName === item.productName)?.id || 0,
+      productName: item.productName,
+      productCode: item.productCode,
+      rate: item.rate,
+      weight: item.weight
+    }))
+    
+    productConfigForm.selectedProducts = productConfigForm.productRates.map(item => item.productId)
+  }
+  
+  productConfigVisible.value = true
+}
+
+// 监听选择产品变化
+const watchSelectedProducts = () => {
+  // 当选择的产品变化时，更新产品费率列表
+  const currentProductIds = productConfigForm.productRates.map(item => item.productId)
+  
+  // 添加新选择的产品
+  productConfigForm.selectedProducts.forEach(productId => {
+    if (!currentProductIds.includes(productId)) {
+      const product = paymentProducts.value.find(item => item.id === productId)
+      if (product) {
+        productConfigForm.productRates.push({
+          productId: product.id,
+          productName: product.productName,
+          productCode: product.productCode,
+          rate: productConfigForm.batchRate,
+          weight: 10 // 默认权重
+        })
+      }
+    }
+  })
+  
+  // 移除取消选择的产品
+  productConfigForm.productRates = productConfigForm.productRates.filter(
+    item => productConfigForm.selectedProducts.includes(item.productId)
+  )
+}
+
+// 应用批量费率
+const applyBatchRate = () => {
+  if (productConfigForm.productRates.length > 0) {
+    productConfigForm.productRates.forEach(item => {
+      item.rate = productConfigForm.batchRate
+    })
+    ElMessage.success('已应用批量费率')
+  } else {
+    ElMessage.warning('请先选择产品')
+  }
+}
+
+// 提交产品配置
+const submitProductConfig = () => {
+  if (productConfigForm.selectedProducts.length === 0) {
+    ElMessage.warning('请至少选择一个产品')
+    return
+  }
+  
+  loading.value = true
+  setTimeout(() => {
+    // 实际应用中这里应调用API保存商户产品配置
+    ElMessage.success(`商户 ${productConfigForm.productName} 的产品配置已更新`)
+    productConfigVisible.value = false
+    loading.value = false
+  }, 300)
+}
+
+// 处理状态开关切换
+const handleStatusChange = (row) => {
+  ElMessage.success(`商户 ${row.productName} 状态已更新为${row.verified === 'Y' ? '开启' : '关闭'}`)
+  
+  // 实际应用中这里会调用API更新商户状态
+  // 这里仅做演示
+}
+
+// 余额操作
+const balanceOperationVisible = ref(false)
+const balanceFormRef = ref(null)
+const balanceForm = reactive({
+  merchantId: '',
+  productId: '',
+  productName: '',
+  currentBalance: 0,
+  operationType: 'add',
+  amount: 0,
+  remark: ''
+})
+
+const balanceRules = {
+  operationType: [{ required: true, message: '请选择操作类型', trigger: 'change' }],
+  amount: [{ required: true, message: '请输入操作金额', trigger: 'blur' }],
+  remark: [{ required: true, message: '请输入操作备注', trigger: 'blur' }]
+}
+
+// 处理余额操作
+const handleBalance = (row) => {
+  balanceForm.merchantId = row.id
+  balanceForm.productId = row.productId
+  balanceForm.productName = row.productName
+  balanceForm.currentBalance = row.balance || 0
+  balanceForm.operationType = 'add'
+  balanceForm.amount = 0
+  balanceForm.remark = ''
+  
+  balanceOperationVisible.value = true
+}
+
+// 提交余额操作
+const submitBalanceOperation = async () => {
+  if (!balanceFormRef.value) return
+  
+  try {
+    await balanceFormRef.value.validate()
+    
+    loading.value = true
+    setTimeout(() => {
+      // 模拟提交
+      const index = productList.findIndex(item => item.id === balanceForm.merchantId)
+      if (index !== -1) {
+        if (balanceForm.operationType === 'add') {
+          productList[index].balance += Number(balanceForm.amount)
+          ElMessage.success(`已成功为 ${balanceForm.productName} 增加余额 ${balanceForm.amount} 元`)
+        } else {
+          if (productList[index].balance < balanceForm.amount) {
+            ElMessage.warning('余额不足，无法扣减')
+            loading.value = false
+            return
+          }
+          productList[index].balance -= Number(balanceForm.amount)
+          ElMessage.success(`已成功从 ${balanceForm.productName} 减少余额 ${balanceForm.amount} 元`)
+        }
+      }
+      
+      balanceOperationVisible.value = false
+      fetchData()
+      loading.value = false
+    }, 300)
+    
+  } catch (error) {
+    console.error('表单验证失败', error)
+  }
+}
+
+// 处理下拉菜单操作
+const handleCommand = (command, row) => {
+  switch (command) {
+    case 'config':
+      handleConfig(row)
+      break
+    case 'edit':
+      handleEdit(row)
+      break
+    case 'resetGoogle':
+      ElMessage.success(`已重置 ${row.productName} 的谷歌验证`)
+      break
+    case 'resetApiKey':
+      ElMessage.success(`已重置 ${row.productName} 的APIKEY`)
+      break
+    case 'unfreeze':
+      ElMessage.success(`已解冻 ${row.productName} 的余额`)
+      break
+    case 'balance':
+      handleBalance(row)
+      break
+    default:
+      break
+  }
 }
 
 // 一键登录
@@ -525,7 +903,9 @@ const handleQuickLogin = (row) => {
 const batchConfigVisible = ref(false)
 const batchConfigFormRef = ref(null)
 const batchConfigForm = reactive({
-  verified: ''
+  verified: 'Y',
+  selectedProducts: [],
+  rate: 3.00
 })
 
 const handleBatchConfig = () => {
@@ -534,34 +914,62 @@ const handleBatchConfig = () => {
     return
   }
   
-  batchConfigForm.verified = ''
+  // 重置表单
+  batchConfigForm.selectedProducts = []
+  batchConfigForm.rate = 3.00
+  
   batchConfigVisible.value = true
 }
 
 const submitBatchConfig = () => {
-  if (!batchConfigForm.verified) {
-    ElMessage.warning('请选择状态')
+  if (batchConfigForm.selectedProducts.length === 0) {
+    ElMessage.warning('请至少选择一个支付产品')
     return
   }
   
   loading.value = true
   setTimeout(() => {
-    const ids = selectedRows.value.map(row => row.id)
-    let updateCount = 0
+    const merchantIds = selectedRows.value.map(row => row.id)
+    const productNames = batchConfigForm.selectedProducts.map(id => 
+      paymentProducts.value.find(item => item.id === id)?.productName
+    ).filter(Boolean)
     
-    productList.forEach(item => {
-      if (ids.includes(item.id)) {
-        item.verified = batchConfigForm.verified
-        updateCount++
-      }
-    })
-    
-    ElMessage.success(`成功更新 ${updateCount} 条记录`)
+    ElMessage.success(`已为 ${selectedRows.value.length} 个商户配置 ${productNames.length} 个支付产品，费率为 ${batchConfigForm.rate}%`)
     batchConfigVisible.value = false
-    fetchData()
     loading.value = false
   }, 300)
 }
+
+// 产品配置
+const productConfigVisible = ref(false)
+const productConfigFormRef = ref(null)
+const productConfigForm = reactive({
+  merchantId: '',
+  productId: '',
+  productName: '',
+  selectedProducts: [],
+  batchRate: 3.00,
+  productRates: []
+})
+
+// 支付产品列表
+const paymentProducts = ref([
+  { id: 1, productName: '微信支付', productCode: 'WX001' },
+  { id: 2, productName: '支付宝', productCode: 'ZFB001' },
+  { id: 3, productName: '银联支付', productCode: 'YL001' },
+  { id: 4, productName: '云闪付', productCode: 'YSF001' },
+  { id: 5, productName: '快捷支付', productCode: 'QP001' },
+  { id: 6, productName: '扫码支付', productCode: 'SCAN001' },
+  { id: 7, productName: '国际信用卡', productCode: 'ICC001' },
+  { id: 8, productName: '聚合支付', productCode: 'AGG001' }
+])
+
+// 监听选择产品变化
+watch(() => productConfigForm.selectedProducts, (newVal, oldVal) => {
+  if (newVal && oldVal) {
+    watchSelectedProducts()
+  }
+}, { deep: true })
 
 // 页面加载时获取数据
 onMounted(() => {
@@ -571,7 +979,7 @@ onMounted(() => {
 
 <style scoped>
 .product-list-container {
-  padding: 16px;
+  padding: 20px;
 }
 
 .filter-container {
@@ -580,14 +988,14 @@ onMounted(() => {
 
 .filter-form {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
 }
 
 .filter-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   margin-bottom: 16px;
+  width: 100%;
 }
 
 .filter-row:last-child {
@@ -602,7 +1010,7 @@ onMounted(() => {
 .filter-buttons {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
+  margin-left: auto;
 }
 
 .filter-buttons .el-button + .el-button {
@@ -615,26 +1023,54 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.table-toolbar .left .el-button {
-  margin-right: 8px;
-}
-
-.table-toolbar .right .el-button {
-  margin-left: 8px;
-}
-
 .pagination-container {
   display: flex;
   justify-content: flex-end;
   margin-top: 16px;
 }
 
-.amount-cell {
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 500;
+.el-dropdown-link {
+  cursor: pointer;
+  color: var(--el-color-primary);
+  display: flex;
+  align-items: center;
 }
 
-.product-form .el-form-item {
-  margin-bottom: 20px;
+.product-form {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.rate-input-group {
+  display: flex;
+  align-items: center;
+}
+
+.rate-unit {
+  margin-left: 5px;
+  color: var(--el-text-color-regular);
+}
+
+.form-tip {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.product-rate-list {
+  margin-top: 20px;
+}
+
+.selected-merchants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.merchant-tag {
+  margin-right: 5px;
+  margin-bottom: 5px;
 }
 </style> 

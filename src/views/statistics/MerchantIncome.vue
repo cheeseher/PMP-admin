@@ -26,28 +26,22 @@
               />
             </div>
           </el-form-item>
-          <el-form-item label="商户ID：">
-            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="商户名称：">
-            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
-          </el-form-item>
-        </div>
-        <div class="filter-row">
-          <el-form-item label="支付类型：">
-            <el-select v-model="searchForm.payType" placeholder="请选择支付类型" style="width: 168px" clearable>
-              <el-option label="支付宝" value="alipay" />
-              <el-option label="微信支付" value="wechat" />
-              <el-option label="银联" value="unionpay" />
-              <el-option label="快捷支付" value="quick" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="订单状态：">
-            <el-select v-model="searchForm.orderStatus" placeholder="请选择订单状态" style="width: 168px" clearable>
-              <el-option label="支付成功" value="success" />
-              <el-option label="支付失败" value="failed" />
-              <el-option label="待支付" value="pending" />
-              <el-option label="已退款" value="refunded" />
+          <el-form-item label="商户：">
+            <el-select
+              v-model="searchForm.merchantIds"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="请选择商户"
+              style="width: 220px"
+              clearable
+            >
+              <el-option
+                v-for="item in merchantOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
             </el-select>
           </el-form-item>
         </div>
@@ -64,8 +58,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总收款金额</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#409EFF"><Money /></el-icon>
-            <span class="stat-value income">{{ formatAmount(totalSuccessAmount) }}</span>
+            <el-icon :size="22"><Money /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalSuccessAmount) }}</span>
           </div>
         </div>
       </el-card>
@@ -74,8 +68,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总补单金额</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#67C23A"><Plus /></el-icon>
-            <span class="stat-value income">{{ formatAmount(totalSupplementAmount) }}</span>
+            <el-icon :size="22"><Plus /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalSupplementAmount) }}</span>
           </div>
         </div>
       </el-card>
@@ -84,8 +78,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总收款额</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#409EFF"><Money /></el-icon>
-            <span class="stat-value income">{{ formatAmount(totalAmount) }}</span>
+            <el-icon :size="22"><Money /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalAmount) }}</span>
           </div>
         </div>
       </el-card>
@@ -94,8 +88,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总手续费</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#E6A23C"><Discount /></el-icon>
-            <span class="stat-value outcome">{{ formatAmount(totalFee) }}</span>
+            <el-icon :size="22"><Discount /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalFee) }}</span>
           </div>
         </div>
       </el-card>
@@ -104,8 +98,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总税后金额</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#67C23A"><Wallet /></el-icon>
-            <span class="stat-value income">{{ formatAmount(totalAfterTaxAmount) }}</span>
+            <el-icon :size="22"><Wallet /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalAfterTaxAmount) }}</span>
           </div>
         </div>
       </el-card>
@@ -114,7 +108,7 @@
         <div class="compact-card-content">
           <div class="stat-header">总成功单数</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#909399"><Document /></el-icon>
+            <el-icon :size="22"><Document /></el-icon>
             <span class="stat-value">{{ formatNumber(totalSuccessCount) }}笔</span>
           </div>
         </div>
@@ -152,27 +146,27 @@
         <el-table-column prop="date" label="日期" width="120" align="center" />
         <el-table-column prop="successAmount" label="成功收款金额" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell income">{{ formatAmount(row.successAmount) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.successAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="supplementAmount" label="补单金额" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell income">{{ formatAmount(row.supplementAmount) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.supplementAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="totalAmount" label="总收款" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell income">{{ formatAmount(row.totalAmount) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.totalAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="fee" label="手续费" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell outcome">{{ formatAmount(row.fee) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.fee) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="afterTaxAmount" label="税后金额" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell income">{{ formatAmount(row.afterTaxAmount) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.afterTaxAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="successCount" label="成功单数" width="120" align="center">
@@ -221,12 +215,16 @@ const getDateRangeByType = (type) => {
   }
 }
 
+// 商户选项数据
+const merchantOptions = ref([
+  { value: 'M001', label: '测试商户' },
+  { value: 'M002', label: '示例商户' },
+  { value: 'M003', label: '演示商户' }
+])
+
 // 搜索表单数据
 const searchForm = reactive({
-  merchantId: '',
-  merchantName: '',
-  payType: '',
-  orderStatus: '',
+  merchantIds: [],
   timeType: 'today',
   dateRange: getDateRangeByType('today')
 })
@@ -344,10 +342,7 @@ const handleSearch = () => {
 
 // 重置方法
 const handleReset = () => {
-  searchForm.merchantId = ''
-  searchForm.merchantName = ''
-  searchForm.payType = ''
-  searchForm.orderStatus = ''
+  searchForm.merchantIds = []
   searchForm.timeType = 'today'
   searchForm.dateRange = getDateRangeByType('today')
   handleSearch()
@@ -391,13 +386,6 @@ const formatAmount = (amount) => {
 // 格式化数字
 const formatNumber = (num) => {
   return num.toLocaleString('zh-CN')
-}
-
-// 获取成功率类型
-const getSuccessRateType = (rate) => {
-  if (rate >= 0.95) return 'success'
-  if (rate >= 0.9) return 'warning'
-  return 'danger'
 }
 </script>
 
@@ -478,14 +466,6 @@ const getSuccessRateType = (rate) => {
   color: #303133;
 }
 
-.stat-value.income {
-  color: #67C23A;
-}
-
-.stat-value.outcome {
-  color: #E6A23C;
-}
-
 .table-toolbar {
   display: flex;
   justify-content: space-between;
@@ -516,14 +496,6 @@ const getSuccessRateType = (rate) => {
 .amount-cell {
   font-family: 'Roboto Mono', monospace;
   font-weight: 500;
-}
-
-.amount-cell.income {
-  color: #67c23a;
-}
-
-.amount-cell.outcome {
-  color: #f56c6c;
 }
 
 .time-filter-container {

@@ -40,8 +40,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总收款金额</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#409EFF"><Money /></el-icon>
-            <span class="stat-value income">{{ formatAmount(totalSuccessAmount) }}</span>
+            <el-icon :size="22"><Money /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalSuccessAmount) }}</span>
           </div>
         </div>
       </el-card>
@@ -50,8 +50,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总通道成本</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#E6A23C"><Discount /></el-icon>
-            <span class="stat-value outcome">{{ formatAmount(totalChannelCost) }}</span>
+            <el-icon :size="22"><Discount /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalChannelCost) }}</span>
           </div>
         </div>
       </el-card>
@@ -60,8 +60,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总利润</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#67C23A"><Wallet /></el-icon>
-            <span class="stat-value income">{{ formatAmount(totalProfit) }}</span>
+            <el-icon :size="22"><Wallet /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalProfit) }}</span>
           </div>
         </div>
       </el-card>
@@ -70,8 +70,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总手续费</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#67C23A"><Money /></el-icon>
-            <span class="stat-value income">{{ formatAmount(totalFee) }}</span>
+            <el-icon :size="22"><Money /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalFee) }}</span>
           </div>
         </div>
       </el-card>
@@ -105,22 +105,22 @@
         <el-table-column prop="date" label="日期" width="120" align="center" />
         <el-table-column prop="successAmount" label="成功收款金额" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell income">{{ formatAmount(row.successAmount) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.successAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="channelCost" label="通道成本" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell outcome">{{ formatAmount(row.channelCost) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.channelCost) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="profitAfterChannel" label="除通道成本后利润" width="180" align="right">
           <template #default="{ row }">
-            <span class="amount-cell income">{{ formatAmount(row.profitAfterChannel) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.profitAfterChannel) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="fee" label="手续费" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell income">{{ formatAmount(row.fee) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.fee) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="orderCount" label="成功单数/总笔数" min-width="160" align="center">
@@ -130,12 +130,7 @@
         </el-table-column>
         <el-table-column prop="successRate" label="成功率" width="100" align="center">
           <template #default="{ row }">
-            <el-tag 
-              :type="getSuccessRateType(row.successRate)"
-              size="small"
-            >
-              {{ (row.successRate * 100).toFixed(2) }}%
-            </el-tag>
+            <span>{{ (row.successRate * 100).toFixed(2) }}%</span>
           </template>
         </el-table-column>
       </el-table>
@@ -345,13 +340,6 @@ const formatAmount = (amount) => {
 const formatNumber = (num) => {
   return num.toLocaleString('zh-CN')
 }
-
-// 获取成功率类型
-const getSuccessRateType = (rate) => {
-  if (rate >= 0.95) return 'success'
-  if (rate >= 0.9) return 'warning'
-  return 'danger'
-}
 </script>
 
 <style scoped>
@@ -431,14 +419,6 @@ const getSuccessRateType = (rate) => {
   color: #303133;
 }
 
-.stat-value.income {
-  color: #67C23A;
-}
-
-.stat-value.outcome {
-  color: #E6A23C;
-}
-
 .table-toolbar {
   display: flex;
   justify-content: space-between;
@@ -469,14 +449,6 @@ const getSuccessRateType = (rate) => {
 .amount-cell {
   font-family: 'Roboto Mono', monospace;
   font-weight: 500;
-}
-
-.amount-cell.income {
-  color: #67c23a;
-}
-
-.amount-cell.outcome {
-  color: #f56c6c;
 }
 
 .time-filter-container {

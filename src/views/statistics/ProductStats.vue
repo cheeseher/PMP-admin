@@ -56,8 +56,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总收款金额</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#409EFF"><Money /></el-icon>
-            <span class="stat-value income">{{ formatAmount(totalSuccessAmount) }}</span>
+            <el-icon :size="22"><Money /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalSuccessAmount) }}</span>
           </div>
         </div>
       </el-card>
@@ -66,8 +66,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总手续费</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#E6A23C"><Discount /></el-icon>
-            <span class="stat-value outcome">{{ formatAmount(totalFeeAmount) }}</span>
+            <el-icon :size="22"><Discount /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalFeeAmount) }}</span>
           </div>
         </div>
       </el-card>
@@ -76,8 +76,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总入账金额</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#67C23A"><Wallet /></el-icon>
-            <span class="stat-value income">{{ formatAmount(totalNetAmount) }}</span>
+            <el-icon :size="22"><Wallet /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalNetAmount) }}</span>
           </div>
         </div>
       </el-card>
@@ -86,7 +86,7 @@
         <div class="compact-card-content">
           <div class="stat-header">总成功单数/总笔数</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#909399"><Document /></el-icon>
+            <el-icon :size="22"><Document /></el-icon>
             <span class="stat-value">{{ formatNumber(totalSuccessCount) }}/{{ formatNumber(totalOrderCount) }}笔</span>
           </div>
         </div>
@@ -123,17 +123,17 @@
         <el-table-column prop="merchantName" label="商户名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="successAmount" label="收款金额" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell income">{{ formatAmount(row.successAmount) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.successAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="feeAmount" label="手续费" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell outcome">{{ formatAmount(row.feeAmount) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.feeAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="netAmount" label="入账金额" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell income">{{ formatAmount(row.netAmount) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.netAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="orderCount" label="成功单数/总笔数" width="150" align="center">
@@ -143,12 +143,7 @@
         </el-table-column>
         <el-table-column prop="successRate" label="成功率" width="100" align="center">
           <template #default="{ row }">
-            <el-tag 
-              :type="getSuccessRateType(row.successRate)"
-              size="small"
-            >
-              {{ (row.successRate * 100).toFixed(2) }}%
-            </el-tag>
+            <span>{{ (row.successRate * 100).toFixed(2) }}%</span>
           </template>
         </el-table-column>
       </el-table>
@@ -504,14 +499,6 @@ const getSuccessRateType = (rate) => {
   color: #303133;
 }
 
-.stat-value.income {
-  color: #67C23A;
-}
-
-.stat-value.outcome {
-  color: #E6A23C;
-}
-
 .table-toolbar {
   display: flex;
   justify-content: space-between;
@@ -542,14 +529,6 @@ const getSuccessRateType = (rate) => {
 .amount-cell {
   font-family: 'Roboto Mono', monospace;
   font-weight: 500;
-}
-
-.amount-cell.income {
-  color: #67c23a;
-}
-
-.amount-cell.outcome {
-  color: #f56c6c;
 }
 
 .time-filter-container {

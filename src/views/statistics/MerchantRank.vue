@@ -26,17 +26,22 @@
               />
             </div>
           </el-form-item>
-          <el-form-item label="商户ID：">
-            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="商户名称：">
-            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
-          </el-form-item>
-          <el-form-item label="排序字段：">
-            <el-select v-model="searchForm.sortField" placeholder="请选择排序字段" style="width: 168px">
-              <el-option label="收款金额" value="amount" />
-              <el-option label="成功率" value="rate" />
-              <el-option label="成功单数" value="count" />
+          <el-form-item label="商户：">
+            <el-select
+              v-model="searchForm.merchantIds"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="请选择商户"
+              style="width: 220px"
+              clearable
+            >
+              <el-option
+                v-for="item in merchantOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
             </el-select>
           </el-form-item>
         </div>
@@ -53,8 +58,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总收款金额</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#409EFF"><Money /></el-icon>
-            <span class="stat-value income">{{ formatAmount(totalSuccessAmount) }}</span>
+            <el-icon :size="22"><Money /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalSuccessAmount) }}</span>
           </div>
         </div>
       </el-card>
@@ -63,8 +68,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总手续费</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#E6A23C"><Discount /></el-icon>
-            <span class="stat-value outcome">{{ formatAmount(totalFee) }}</span>
+            <el-icon :size="22"><Discount /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalFee) }}</span>
           </div>
         </div>
       </el-card>
@@ -73,8 +78,8 @@
         <div class="compact-card-content">
           <div class="stat-header">总入账金额</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#67C23A"><Wallet /></el-icon>
-            <span class="stat-value income">{{ formatAmount(totalNetAmount) }}</span>
+            <el-icon :size="22"><Wallet /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalNetAmount) }}</span>
           </div>
         </div>
       </el-card>
@@ -83,7 +88,7 @@
         <div class="compact-card-content">
           <div class="stat-header">总成功单数/总笔数</div>
           <div class="stat-body">
-            <el-icon :size="22" color="#909399"><Document /></el-icon>
+            <el-icon :size="22"><Document /></el-icon>
             <span class="stat-value">{{ formatNumber(totalSuccessCount) }}/{{ formatNumber(totalOrderCount) }}笔</span>
           </div>
         </div>
@@ -130,17 +135,17 @@
         <el-table-column prop="merchantName" label="商户名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="successAmount" label="收款金额" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell income">{{ formatAmount(row.successAmount) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.successAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="fee" label="手续费" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell outcome">{{ formatAmount(row.fee) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.fee) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="netAmount" label="入账金额" width="150" align="right">
           <template #default="{ row }">
-            <span class="amount-cell income">{{ formatAmount(row.netAmount) }}</span>
+            <span class="amount-cell">{{ formatAmount(row.netAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="orderCount" label="成功单数/总笔数" width="150" align="center">
@@ -150,12 +155,7 @@
         </el-table-column>
         <el-table-column prop="successRate" label="成功率" width="100" align="center">
           <template #default="{ row }">
-            <el-tag 
-              :type="getSuccessRateType(row.successRate)"
-              size="small"
-            >
-              {{ (row.successRate * 100).toFixed(2) }}%
-            </el-tag>
+            <span>{{ (row.successRate * 100).toFixed(2) }}%</span>
           </template>
         </el-table-column>
       </el-table>
@@ -199,11 +199,18 @@ const getDateRangeByType = (type) => {
   }
 }
 
+// 商户选项数据
+const merchantOptions = ref([
+  { value: '1001', label: '顶级商户A' },
+  { value: '1002', label: '优质商户B' },
+  { value: '1003', label: '标准商户C' },
+  { value: '1004', label: '普通商户D' },
+  { value: '1005', label: '小型商户E' }
+])
+
 // 搜索表单数据
 const searchForm = reactive({
-  merchantId: '',
-  merchantName: '',
-  sortField: 'amount',
+  merchantIds: [],
   timeType: 'today',
   dateRange: getDateRangeByType('today')
 })
@@ -340,9 +347,7 @@ const handleSearch = () => {
 
 // 重置方法
 const handleReset = () => {
-  searchForm.merchantId = ''
-  searchForm.merchantName = ''
-  searchForm.sortField = 'amount'
+  searchForm.merchantIds = []
   searchForm.timeType = 'today'
   searchForm.dateRange = getDateRangeByType('today')
   handleSearch()
@@ -392,13 +397,6 @@ const formatAmount = (amount) => {
 // 格式化数字
 const formatNumber = (num) => {
   return num.toLocaleString('zh-CN')
-}
-
-// 获取成功率类型
-const getSuccessRateType = (rate) => {
-  if (rate >= 0.95) return 'success'
-  if (rate >= 0.9) return 'warning'
-  return 'danger'
 }
 </script>
 
@@ -479,14 +477,6 @@ const getSuccessRateType = (rate) => {
   color: #303133;
 }
 
-.stat-value.income {
-  color: #67C23A;
-}
-
-.stat-value.outcome {
-  color: #E6A23C;
-}
-
 .table-toolbar {
   display: flex;
   justify-content: space-between;
@@ -517,14 +507,6 @@ const getSuccessRateType = (rate) => {
 .amount-cell {
   font-family: 'Roboto Mono', monospace;
   font-weight: 500;
-}
-
-.amount-cell.income {
-  color: #67c23a;
-}
-
-.amount-cell.outcome {
-  color: #f56c6c;
 }
 
 .rank-tag {

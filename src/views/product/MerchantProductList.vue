@@ -33,6 +33,8 @@
           <!-- 删除新增关联按钮 -->
         </div>
         <div class="right">
+          <el-button :icon="Printer" plain>打印</el-button>
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="fetchData" />
           </el-tooltip>
@@ -79,7 +81,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Refresh } from '@element-plus/icons-vue'
+import { Search, Refresh, Printer, Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { merchantProductList } from '@/data/merchantProductData'
 
@@ -140,6 +142,11 @@ const fetchData = () => {
     tableData.value = filteredData.slice(start, end)
     loading.value = false
   }, 300)
+}
+
+// 导出数据
+const handleExport = () => {
+  ElMessage.success('商户产品关联数据导出成功')
 }
 
 // 搜索与重置

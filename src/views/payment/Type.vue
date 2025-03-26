@@ -26,6 +26,8 @@
           <el-button :icon="Delete" plain :disabled="selectedRows.length === 0" @click="handleBatchDelete">批量删除</el-button>
         </div>
         <div class="right">
+          <el-button :icon="Printer" plain>打印</el-button>
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="fetchData" />
           </el-tooltip>
@@ -101,7 +103,9 @@ import {
   Refresh,
   Plus, 
   Delete,
-  Edit
+  Edit,
+  Printer,
+  Download
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCleanup } from '@/utils/cleanupUtils'
@@ -211,6 +215,11 @@ const fetchData = () => {
   safeTimeout(() => {
     loading.value = false
   }, 500)
+}
+
+// 导出数据
+const handleExport = () => {
+  ElMessage.success('支付类型数据导出成功')
 }
 
 // 搜索方法

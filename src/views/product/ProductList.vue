@@ -54,6 +54,8 @@
           <el-button :icon="Setting" plain :disabled="!selectedRows.length" @click="handleBatchConfig">批量配置产品</el-button>
         </div>
         <div class="right">
+          <el-button :icon="Printer" plain>打印</el-button>
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="fetchData" />
           </el-tooltip>
@@ -425,7 +427,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
-import { Search, Refresh, Plus, Delete, Setting, Edit, ArrowDown } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, Delete, Setting, Edit, ArrowDown, Printer, Download } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { productList } from '@/data/productData'
 import { merchantProductList } from '@/data/merchantProductData'
@@ -897,6 +899,11 @@ const handleCommand = (command, row) => {
 const handleQuickLogin = (row) => {
   ElMessage.success(`正在登录商户账户：${row.productId}`)
   // 实际登录逻辑这里仅作演示
+}
+
+// 导出数据
+const handleExport = () => {
+  ElMessage.success('商户数据导出成功')
 }
 
 // 批量配置

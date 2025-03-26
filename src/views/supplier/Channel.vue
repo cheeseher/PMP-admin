@@ -33,6 +33,8 @@
           <el-button type="danger" :icon="Delete" :disabled="selectedRows.length === 0" @click="handleBatchDelete">批量删除</el-button>
         </div>
         <div class="right">
+          <el-button :icon="Printer" plain>打印</el-button>
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="fetchData" />
           </el-tooltip>
@@ -266,7 +268,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from 'vue'
-import { Search, Refresh, Plus, Check, Close, EditPen, DocumentCopy, SetUp, Delete } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, Check, Close, EditPen, DocumentCopy, SetUp, Delete, Printer, Download } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { channelList, payTypeOptions, categoryOptions } from '@/data/channelData'
 import { supplierList } from '@/data/supplierData'
@@ -540,6 +542,11 @@ const handleBatchDelete = () => {
   }).catch(() => {
     ElMessage.info('已取消操作')
   })
+}
+
+// 导出数据
+const handleExport = () => {
+  ElMessage.success('供应商通道数据导出成功')
 }
 
 // 重置表单

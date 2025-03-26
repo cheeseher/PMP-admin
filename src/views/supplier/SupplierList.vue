@@ -40,6 +40,8 @@
           <el-button type="primary" :icon="Plus" @click="handleAdd">新增</el-button>
         </div>
         <div class="right">
+          <el-button :icon="Printer" plain>打印</el-button>
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="handleSearch" />
           </el-tooltip>
@@ -337,7 +339,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Refresh, Plus, ArrowDown } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, ArrowDown, Printer, Download } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { supplierList } from '@/data/supplierData'
 
@@ -735,6 +737,11 @@ const submitUnfreeze = () => {
       return false
     }
   })
+}
+
+// 导出数据
+const handleExport = () => {
+  ElMessage.success('供应商数据导出成功')
 }
 
 // 页面加载时获取数据

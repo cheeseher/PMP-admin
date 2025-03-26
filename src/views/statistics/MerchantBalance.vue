@@ -5,60 +5,38 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="商户名称：">
-            <el-input 
-              v-model="searchForm.merchantName" 
-              placeholder="请输入商户名称" 
-              clearable 
-              style="width: 220px" 
+          <el-form-item label="日期选择：">
+            <el-date-picker
+              v-model="searchForm.date"
+              type="date"
+              placeholder="选择日期"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 160px;"
             />
           </el-form-item>
-          <el-form-item label="余额范围：">
-            <el-input-number
-              v-model="searchForm.minBalance"
-              :precision="2"
-              :step="1000"
-              :min="0"
-              placeholder="最小金额"
-              style="width: 120px"
-              controls-position="right"
-            />
-            <span class="separator">-</span>
-            <el-input-number
-              v-model="searchForm.maxBalance"
-              :precision="2"
-              :step="1000"
-              :min="0"
-              placeholder="最大金额"
-              style="width: 120px"
-              controls-position="right"
-            />
-          </el-form-item>
-        </div>
-        <div class="filter-row">
-          <el-form-item label="时间筛选：">
-            <div class="time-filter-container">
-              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
-                <el-option label="自定义时间" value="custom" />
-                <el-option label="今日" value="today" />
-                <el-option label="昨日" value="yesterday" />
-                <el-option label="最近7天" value="last7days" />
-              </el-select>
-              <el-date-picker
-                v-if="searchForm.timeType === 'custom'"
-                v-model="searchForm.snapshotTime"
-                type="datetime"
-                placeholder="请选择快照时间"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                style="width: 240px; margin-left: 8px;"
-                :shortcuts="dateShortcuts"
+          <el-form-item label="商户选择：">
+            <el-select
+              v-model="searchForm.merchantIds"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="请选择商户"
+              style="width: 280px"
+              clearable
+            >
+              <el-option
+                v-for="item in merchantOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
               />
-            </div>
+            </el-select>
           </el-form-item>
-        </div>
-        <div class="filter-buttons">
-          <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
-          <el-button plain :icon="RefreshRight" @click="handleReset">重置</el-button>
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
+            <el-button plain :icon="RefreshRight" @click="handleReset">重置</el-button>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -103,12 +81,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="snapshotTime" label="备份时间" width="180" align="center" />
-        <el-table-column label="操作" width="180" fixed="right" align="center">
-          <template #default="{ row }">
-            <el-button type="primary" link @click="viewDetail(row)">查看明细</el-button>
-            <el-button type="success" link @click="viewHistory(row)">历史记录</el-button>
-          </template>
-        </el-table-column>
       </el-table>
 
       <!-- 分页 -->
@@ -163,7 +135,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { 
   ArrowUp, 
   ArrowDown, 
@@ -180,61 +152,20 @@ import { formatAmount } from '@/utils/formatUtils'
 import { merchantBalanceData } from '@/data/statisticsData'
 import dayjs from 'dayjs'
 
-// 根据时间类型获取日期范围
-const getDateTimeByType = (type) => {
-  const today = dayjs()
-  
-  switch (type) {
-    case 'today':
-      return today.format('YYYY-MM-DD HH:mm:ss')
-    case 'yesterday':
-      return today.subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')
-    case 'last7days':
-      return today.subtract(6, 'day').format('YYYY-MM-DD HH:mm:ss')
-    default:
-      return ''
-  }
-}
+// 商户选项
+const merchantOptions = ref([
+  { value: 'M001', label: '测试商户' },
+  { value: 'M002', label: '示例商户' },
+  { value: 'M003', label: '演示商户' },
+  { value: 'M004', label: '测试商户A' },
+  { value: 'M005', label: '测试商户B' }
+])
 
 // 搜索表单数据
 const searchForm = reactive({
-  merchantName: '',
-  minBalance: null,
-  maxBalance: null,
-  timeType: 'today',
-  snapshotTime: getDateTimeByType('today')
+  date: dayjs().format('YYYY-MM-DD'),
+  merchantIds: []
 })
-
-// 监听时间类型变化，自动设置日期
-watch(() => searchForm.timeType, (newType) => {
-  if (newType !== 'custom') {
-    searchForm.snapshotTime = getDateTimeByType(newType)
-  }
-})
-
-// 日期快捷选项
-const dateShortcuts = [
-  {
-    text: '今天',
-    value: new Date()
-  },
-  {
-    text: '昨天',
-    value: (() => {
-      const date = new Date()
-      date.setTime(date.getTime() - 3600 * 1000 * 24)
-      return date
-    })()
-  },
-  {
-    text: '一周前',
-    value: (() => {
-      const date = new Date()
-      date.setTime(date.getTime() - 3600 * 1000 * 24 * 7)
-      return date
-    })()
-  }
-]
 
 // 表格数据
 const tableData = ref([])
@@ -274,32 +205,27 @@ const handleSearch = () => {
     // 根据搜索条件过滤数据
     let filteredData = [...merchantBalanceData]
     
-    if (searchForm.merchantName) {
+    if (searchForm.merchantIds && searchForm.merchantIds.length > 0) {
       filteredData = filteredData.filter(item => 
-        item.merchantName.includes(searchForm.merchantName)
+        searchForm.merchantIds.includes(item.merchantId)
       )
     }
     
-    if (searchForm.minBalance !== null) {
+    if (searchForm.date) {
+      const selectedDate = searchForm.date
       filteredData = filteredData.filter(item => 
-        item.balance >= searchForm.minBalance
+        item.snapshotTime && item.snapshotTime.startsWith(selectedDate)
       )
     }
     
-    if (searchForm.maxBalance !== null) {
-      filteredData = filteredData.filter(item => 
-        item.balance <= searchForm.maxBalance
-      )
-    }
+    const processedData = filteredData.map(item => ({
+      ...item,
+      date: item.snapshotTime ? item.snapshotTime.split(' ')[0] : '',
+      merchantAccount: `account${item.merchantId.substring(1)}`
+    }))
     
-    if (searchForm.snapshotTime) {
-      filteredData = filteredData.filter(item => 
-        item.snapshotTime === searchForm.snapshotTime
-      )
-    }
-    
-    tableData.value = filteredData
-    total.value = filteredData.length
+    tableData.value = processedData
+    total.value = processedData.length
     
     loading.value = false
     ElMessage.success('查询成功')
@@ -308,11 +234,8 @@ const handleSearch = () => {
 
 // 重置方法
 const handleReset = () => {
-  searchForm.merchantName = ''
-  searchForm.minBalance = null
-  searchForm.maxBalance = null
-  searchForm.timeType = 'today'
-  searchForm.snapshotTime = getDateTimeByType('today')
+  searchForm.date = dayjs().format('YYYY-MM-DD')
+  searchForm.merchantIds = []
   handleSearch()
 }
 
@@ -438,11 +361,6 @@ const viewDetail = (row) => {
   }, 100);
 }
 
-// 查看历史记录
-const viewHistory = (row) => {
-  ElMessage.info(`查看商户 ${row.merchantName} 的历史余额记录`)
-}
-
 // 打印明细
 const printDetail = () => {
   ElMessage.success('明细打印指令已发送')
@@ -480,15 +398,9 @@ onMounted(() => {
   margin-right: 20px;
 }
 
-.separator {
-  margin: 0 8px;
-  color: #909399;
-}
-
 .filter-buttons {
+  margin-left: auto;
   display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
 }
 
 .filter-buttons .el-button + .el-button {

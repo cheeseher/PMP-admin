@@ -34,6 +34,49 @@
       </el-form>
     </el-card>
 
+    <!-- 统计卡片 -->
+    <div class="stat-cards">
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总收款金额</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#409EFF"><Money /></el-icon>
+            <span class="stat-value income">{{ formatAmount(totalSuccessAmount) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总通道成本</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#E6A23C"><Discount /></el-icon>
+            <span class="stat-value outcome">{{ formatAmount(totalChannelCost) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总利润</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#67C23A"><Wallet /></el-icon>
+            <span class="stat-value income">{{ formatAmount(totalProfit) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总手续费</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#67C23A"><Money /></el-icon>
+            <span class="stat-value income">{{ formatAmount(totalFee) }}</span>
+          </div>
+        </div>
+      </el-card>
+    </div>
+
     <!-- 数据表格 -->
     <el-card shadow="never">
       <!-- 表格工具栏 -->
@@ -114,8 +157,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
-import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { Search, Refresh, Download, Printer, Money, Discount, Wallet } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 
@@ -202,6 +245,23 @@ const tableData = ref([
     successRate: 0.98
   }
 ])
+
+// 统计数据计算
+const totalSuccessAmount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.successAmount, 0)
+})
+
+const totalChannelCost = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.channelCost, 0)
+})
+
+const totalProfit = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.profitAfterChannel, 0)
+})
+
+const totalFee = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.fee, 0)
+})
 
 // 分页相关
 const currentPage = ref(1)
@@ -329,6 +389,56 @@ const getSuccessRateType = (rate) => {
   margin-left: 12px;
 }
 
+/* 统计卡片样式 */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  height: auto;
+}
+
+.stat-card :deep(.el-card__body) {
+  padding: 10px;
+}
+
+.compact-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-header {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.stat-body {
+  display: flex;
+  align-items: center;
+}
+
+.stat-body .el-icon {
+  margin-right: 8px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.stat-value.income {
+  color: #67C23A;
+}
+
+.stat-value.outcome {
+  color: #E6A23C;
+}
+
 .table-toolbar {
   display: flex;
   justify-content: space-between;
@@ -373,5 +483,18 @@ const getSuccessRateType = (rate) => {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+}
+
+/* 媒体查询，适配小屏幕 */
+@media (max-width: 1200px) {
+  .stat-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stat-cards {
+    grid-template-columns: 1fr;
+  }
 }
 </style> 

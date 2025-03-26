@@ -5,30 +5,6 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="商户ID：">
-            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="商户名称：">
-            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
-          </el-form-item>
-          <el-form-item label="支付类型：">
-            <el-select v-model="searchForm.payType" placeholder="请选择支付类型" style="width: 168px" clearable>
-              <el-option label="支付宝" value="alipay" />
-              <el-option label="微信支付" value="wechat" />
-              <el-option label="银联" value="unionpay" />
-              <el-option label="快捷支付" value="quick" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="订单状态：">
-            <el-select v-model="searchForm.orderStatus" placeholder="请选择订单状态" style="width: 168px" clearable>
-              <el-option label="支付成功" value="success" />
-              <el-option label="支付失败" value="failed" />
-              <el-option label="待支付" value="pending" />
-              <el-option label="已退款" value="refunded" />
-            </el-select>
-          </el-form-item>
-        </div>
-        <div class="filter-row">
           <el-form-item label="时间筛选：">
             <div class="time-filter-container">
               <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
@@ -50,6 +26,30 @@
               />
             </div>
           </el-form-item>
+          <el-form-item label="商户ID：">
+            <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="商户名称：">
+            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
+          </el-form-item>
+        </div>
+        <div class="filter-row">
+          <el-form-item label="支付类型：">
+            <el-select v-model="searchForm.payType" placeholder="请选择支付类型" style="width: 168px" clearable>
+              <el-option label="支付宝" value="alipay" />
+              <el-option label="微信支付" value="wechat" />
+              <el-option label="银联" value="unionpay" />
+              <el-option label="快捷支付" value="quick" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="订单状态：">
+            <el-select v-model="searchForm.orderStatus" placeholder="请选择订单状态" style="width: 168px" clearable>
+              <el-option label="支付成功" value="success" />
+              <el-option label="支付失败" value="failed" />
+              <el-option label="待支付" value="pending" />
+              <el-option label="已退款" value="refunded" />
+            </el-select>
+          </el-form-item>
         </div>
         <div class="filter-buttons">
           <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
@@ -57,6 +57,69 @@
         </div>
       </el-form>
     </el-card>
+
+    <!-- 统计卡片 -->
+    <div class="stat-cards">
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总收款金额</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#409EFF"><Money /></el-icon>
+            <span class="stat-value income">{{ formatAmount(totalSuccessAmount) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总补单金额</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#67C23A"><Plus /></el-icon>
+            <span class="stat-value income">{{ formatAmount(totalSupplementAmount) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总收款额</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#409EFF"><Money /></el-icon>
+            <span class="stat-value income">{{ formatAmount(totalAmount) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总手续费</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#E6A23C"><Discount /></el-icon>
+            <span class="stat-value outcome">{{ formatAmount(totalFee) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总税后金额</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#67C23A"><Wallet /></el-icon>
+            <span class="stat-value income">{{ formatAmount(totalAfterTaxAmount) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总成功单数</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#909399"><Document /></el-icon>
+            <span class="stat-value">{{ formatNumber(totalSuccessCount) }}笔</span>
+          </div>
+        </div>
+      </el-card>
+    </div>
 
     <!-- 数据表格 -->
     <el-card shadow="never">
@@ -136,8 +199,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
-import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
+import { ref, reactive, watch, computed } from 'vue'
+import { Search, Refresh, Download, Printer, Money, Plus, Discount, Wallet, Document } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
 
@@ -214,6 +277,31 @@ const tableData = ref([
     successCount: 880
   }
 ])
+
+// 统计数据计算
+const totalSuccessAmount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.successAmount, 0)
+})
+
+const totalSupplementAmount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.supplementAmount, 0)
+})
+
+const totalAmount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.totalAmount, 0)
+})
+
+const totalFee = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.fee, 0)
+})
+
+const totalAfterTaxAmount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.afterTaxAmount, 0)
+})
+
+const totalSuccessCount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.successCount, 0)
+})
 
 const loading = ref(false)
 const currentPage = ref(1)
@@ -348,6 +436,56 @@ const getSuccessRateType = (rate) => {
   margin-left: 12px;
 }
 
+/* 统计卡片样式 */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  height: auto;
+}
+
+.stat-card :deep(.el-card__body) {
+  padding: 10px;
+}
+
+.compact-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-header {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.stat-body {
+  display: flex;
+  align-items: center;
+}
+
+.stat-body .el-icon {
+  margin-right: 8px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.stat-value.income {
+  color: #67C23A;
+}
+
+.stat-value.outcome {
+  color: #E6A23C;
+}
+
 .table-toolbar {
   display: flex;
   justify-content: space-between;
@@ -386,5 +524,30 @@ const getSuccessRateType = (rate) => {
 
 .amount-cell.outcome {
   color: #f56c6c;
+}
+
+.time-filter-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* 媒体查询，适配小屏幕 */
+@media (max-width: 1600px) {
+  .stat-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .stat-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stat-cards {
+    grid-template-columns: 1fr;
+  }
 }
 </style> 

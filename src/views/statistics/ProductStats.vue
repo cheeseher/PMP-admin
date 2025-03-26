@@ -5,9 +5,6 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="产品名称：">
-            <el-input v-model="searchForm.productName" placeholder="请输入产品名称" style="width: 220px" clearable />
-          </el-form-item>
           <el-form-item label="时间筛选：">
             <div class="time-filter-container">
               <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
@@ -27,19 +24,23 @@
                 value-format="YYYY-MM-DD"
                 style="width: 240px; margin-left: 8px;"
               />
-              <span class="merchant-label">商户：</span>
-              <el-select 
-                v-model="searchForm.merchantIds" 
-                placeholder="请选择商户" 
-                style="width: 168px;"
-                clearable 
-                multiple 
-                collapse-tags 
-                collapse-tags-tooltip
-              >
-                <el-option v-for="item in merchantOptions" :key="item.value" :label="item.label" :value="item.value" />
-              </el-select>
             </div>
+          </el-form-item>
+          <el-form-item label="产品名称：">
+            <el-input v-model="searchForm.productName" placeholder="请输入产品名称" style="width: 220px" clearable />
+          </el-form-item>
+          <el-form-item label="商户：">
+            <el-select 
+              v-model="searchForm.merchantIds" 
+              placeholder="请选择商户" 
+              style="width: 168px;"
+              clearable 
+              multiple 
+              collapse-tags 
+              collapse-tags-tooltip
+            >
+              <el-option v-for="item in merchantOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
           </el-form-item>
         </div>
         <div class="filter-buttons">
@@ -48,6 +49,49 @@
         </div>
       </el-form>
     </el-card>
+
+    <!-- 统计卡片 -->
+    <div class="stat-cards">
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总收款金额</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#409EFF"><Money /></el-icon>
+            <span class="stat-value income">{{ formatAmount(totalSuccessAmount) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总手续费</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#E6A23C"><Discount /></el-icon>
+            <span class="stat-value outcome">{{ formatAmount(totalFeeAmount) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总入账金额</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#67C23A"><Wallet /></el-icon>
+            <span class="stat-value income">{{ formatAmount(totalNetAmount) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总成功单数/总笔数</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#909399"><Document /></el-icon>
+            <span class="stat-value">{{ formatNumber(totalSuccessCount) }}/{{ formatNumber(totalOrderCount) }}笔</span>
+          </div>
+        </div>
+      </el-card>
+    </div>
 
     <!-- 数据表格 -->
     <el-card shadow="never">
@@ -126,8 +170,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
-import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { Search, Refresh, Download, Printer, Money, Discount, Wallet, Document } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 
@@ -257,6 +301,27 @@ const tableData = ref([
     remark: ''
   }
 ])
+
+// 统计数据计算
+const totalSuccessAmount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.successAmount, 0)
+})
+
+const totalFeeAmount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.feeAmount, 0)
+})
+
+const totalNetAmount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.netAmount, 0)
+})
+
+const totalSuccessCount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.successCount, 0)
+})
+
+const totalOrderCount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.orderCount, 0)
+})
 
 // 分页相关
 const currentPage = ref(1)
@@ -397,6 +462,56 @@ const getSuccessRateType = (rate) => {
   margin-left: 12px;
 }
 
+/* 统计卡片样式 */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  height: auto;
+}
+
+.stat-card :deep(.el-card__body) {
+  padding: 10px;
+}
+
+.compact-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-header {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.stat-body {
+  display: flex;
+  align-items: center;
+}
+
+.stat-body .el-icon {
+  margin-right: 8px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.stat-value.income {
+  color: #67C23A;
+}
+
+.stat-value.outcome {
+  color: #E6A23C;
+}
+
 .table-toolbar {
   display: flex;
   justify-content: space-between;
@@ -443,8 +558,16 @@ const getSuccessRateType = (rate) => {
   flex-wrap: wrap;
 }
 
-.merchant-label {
-  margin: 0 8px 0 16px;
-  color: var(--el-text-color-regular);
+/* 媒体查询，适配小屏幕 */
+@media (max-width: 1200px) {
+  .stat-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stat-cards {
+    grid-template-columns: 1fr;
+  }
 }
 </style> 

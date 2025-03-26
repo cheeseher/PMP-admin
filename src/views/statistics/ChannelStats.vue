@@ -5,22 +5,6 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="供应商通道ID：">
-            <el-input v-model="searchForm.channelId" placeholder="请输入供应商通道ID" style="width: 168px" clearable />
-          </el-form-item>
-          <el-form-item label="通道名称：">
-            <el-input v-model="searchForm.channelName" placeholder="请输入通道名称" style="width: 220px" clearable />
-          </el-form-item>
-          <el-form-item label="通道编码：">
-            <el-select v-model="searchForm.payType" placeholder="请选择通道编码" style="width: 168px" clearable>
-              <el-option label="支付宝" value="alipay" />
-              <el-option label="微信支付" value="wechat" />
-              <el-option label="银联" value="unionpay" />
-              <el-option label="快捷支付" value="quick" />
-            </el-select>
-          </el-form-item>
-        </div>
-        <div class="filter-row">
           <el-form-item label="时间筛选：">
             <div class="time-filter-container">
               <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
@@ -42,6 +26,20 @@
               />
             </div>
           </el-form-item>
+          <el-form-item label="供应商通道ID：">
+            <el-input v-model="searchForm.channelId" placeholder="请输入供应商通道ID" style="width: 168px" clearable />
+          </el-form-item>
+          <el-form-item label="通道名称：">
+            <el-input v-model="searchForm.channelName" placeholder="请输入通道名称" style="width: 220px" clearable />
+          </el-form-item>
+          <el-form-item label="通道编码：">
+            <el-select v-model="searchForm.payType" placeholder="请选择通道编码" style="width: 168px" clearable>
+              <el-option label="支付宝" value="alipay" />
+              <el-option label="微信支付" value="wechat" />
+              <el-option label="银联" value="unionpay" />
+              <el-option label="快捷支付" value="quick" />
+            </el-select>
+          </el-form-item>
         </div>
         <div class="filter-buttons">
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -49,6 +47,49 @@
         </div>
       </el-form>
     </el-card>
+
+    <!-- 统计卡片 -->
+    <div class="stat-cards">
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总成功金额</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#409EFF"><Money /></el-icon>
+            <span class="stat-value income">{{ formatAmount(totalSuccessAmount) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总金额</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#909399"><Money /></el-icon>
+            <span class="stat-value">{{ formatAmount(totalOrderAmount) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总通道成本</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#E6A23C"><Discount /></el-icon>
+            <span class="stat-value outcome">{{ formatAmount(totalFee) }}</span>
+          </div>
+        </div>
+      </el-card>
+
+      <el-card shadow="hover" class="stat-card">
+        <div class="compact-card-content">
+          <div class="stat-header">总成功单数/总笔数</div>
+          <div class="stat-body">
+            <el-icon :size="22" color="#909399"><Document /></el-icon>
+            <span class="stat-value">{{ formatNumber(totalSuccessCount) }}/{{ formatNumber(totalOrderCount) }}笔</span>
+          </div>
+        </div>
+      </el-card>
+    </div>
 
     <!-- 数据表格 -->
     <el-card shadow="never">
@@ -76,11 +117,7 @@
         <el-table-column type="selection" width="50" align="center" />
         <el-table-column prop="channelId" label="供应商通道ID" width="120" align="center" />
         <el-table-column prop="channelName" label="通道名称" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="payType" label="通道编码" width="100" align="center">
-          <template #default="{ row }">
-            <el-tag size="small" :type="getPayTypeType(row.payType)">{{ row.payType }}</el-tag>
-          </template>
-        </el-table-column>
+        <el-table-column prop="payType" label="通道编码" width="100" align="center" />
         <el-table-column prop="successAmount" label="成功金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell income">{{ formatAmount(row.successAmount) }}</span>
@@ -96,14 +133,9 @@
             <span class="amount-cell outcome">{{ formatAmount(row.fee) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="successCount" label="成功单数" width="100" align="center">
+        <el-table-column prop="orderCount" label="成功单数/总笔数" width="150" align="center">
           <template #default="{ row }">
-            <span>{{ formatNumber(row.successCount) }}笔</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="orderCount" label="总笔数" width="100" align="center">
-          <template #default="{ row }">
-            <span>{{ formatNumber(row.orderCount) }}笔</span>
+            <span>{{ formatNumber(row.successCount) }}/{{ formatNumber(row.orderCount) }}笔</span>
           </template>
         </el-table-column>
         <el-table-column prop="successRate" label="成功率" width="100" align="center">
@@ -135,8 +167,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
-import { Search, Refresh, Download, Printer } from '@element-plus/icons-vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { Search, Refresh, Download, Printer, Money, Discount, Document } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCleanup } from '@/composables/useCleanup'
 import dayjs from 'dayjs'
@@ -228,6 +260,27 @@ const tableData = ref([
     fee: 270.00
   }
 ])
+
+// 统计数据计算
+const totalSuccessAmount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.successAmount, 0)
+})
+
+const totalOrderAmount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.orderAmount, 0)
+})
+
+const totalFee = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.fee, 0)
+})
+
+const totalSuccessCount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.successCount, 0)
+})
+
+const totalOrderCount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.orderCount, 0)
+})
 
 // 分页相关
 const currentPage = ref(1)
@@ -380,6 +433,56 @@ const getSuccessRateType = (rate) => {
   margin-left: 12px;
 }
 
+/* 统计卡片样式 */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  height: auto;
+}
+
+.stat-card :deep(.el-card__body) {
+  padding: 10px;
+}
+
+.compact-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-header {
+  font-size: 14px;
+  color: #606266;
+  margin-bottom: 8px;
+}
+
+.stat-body {
+  display: flex;
+  align-items: center;
+}
+
+.stat-body .el-icon {
+  margin-right: 8px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.stat-value.income {
+  color: #67C23A;
+}
+
+.stat-value.outcome {
+  color: #E6A23C;
+}
+
 .table-toolbar {
   display: flex;
   justify-content: space-between;
@@ -418,5 +521,24 @@ const getSuccessRateType = (rate) => {
 
 .amount-cell.outcome {
   color: #f56c6c;
+}
+
+.time-filter-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* 媒体查询，适配小屏幕 */
+@media (max-width: 1200px) {
+  .stat-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stat-cards {
+    grid-template-columns: 1fr;
+  }
 }
 </style> 

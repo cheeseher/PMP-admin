@@ -14,6 +14,12 @@
           :collapse="isCollapse"
           @select="handleSelect"
         >
+          <!-- 仪表板 -->
+          <el-menu-item index="/dashboard">
+            <el-icon><DataLine /></el-icon>
+            <span>仪表板</span>
+          </el-menu-item>
+
           <!-- 数据统计 -->
           <el-sub-menu index="/statistics">
             <template #title>
@@ -140,7 +146,8 @@ import {
   Expand,
   Fold,
   ShoppingCart,
-  Setting
+  Setting,
+  DataLine
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

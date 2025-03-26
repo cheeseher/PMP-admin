@@ -28,7 +28,7 @@
       <!-- 表格工具栏 -->
       <div class="table-toolbar">
         <div class="left">
-          <el-button type="primary" :icon="Plus" @click="handleAdd">新建</el-button>
+          <el-button type="primary" :icon="Plus" @click="handleAdd">新增</el-button>
           <el-button type="warning" :icon="SetUp" :disabled="selectedRows.length === 0" @click="handleBatchSetCategory">批量设置分组</el-button>
           <el-button type="danger" :icon="Delete" :disabled="selectedRows.length === 0" @click="handleBatchDelete">批量删除</el-button>
         </div>

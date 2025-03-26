@@ -7,8 +7,16 @@ const router = createRouter({
     {
       path: '/',
       component: MainLayout,
-      redirect: '/product/list',
+      redirect: '/dashboard',
       children: [
+        // 仪表板
+        {
+          path: '/dashboard',
+          name: 'Dashboard',
+          component: () => import('@/views/statistics/Dashboard.vue'),
+          meta: { title: '仪表板' }
+        },
+        
         // 订单管理
         {
           path: '/order',
@@ -107,7 +115,7 @@ const router = createRouter({
         {
           path: '/statistics',
           name: 'Statistics',
-          redirect: '/statistics/product',
+          redirect: '/statistics/dashboard',
           meta: { title: '数据统计' },
           children: [
             {

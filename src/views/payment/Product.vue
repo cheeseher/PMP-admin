@@ -52,22 +52,6 @@
         <el-table-column prop="id" label="支付产品ID" width="120" />
         <el-table-column prop="productName" label="支付产品名称" min-width="150" show-overflow-tooltip />
         <el-table-column prop="productCode" label="支付产品编码" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="payType" label="支付类型" width="120">
-          <template #default="scope">
-            <el-tag 
-              :type="scope.row.payType === 'ALIPAY' ? 'primary' : 
-                    scope.row.payType === 'WECHAT' ? 'success' : 'info'">
-              {{ scope.row.payType === 'ALIPAY' ? '支付宝' : 
-                 scope.row.payType === 'WECHAT' ? '微信支付' : 
-                 scope.row.payType === 'UNIONPAY' ? '银联支付' : scope.row.payType }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="feeRate" label="费率" width="100">
-          <template #default="scope">
-            <span class="fee-rate">{{ scope.row.feeRate }}%</span>
-          </template>
-        </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
             <el-switch
@@ -122,12 +106,47 @@
           <el-input v-model="productForm.productCode" placeholder="请输入支付产品编码" />
         </el-form-item>
         <el-form-item label="供应商通道" prop="channelCode">
-          <el-select v-model="productForm.channelCode" multiple placeholder="请选择供应商通道" style="width: 100%">
-            <el-option label="支付宝" value="ALIPAY" />
-            <el-option label="微信支付" value="WECHAT" />
-            <el-option label="银联支付" value="UNIONPAY" />
+          <el-select v-model="productForm.channelCode" multiple placeholder="请选择供应商通道" style="width: 100%" @change="handleChannelChange">
+            <el-option-group label="未分组">
+              <el-option label="支付宝" value="ALIPAY" />
+              <el-option label="微信支付" value="WECHAT" />
+              <el-option label="银联支付" value="UNIONPAY" />
+            </el-option-group>
+            <el-option-group label="分组">
+              <el-option label="分组 1" value="GROUP_1" />
+              <el-option label="分组 2" value="GROUP_2" />
+              <el-option label="分组 3" value="GROUP_3" />
+            </el-option-group>
           </el-select>
         </el-form-item>
+        
+        <!-- 供应商通道表格 -->
+        <el-form-item label="" v-if="productForm.channelCode && productForm.channelCode.length > 0">
+          <div class="channel-table-container">
+            <el-table :data="channelTableData" border style="width: 100%" size="small">
+              <el-table-column prop="channelName" label="通道名称" min-width="120" />
+              <el-table-column prop="channelCode" label="通道编码" min-width="120" />
+              <el-table-column prop="channelFeeRate" label="通道费率" width="100">
+                <template #default="scope">
+                  <span>{{ scope.row.channelFeeRate }}%</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="weight" label="权重" width="120">
+                <template #default="scope">
+                  <el-input-number 
+                    v-model="scope.row.weight" 
+                    :precision="0" 
+                    :step="1" 
+                    :min="1" 
+                    :max="100"
+                    controls-position="right"
+                    style="width: 90%" />
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </el-form-item>
+        
         <el-form-item label="商户费率" prop="feeRate">
           <div class="fee-rate-input">
             <el-input-number 
@@ -195,7 +214,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { Search, Delete, Plus, Edit, Refresh, Check, Close, Remove, Printer, Download } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCleanup } from '@/utils/cleanupUtils'
@@ -264,6 +283,8 @@ const productForm = reactive({
 
 const submitLoading = ref(false)
 
+const channelTableData = ref([])
+
 const formRules = {
   productName: [
     { required: true, message: '请输入支付产品名称', trigger: 'blur' },
@@ -329,6 +350,8 @@ const handleAdd = () => {
   productForm.superPassword = ''
   productForm.remark = ''
   
+  channelTableData.value = []
+  
   formDialogVisible.value = true
 }
 
@@ -337,6 +360,11 @@ const handleEdit = (row) => {
   Object.keys(productForm).forEach(key => {
     productForm[key] = row[key] || ''
   })
+  
+  if (productForm.channelCode && productForm.channelCode.length > 0) {
+    handleChannelChange(productForm.channelCode);
+  }
+  
   formDialogVisible.value = true
 }
 
@@ -393,9 +421,13 @@ const handleBatchApprove = () => {
       type: 'warning'
     }
   ).then(() => {
-    // TODO: 实现支付产品一键开启逻辑
+    // 实现支付产品一键开启逻辑
     loading.value = true
     safeTimeout(() => {
+      // 将所有表格数据状态改为开启
+      tableData.value.forEach(item => {
+        item.status = 'ONLINE'
+      })
       loading.value = false
       ElMessage.success('支付产品一键开启成功')
     }, 500)
@@ -412,9 +444,13 @@ const handleBatchReject = () => {
       type: 'warning'
     }
   ).then(() => {
-    // TODO: 实现支付产品一键关闭逻辑
+    // 实现支付产品一键关闭逻辑
     loading.value = true
     safeTimeout(() => {
+      // 将所有表格数据状态改为关闭
+      tableData.value.forEach(item => {
+        item.status = 'OFFLINE'
+      })
       loading.value = false
       ElMessage.success('支付产品一键关闭成功')
     }, 500)
@@ -497,6 +533,71 @@ const handleSizeChange = (val) => {
 const handleCurrentChange = (val) => {
   currentPage.value = val
   fetchData()
+}
+
+const handleChannelChange = (selectedChannels) => {
+  // 保留已存在的通道及其设置
+  const existingChannels = channelTableData.value.reduce((acc, curr) => {
+    acc[curr.channelCode] = curr;
+    return acc;
+  }, {});
+  
+  // 定义分组内容
+  const groups = {
+    GROUP_1: [
+      { code: 'ALIPAY_GROUP1', name: '支付宝通道 1' },
+      { code: 'WECHAT_GROUP1', name: '微信支付通道 1' }
+    ],
+    GROUP_2: [
+      { code: 'ALIPAY_GROUP2', name: '支付宝通道 2' },
+      { code: 'WECHAT_GROUP2', name: '微信支付通道 2' },
+      { code: 'JD_GROUP2', name: '京东支付通道' }
+    ],
+    GROUP_3: [
+      { code: 'UNIONPAY_GROUP3', name: '银联支付通道' },
+      { code: 'BAIDU_GROUP3', name: '百度钱包通道' }
+    ]
+  };
+  
+  // 处理选择的通道，包括分组
+  let processedChannels = [];
+  
+  selectedChannels.forEach(channel => {
+    // 如果是分组，添加该分组下所有通道
+    if (channel.startsWith('GROUP_') && groups[channel]) {
+      processedChannels = [...processedChannels, ...groups[channel].map(item => ({
+        channelCode: item.code,
+        channelName: item.name,
+        channelFeeRate: 0,
+        weight: 1,
+        groupCode: channel // 记录所属分组
+      }))];
+    } else if (!channel.startsWith('GROUP_')) {
+      // 如果是单独的通道，直接添加
+      let channelName = '';
+      if (channel === 'ALIPAY') channelName = '支付宝';
+      else if (channel === 'WECHAT') channelName = '微信支付';
+      else if (channel === 'UNIONPAY') channelName = '银联支付';
+      
+      processedChannels.push({
+        channelCode: channel,
+        channelName,
+        channelFeeRate: 0,
+        weight: 1
+      });
+    }
+  });
+  
+  // 更新表格数据，保留已存在的设置
+  channelTableData.value = processedChannels.map(channel => {
+    if (existingChannels[channel.channelCode]) {
+      return {
+        ...existingChannels[channel.channelCode],
+        groupCode: channel.groupCode
+      };
+    }
+    return channel;
+  });
 }
 
 // 获取安全定时器
@@ -601,5 +702,10 @@ const handleExport = () => {
   margin-left: 3px;
   color: #606266;
   font-size: 14px;
+}
+
+.channel-table-container {
+  margin-left: -140px; /* 与 label-width 对应，使表格左侧与表单项文字对齐 */
+  width: calc(100% + 140px); /* 确保表格宽度仍然是100% */
 }
 </style> 

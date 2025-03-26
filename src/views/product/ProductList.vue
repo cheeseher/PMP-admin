@@ -286,25 +286,81 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="商户费率" prop="rate">
-          <div class="rate-input-group">
-            <el-input-number 
-              v-model="batchConfigForm.rate" 
-              :precision="2" 
-              :step="0.1" 
-              :min="0" 
-              :max="20"
-              controls-position="right"
-              style="width: 180px"
-            />
-            <span class="rate-unit">%</span>
+        
+        <!-- 支付产品费率列表 -->
+        <div class="product-rate-list" v-if="batchConfigForm.productRates.length > 0">
+          <el-divider content-position="left">支付产品费率列表</el-divider>
+          
+          <!-- 批量设置费率 -->
+          <div v-if="batchConfigForm.productRates.length > 1" class="batch-rate-setting">
+            <el-alert
+              type="info"
+              :closable="false"
+              show-icon
+            >
+              <template #title>
+                <div class="batch-rate-title">
+                  <span>批量设置费率</span>
+                  <div class="batch-rate-input">
+                    <el-input-number 
+                      v-model="batchConfigForm.rate" 
+                      :precision="2" 
+                      :step="0.1" 
+                      :min="0"
+                      :max="20"
+                      controls-position="right"
+                      size="small"
+                      style="width: 120px"
+                    />
+                    <span class="rate-unit">%</span>
+                    <el-button type="primary" size="small" style="margin-left: 10px" @click="applyBatchConfigRate">应用到所有产品</el-button>
+                  </div>
+                </div>
+              </template>
+            </el-alert>
           </div>
-        </el-form-item>
+          
+          <el-table :data="batchConfigForm.productRates" style="width: 100%; margin-top: 16px" border>
+            <el-table-column prop="productName" label="支付产品名称" min-width="180" />
+            <el-table-column label="商户费率" min-width="200">
+              <template #default="scope">
+                <div class="rate-input-group">
+                  <el-input-number 
+                    v-model="scope.row.rate" 
+                    :precision="2" 
+                    :step="0.1" 
+                    :min="0" 
+                    :max="20"
+                    controls-position="right"
+                    style="width: 100px"
+                    size="small"
+                  />
+                  <span class="rate-unit">%</span>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" min-width="100" align="center">
+              <template #default="scope">
+                <el-button 
+                  type="danger" 
+                  link 
+                  size="small" 
+                  @click="removeBatchProductRate(scope.row.productId)"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+        
+        <!-- 无产品提示 -->
+        <el-empty v-if="batchConfigForm.productRates.length === 0" description="请选择支付产品" />
       </el-form>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="batchConfigVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitBatchConfig">确认</el-button>
+          <el-button type="primary" @click="submitBatchConfig" :disabled="batchConfigForm.productRates.length === 0">确认</el-button>
         </div>
       </template>
     </el-dialog>
@@ -1074,7 +1130,8 @@ const batchConfigFormRef = ref(null)
 const batchConfigForm = reactive({
   verified: 'Y',
   selectedProducts: [],
-  rate: 3.00
+  rate: 3.00,
+  productRates: []
 })
 
 const handleBatchConfig = () => {
@@ -1086,8 +1143,63 @@ const handleBatchConfig = () => {
   // 重置表单
   batchConfigForm.selectedProducts = []
   batchConfigForm.rate = 3.00
+  batchConfigForm.productRates = []
   
   batchConfigVisible.value = true
+}
+
+// 监听批量配置中选择产品变化
+const watchBatchSelectedProducts = () => {
+  // 当选择的产品变化时，更新产品费率列表
+  const currentProductIds = batchConfigForm.productRates.map(item => item.productId)
+  
+  // 添加新选择的产品
+  batchConfigForm.selectedProducts.forEach(productId => {
+    if (!currentProductIds.includes(productId)) {
+      const product = paymentProducts.value.find(item => item.id === productId)
+      if (product) {
+        batchConfigForm.productRates.push({
+          productId: product.id,
+          productName: product.productName,
+          productCode: product.productCode,
+          rate: batchConfigForm.rate,
+          weight: 10 // 默认权重
+        })
+      }
+    }
+  })
+  
+  // 移除取消选择的产品
+  batchConfigForm.productRates = batchConfigForm.productRates.filter(
+    item => batchConfigForm.selectedProducts.includes(item.productId)
+  )
+}
+
+// 移除批量配置中的产品费率
+const removeBatchProductRate = (productId) => {
+  // 从产品费率列表中移除
+  const index = batchConfigForm.productRates.findIndex(item => item.productId === productId);
+  if (index !== -1) {
+    batchConfigForm.productRates.splice(index, 1);
+  }
+  
+  // 从已选产品中移除
+  const selectedIndex = batchConfigForm.selectedProducts.indexOf(productId);
+  if (selectedIndex !== -1) {
+    batchConfigForm.selectedProducts.splice(selectedIndex, 1);
+  }
+}
+
+// 应用批量配置费率
+const applyBatchConfigRate = () => {
+  if (batchConfigForm.productRates.length > 0) {
+    batchConfigForm.productRates.forEach(item => {
+      item.rate = batchConfigForm.rate
+    })
+    ElMessage.success('已应用批量费率')
+  } else {
+    ElMessage.warning('请先选择产品')
+  }
 }
 
 const submitBatchConfig = () => {
@@ -1098,12 +1210,14 @@ const submitBatchConfig = () => {
   
   loading.value = true
   setTimeout(() => {
-    const merchantIds = selectedRows.value.map(row => row.id)
-    const productNames = batchConfigForm.selectedProducts.map(id => 
-      paymentProducts.value.find(item => item.id === id)?.productName
-    ).filter(Boolean)
+    // 在实际应用中，这里应该调用API为多个商户配置产品和费率
+    const merchantCount = selectedRows.value.length
+    const productCount = batchConfigForm.productRates.length
+    const rateInfo = batchConfigForm.productRates.map(item => 
+      `${item.productName}(${item.rate}%)`
+    ).join('、')
     
-    ElMessage.success(`已为 ${selectedRows.value.length} 个商户配置 ${productNames.length} 个支付产品，费率为 ${batchConfigForm.rate}%`)
+    ElMessage.success(`已为 ${merchantCount} 个商户配置产品：${rateInfo}`)
     batchConfigVisible.value = false
     loading.value = false
   }, 300)
@@ -1152,6 +1266,13 @@ const paymentProducts = ref([
 watch(() => productConfigForm.selectedProducts, (newVal, oldVal) => {
   if (newVal && oldVal) {
     watchSelectedProducts()
+  }
+}, { deep: true })
+
+// 监听批量配置中选择产品变化
+watch(() => batchConfigForm.selectedProducts, (newVal, oldVal) => {
+  if (newVal && oldVal) {
+    watchBatchSelectedProducts()
   }
 }, { deep: true })
 

@@ -5,8 +5,8 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="商户ID：">
-            <el-input v-model="searchForm.id" placeholder="请输入商户ID" style="width: 168px" clearable />
+          <el-form-item label="ID：">
+            <el-input v-model="searchForm.id" placeholder="请输入ID" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="商户账号：">
             <el-input v-model="searchForm.merchantNo" placeholder="请输入商户账号" style="width: 220px" clearable />
@@ -14,8 +14,8 @@
           <el-form-item label="商户名称：">
             <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="支付产品：">
-            <el-input v-model="searchForm.product" placeholder="请输入支付产品" style="width: 220px" clearable />
+          <el-form-item label="支付产品名称：">
+            <el-input v-model="searchForm.product" placeholder="请输入支付产品名称" style="width: 220px" clearable />
           </el-form-item>
         </div>
         <div class="filter-buttons">
@@ -49,7 +49,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" fixed="left" />
-        <el-table-column prop="id" label="商户ID" width="80" sortable />
+        <el-table-column prop="id" label="ID" width="80" sortable />
         <el-table-column prop="merchantNo" label="商户账号" min-width="120" />
         <el-table-column prop="merchantName" label="商户名称" min-width="150" />
         <el-table-column prop="productName" label="支付产品名称" min-width="150" />

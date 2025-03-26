@@ -1,13 +1,13 @@
 <template>
   <el-container class="layout-container">
     <!-- 侧边栏 -->
-    <el-aside width="220px" class="aside">
+    <el-aside :width="isCollapse ? '64px' : '220px'" class="aside">
       <div class="logo">
         <img src="@/assets/logo.svg" alt="logo" />
-        <h1>支付管理系统</h1>
+        <h1 v-if="!isCollapse">支付管理系统</h1>
       </div>
       
-      <el-scrollbar>
+      <el-scrollbar class="menu-scrollbar">
         <el-menu
           :default-active="route.path"
           class="el-menu-vertical"
@@ -173,6 +173,7 @@ const handleSelect = (index) => {
   .aside {
     background-color: #304156;
     transition: width 0.3s;
+    overflow: hidden;
     
     .logo {
       height: 60px;
@@ -191,6 +192,19 @@ const handleSelect = (index) => {
         margin: 0;
         font-size: 18px;
         font-weight: 600;
+        white-space: nowrap;
+      }
+    }
+    
+    .menu-scrollbar {
+      height: calc(100% - 60px);
+      
+      :deep(.el-scrollbar__bar.is-horizontal) {
+        display: none;
+      }
+      
+      :deep(.el-scrollbar__bar.is-vertical) {
+        display: none;
       }
     }
     

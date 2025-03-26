@@ -9,8 +9,8 @@
           <el-form-item label="商户ID：">
             <el-input v-model="searchForm.id" placeholder="请输入商户ID" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="商户账户：">
-            <el-input v-model="searchForm.productId" placeholder="请输入商户账户" style="width: 220px" clearable />
+          <el-form-item label="商户账号：">
+            <el-input v-model="searchForm.productId" placeholder="请输入商户账号" style="width: 220px" clearable />
           </el-form-item>
           <el-form-item label="商户名称：">
             <el-input v-model="searchForm.productName" placeholder="请输入商户名称" style="width: 220px" clearable />
@@ -68,11 +68,12 @@
         :data="tableData"
         border
         stripe
+        style="width: 100%"
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" fixed="left" />
         <el-table-column prop="id" label="商户ID" width="80" />
-        <el-table-column prop="productId" label="商户账户" min-width="120" />
+        <el-table-column prop="productId" label="商户账号" min-width="120" />
         <el-table-column prop="productName" label="商户名称" min-width="150" />
         <el-table-column prop="productNo" label="商户号" min-width="120" />
         <el-table-column prop="balance" label="余额" width="100" align="right">
@@ -113,9 +114,9 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="操作" width="150" fixed="right">
           <template #default="scope">
-            <el-dropdown @command="(command) => handleCommand(command, scope.row)">
+            <el-dropdown @command="(command) => handleCommand(command, scope.row)" class="operation-dropdown">
               <span class="el-dropdown-link">
                 操作<el-icon class="el-icon--right"><arrow-down /></el-icon>
               </span>
@@ -186,13 +187,13 @@
         <el-form-item label="提现密码" prop="withdrawPassword">
           <el-input v-model="productForm.withdrawPassword" type="password" placeholder="不填表示不更新密码" show-password />
         </el-form-item>
-        <el-form-item label="是否开启进单">
+        <el-form-item label="开启进单">
           <el-switch v-model="productForm.enableDeposit" />
         </el-form-item>
-        <el-form-item label="是否开启提现">
+        <el-form-item label="开启提现">
           <el-switch v-model="productForm.enableWithdraw" />
         </el-form-item>
-        <el-form-item label="是否区分手机系统">
+        <el-form-item label="区分手机系统">
           <el-switch v-model="productForm.distinguishMobileOS" />
         </el-form-item>
         <el-form-item label="下单IP白名单" prop="depositIpWhitelist">
@@ -326,7 +327,7 @@
         <el-form-item label="商户名称">
           <el-input v-model="productConfigForm.productName" disabled />
         </el-form-item>
-        <el-form-item label="选择产品">
+        <el-form-item label="选择支付产品">
           <el-select 
             v-model="productConfigForm.selectedProducts" 
             multiple 
@@ -343,25 +344,81 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="商户费率">
-          <div class="rate-input-group">
-            <el-input-number 
-              v-model="productConfigForm.batchRate" 
-              :precision="2" 
-              :step="0.1" 
-              :min="0" 
-              :max="20"
-              controls-position="right"
-              style="width: 180px"
-            />
-            <span class="rate-unit">%</span>
+        
+        <!-- 支付产品费率列表 -->
+        <div class="product-rate-list" v-if="productConfigForm.productRates.length > 0">
+          <el-divider content-position="left">支付产品费率列表</el-divider>
+          
+          <!-- 批量设置费率 -->
+          <div v-if="productConfigForm.productRates.length > 1" class="batch-rate-setting">
+            <el-alert
+              type="info"
+              :closable="false"
+              show-icon
+            >
+              <template #title>
+                <div class="batch-rate-title">
+                  <span>批量设置费率</span>
+                  <div class="batch-rate-input">
+                    <el-input-number 
+                      v-model="productConfigForm.batchRate" 
+                      :precision="2" 
+                      :step="0.1" 
+                      :min="0"
+                      :max="20"
+                      controls-position="right"
+                      size="small"
+                      style="width: 120px"
+                    />
+                    <span class="rate-unit">%</span>
+                    <el-button type="primary" size="small" style="margin-left: 10px" @click="applyBatchRate">应用到所有产品</el-button>
+                  </div>
+                </div>
+              </template>
+            </el-alert>
           </div>
-        </el-form-item>
+          
+          <el-table :data="productConfigForm.productRates" style="width: 100%; margin-top: 16px" border>
+            <el-table-column prop="productName" label="支付产品名称" min-width="180" />
+            <el-table-column label="商户费率" min-width="200">
+              <template #default="scope">
+                <div class="rate-input-group">
+                  <el-input-number 
+                    v-model="scope.row.rate" 
+                    :precision="2" 
+                    :step="0.1" 
+                    :min="0" 
+                    :max="20"
+                    controls-position="right"
+                    style="width: 100px"
+                    size="small"
+                  />
+                  <span class="rate-unit">%</span>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" min-width="100" align="center">
+              <template #default="scope">
+                <el-button 
+                  type="danger" 
+                  link 
+                  size="small" 
+                  @click="removeProductRate(scope.row.productId)"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+        
+        <!-- 无产品提示 -->
+        <el-empty v-if="productConfigForm.productRates.length === 0" description="请选择支付产品" />
       </el-form>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="productConfigVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitProductConfig">确认</el-button>
+          <el-button type="primary" @click="submitProductConfig" :disabled="productConfigForm.productRates.length === 0">确认</el-button>
         </div>
       </template>
     </el-dialog>
@@ -540,7 +597,7 @@ const handleCurrentChange = (val) => {
 
 // 添加/编辑商户相关
 const dialogVisible = ref(false)
-const dialogTitle = ref('添加商户')
+const dialogTitle = ref('新增商户')
 const productFormRef = ref(null)
 const productForm = reactive({
   id: '',
@@ -551,9 +608,26 @@ const productForm = reactive({
 })
 
 const productRules = {
-  productId: [{ required: true, message: '请输入商户账户', trigger: 'blur' }],
+  productId: [{ required: true, message: '请输入商户账号', trigger: 'blur' }],
   productName: [{ required: true, message: '请输入商户名称', trigger: 'blur' }],
   productNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }]
+}
+
+// 生成随机商户号
+const generateMerchantNo = () => {
+  // 生成10位数字的商户号
+  return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+}
+
+// 生成随机API密钥
+const generateApiKey = () => {
+  // 生成32位的随机字符串（MD5格式）
+  const chars = '0123456789abcdef';
+  let result = '';
+  for (let i = 0; i < 32; i++) {
+    result += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return result;
 }
 
 const resetProductForm = () => {
@@ -564,10 +638,10 @@ const resetProductForm = () => {
     id: '',
     productId: '',
     productName: '',
-    productNo: '',
+    productNo: generateMerchantNo(),
     password: '',
     mobile: '',
-    apiKey: '',
+    apiKey: generateApiKey(),
     callbackUrl: '',
     withdrawPassword: '',
     balance: 0,
@@ -587,7 +661,7 @@ const resetProductForm = () => {
 
 const handleAdd = () => {
   resetProductForm()
-  dialogTitle.value = '添加商户'
+  dialogTitle.value = '新增商户'
   dialogVisible.value = true
 }
 
@@ -879,13 +953,13 @@ const handleCommand = (command, row) => {
       handleEdit(row)
       break
     case 'resetGoogle':
-      ElMessage.success(`已重置 ${row.productName} 的谷歌验证`)
+      handleResetGoogle(row)
       break
     case 'resetApiKey':
-      ElMessage.success(`已重置 ${row.productName} 的APIKEY`)
+      handleResetApiKey(row)
       break
     case 'unfreeze':
-      ElMessage.success(`已解冻 ${row.productName} 的余额`)
+      handleUnfreeze(row)
       break
     case 'balance':
       handleBalance(row)
@@ -893,6 +967,94 @@ const handleCommand = (command, row) => {
     default:
       break
   }
+}
+
+// 重置谷歌认证
+const handleResetGoogle = (row) => {
+  ElMessageBox.confirm(
+    `确定要重置商户 ${row.productName} 的谷歌认证吗？`,
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    loading.value = true
+    setTimeout(() => {
+      // 模拟API请求
+      const index = productList.findIndex(item => item.id === row.id)
+      if (index !== -1) {
+        productList[index].googleAuth = false
+        ElMessage.success(`已重置 ${row.productName} 的谷歌验证`)
+        fetchData()
+      }
+      loading.value = false
+    }, 300)
+  }).catch(() => {
+    ElMessage.info('已取消操作')
+  })
+}
+
+// 重置APIKEY
+const handleResetApiKey = (row) => {
+  ElMessageBox.confirm(
+    `确定要重置商户 ${row.productName} 的APIKEY吗？`,
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    loading.value = true
+    setTimeout(() => {
+      // 模拟API请求
+      const index = productList.findIndex(item => item.id === row.id)
+      if (index !== -1) {
+        const newApiKey = generateApiKey()
+        productList[index].apiKey = newApiKey
+        ElMessage.success(`已重置 ${row.productName} 的APIKEY: ${newApiKey}`)
+      }
+      loading.value = false
+    }, 300)
+  }).catch(() => {
+    ElMessage.info('已取消操作')
+  })
+}
+
+// 余额解冻
+const handleUnfreeze = (row) => {
+  if (!row.freeze || row.freeze <= 0) {
+    ElMessage.warning(`商户 ${row.productName} 没有冻结余额`)
+    return
+  }
+
+  ElMessageBox.confirm(
+    `确定要解冻商户 ${row.productName} 的冻结余额 ${formatAmount(row.freeze)} 元吗？`,
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    loading.value = true
+    setTimeout(() => {
+      // 模拟API请求
+      const index = productList.findIndex(item => item.id === row.id)
+      if (index !== -1) {
+        // 将冻结金额加回余额中
+        productList[index].balance = (productList[index].balance || 0) + (productList[index].freeze || 0)
+        productList[index].freeze = 0
+        ElMessage.success(`已解冻 ${row.productName} 的余额`)
+        fetchData()
+      }
+      loading.value = false
+    }, 300)
+  }).catch(() => {
+    ElMessage.info('已取消操作')
+  })
 }
 
 // 一键登录
@@ -959,6 +1121,21 @@ const productConfigForm = reactive({
   productRates: []
 })
 
+// 移除产品费率
+const removeProductRate = (productId) => {
+  // 从产品费率列表中移除
+  const index = productConfigForm.productRates.findIndex(item => item.productId === productId);
+  if (index !== -1) {
+    productConfigForm.productRates.splice(index, 1);
+  }
+  
+  // 从已选产品中移除
+  const selectedIndex = productConfigForm.selectedProducts.indexOf(productId);
+  if (selectedIndex !== -1) {
+    productConfigForm.selectedProducts.splice(selectedIndex, 1);
+  }
+}
+
 // 支付产品列表
 const paymentProducts = ref([
   { id: 1, productName: '微信支付', productCode: 'WX001' },
@@ -991,6 +1168,10 @@ onMounted(() => {
 
 .filter-container {
   margin-bottom: 16px;
+}
+
+.el-card {
+  overflow-x: auto;
 }
 
 .filter-form {
@@ -1036,11 +1217,18 @@ onMounted(() => {
   margin-top: 16px;
 }
 
+.operation-dropdown {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 .el-dropdown-link {
   cursor: pointer;
   color: var(--el-color-primary);
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
 .product-form {
@@ -1057,6 +1245,16 @@ onMounted(() => {
 .rate-unit {
   margin-left: 5px;
   color: var(--el-text-color-regular);
+}
+
+/* 强制表格自动填充空间 */
+.product-rate-list .el-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.product-rate-list .el-table__body {
+  width: 100% !important;
 }
 
 .form-tip {

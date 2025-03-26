@@ -6,7 +6,7 @@
       <el-card shadow="hover" class="stat-card">
         <template #header>
           <div class="card-header">
-            <span class="title">总销售额</span>
+            <span class="title">收款总额</span>
             <el-radio-group v-model="incomeTimeRange" size="small" @change="handleIncomeTimeRangeChange">
               <el-radio-button label="total">总计</el-radio-button>
               <el-radio-button label="today">今日</el-radio-button>

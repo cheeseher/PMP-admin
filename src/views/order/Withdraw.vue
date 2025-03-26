@@ -287,7 +287,7 @@ const tableData = ref([
     fee: '100.00',
     afterAmount: '29900.00',
     afterFrozen: '3000.00',
-    status: 'APPROVED',
+    status: 'PAID',
     remark: '大额提现，已人工核实',
     createTime: '2025-03-14 18:30:25'
   },
@@ -301,7 +301,7 @@ const tableData = ref([
     fee: '25.00',
     afterAmount: '9975.00',
     afterFrozen: '1000.00',
-    status: 'REJECTED',
+    status: 'FAILED',
     remark: '风控拦截，疑似套现',
     createTime: '2025-03-14 18:45:30'
   },
@@ -376,9 +376,6 @@ const auditRules = {
 const getStatusType = (status) => {
   const map = {
     PENDING: 'warning',
-    APPROVED: 'primary',
-    REJECTED: 'danger',
-    PROCESSING: 'info',
     PAID: 'success',
     FAILED: 'danger'
   }
@@ -388,9 +385,6 @@ const getStatusType = (status) => {
 const getStatusText = (status) => {
   const map = {
     PENDING: '未确认',
-    APPROVED: '审核通过',
-    REJECTED: '审核拒绝',
-    PROCESSING: '打款中',
     PAID: '成功',
     FAILED: '失败'
   }

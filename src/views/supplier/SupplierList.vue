@@ -124,7 +124,7 @@
     
     <!-- 添加/编辑对话框 -->
     <el-dialog
-      :title="dialogType === 'add' ? '添加上游管理' : '编辑上游管理'"
+      :title="dialogType === 'add' ? '新增供应商' : '编辑供应商'"
       v-model="dialogVisible"
       width="600px"
       destroy-on-close
@@ -382,7 +382,7 @@ const supplierForm = reactive({
   privateKey: '',
   publicKey: '',
   returnUrl: '',
-  notifyUrl: '',
+  notifyUrl: 'https://testadmin.hxpay.vip/notify/NewSdPay/notify',
   whiteList: '',
   remark: '',
   enabled: true,
@@ -619,7 +619,7 @@ const resetForm = () => {
     privateKey: '',
     publicKey: '',
     returnUrl: '',
-    notifyUrl: '',
+    notifyUrl: 'https://testadmin.hxpay.vip/notify/NewSdPay/notify',
     whiteList: '',
     remark: '',
     enabled: true

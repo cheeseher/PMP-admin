@@ -6,17 +6,26 @@
       <el-form :model="searchForm" label-position="left" inline class="multi-line-filter-form">
         <!-- 第一行筛选项 -->
         <div class="filter-line">
-          <el-form-item label="创建时间：">
-            <el-date-picker
-              v-model="searchForm.createTimeRange"
-              type="daterange"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-              class="date-range-picker"
-            />
+          <el-form-item label="时间：">
+            <div class="time-filter-container">
+              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
+                <el-option label="自定义时间" value="custom" />
+                <el-option label="今日" value="today" />
+                <el-option label="昨日" value="yesterday" />
+                <el-option label="最近7天" value="last7days" />
+              </el-select>
+              <el-date-picker
+                v-if="searchForm.timeType === 'custom'"
+                v-model="searchForm.timeRange"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                style="width: 240px; margin-left: 8px;"
+              />
+            </div>
           </el-form-item>
           
           <el-form-item label="完成时间：">
@@ -222,6 +231,16 @@
             <span class="amount-cell">{{ formatAmount(scope.row.orderAmount) }}</span>
           </template>
         </el-table-column>
+        <el-table-column prop="orderStatus" label="订单状态" width="100" align="center">
+          <template #default="scope">
+            <el-tag 
+              :type="getStatusType(scope.row.orderStatus)" 
+              size="small"
+            >
+              {{ getStatusText(scope.row.orderStatus) }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="createTime" label="订单创建时间" width="150" />
         <el-table-column prop="completeTime" label="订单完成时间" width="150" />
         <el-table-column prop="pushStatus" label="推送状态" width="90" align="center">
@@ -309,7 +328,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import { 
   Search, 
   Refresh, 
@@ -327,13 +346,32 @@ import {
   Service 
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import dayjs from 'dayjs'
 
 // 加载状态
 const loading = ref(false)
 
+// 根据时间类型获取日期范围
+const getDateRangeByType = (type) => {
+  const today = dayjs()
+  
+  switch (type) {
+    case 'today':
+      return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    case 'yesterday':
+      const yesterday = today.subtract(1, 'day')
+      return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]
+    case 'last7days':
+      return [today.subtract(6, 'day').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    default:
+      return []
+  }
+}
+
 // 搜索表单数据
 const searchForm = reactive({
-  createTimeRange: ['2025-03-24', '2025-03-24'],
+  timeType: 'today',
+  timeRange: getDateRangeByType('today'),
   completeTimeRange: ['', ''],
   orderNo: '',
   merchantOrderNo: '',
@@ -507,14 +545,22 @@ const handleSearch = () => {
 // 重置搜索条件
 const handleReset = () => {
   // 重置搜索表单
-  Object.keys(searchForm).forEach(key => {
-    if (key === 'createTimeRange') {
-      searchForm[key] = ['2025-03-24', '2025-03-24']
-    } else if (key === 'completeTimeRange') {
-      searchForm[key] = ['', '']
-    } else {
-      searchForm[key] = ''
-    }
+  Object.assign(searchForm, {
+    timeType: 'today',
+    timeRange: getDateRangeByType('today'),
+    completeTimeRange: ['', ''],
+    orderNo: '',
+    merchantOrderNo: '',
+    merchantId: '',
+    merchantAccount: '',
+    merchantName: '',
+    upstreamOrderNo: '',
+    productName: '',
+    productCode: '',
+    supplier: '',
+    supplierChannel: '',
+    upstreamChannelCode: '',
+    orderStatus: ''
   })
   ElMessage.success('搜索条件已重置')
 }
@@ -600,6 +646,13 @@ const openEditAmountDialog = () => {
     ElMessage.info('已取消操作')
   })
 }
+
+// 监听时间类型变化，自动设置日期范围
+watch(() => searchForm.timeType, (newType) => {
+  if (newType !== 'custom') {
+    searchForm.timeRange = getDateRangeByType(newType)
+  }
+})
 </script>
 
 <style scoped>
@@ -633,6 +686,13 @@ const openEditAmountDialog = () => {
   white-space: nowrap;
   width: auto !important;
   padding-right: 6px;
+}
+
+/* 时间筛选容器样式 */
+.time-filter-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 /* 日期选择器宽度 */

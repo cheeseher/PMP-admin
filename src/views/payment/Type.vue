@@ -1,20 +1,14 @@
 <!-- 支付配置/支付类型管理 - 管理系统支持的支付类型 -->
 <template>
   <div class="payment-type-container">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <div class="title">支付类型管理</div>
-      <div class="description">管理系统支持的所有支付类型以及配置信息</div>
-    </div>
-
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
-        <el-form-item label="类型ID：">
-          <el-input v-model="searchForm.id" placeholder="请输入类型ID" style="width: 168px" clearable />
+        <el-form-item label="支付类型ID：">
+          <el-input v-model="searchForm.id" placeholder="请输入支付类型ID" style="width: 168px" clearable />
         </el-form-item>
-        <el-form-item label="类型名称：">
-          <el-input v-model="searchForm.typeName" placeholder="请输入类型名称" style="width: 220px" clearable />
+        <el-form-item label="支付类型名称：">
+          <el-input v-model="searchForm.typeName" placeholder="请输入支付类型名称" style="width: 220px" clearable />
         </el-form-item>
         <div class="filter-buttons">
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -45,14 +39,13 @@
         v-loading="loading"
         @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" fixed="left" />
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="typeName" label="类型名称" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="createTime" label="创建时间" width="180" show-overflow-tooltip />
+        <el-table-column prop="id" label="支付类型ID" width="100" />
+        <el-table-column prop="typeName" label="支付类型名称" min-width="150" show-overflow-tooltip />
         <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button link type="primary" :icon="Edit" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button link type="danger" :icon="Delete" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -357,22 +350,6 @@ const handleCurrentChange = (val) => {
 <style scoped>
 .payment-type-container {
   padding: 16px;
-}
-
-.page-header {
-  margin-bottom: 16px;
-}
-
-.page-header .title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 8px;
-}
-
-.page-header .description {
-  color: #606266;
-  font-size: 14px;
 }
 
 .filter-container {

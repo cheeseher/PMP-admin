@@ -1,24 +1,18 @@
 <!-- 支付配置/支付产品管理 - 管理系统支持的支付产品 -->
 <template>
   <div class="payment-product">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <div class="title">支付产品管理</div>
-      <div class="description">管理所有支付通道产品并配置费率等信息</div>
-    </div>
-
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="产品ID：">
-            <el-input v-model="searchForm.id" placeholder="请输入产品ID" style="width: 168px" clearable />
+          <el-form-item label="支付产品ID：">
+            <el-input v-model="searchForm.id" placeholder="请输入支付产品ID" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="产品名称：">
-            <el-input v-model="searchForm.productName" placeholder="请输入产品名称" style="width: 220px" clearable />
+          <el-form-item label="支付产品名称：">
+            <el-input v-model="searchForm.productName" placeholder="请输入支付产品名称" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="产品编码：">
-            <el-input v-model="searchForm.productCode" placeholder="请输入产品编码" style="width: 220px" clearable />
+          <el-form-item label="支付产品编码：">
+            <el-input v-model="searchForm.productCode" placeholder="请输入支付产品编码" style="width: 220px" clearable />
           </el-form-item>
         </div>
         <div class="filter-buttons">
@@ -34,6 +28,9 @@
       <div class="table-toolbar">
         <div class="left">
           <el-button type="primary" :icon="Plus" @click="handleAdd">新增</el-button>
+          <el-button :icon="Check" plain @click="handleBatchApprove">产品一键开启</el-button>
+          <el-button :icon="Close" plain @click="handleBatchReject">产品一键关闭</el-button>
+          <el-button :icon="Remove" plain @click="handleBatchRemove">下单一键关闭</el-button>
           <el-button :icon="Delete" plain :disabled="selectedRows.length === 0" @click="handleBatchDelete">批量删除</el-button>
         </div>
         <div class="right">
@@ -50,9 +47,9 @@
         v-loading="loading"
         @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" fixed="left" />
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="productName" label="产品名称" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="productCode" label="产品编码" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="id" label="支付产品ID" width="120" />
+        <el-table-column prop="productName" label="支付产品名称" min-width="150" show-overflow-tooltip />
+        <el-table-column prop="productCode" label="支付产品编码" min-width="120" show-overflow-tooltip />
         <el-table-column prop="payType" label="支付类型" width="120">
           <template #default="scope">
             <el-tag 
@@ -66,27 +63,24 @@
         </el-table-column>
         <el-table-column prop="feeRate" label="费率" width="100">
           <template #default="scope">
-            <span class="fee-rate">{{ (scope.row.feeRate * 100).toFixed(2) }}%</span>
+            <span class="fee-rate">{{ scope.row.feeRate }}%</span>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
-            <el-tag :type="scope.row.status === 'ONLINE' ? 'success' : 'danger'">
-              {{ scope.row.status === 'ONLINE' ? '已启用' : '已禁用' }}
-            </el-tag>
+            <el-switch
+              v-model="scope.row.status"
+              active-value="ONLINE"
+              inactive-value="OFFLINE"
+              @change="(val) => handleToggleStatus(scope.row, val)"
+            />
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
-        <el-table-column label="操作" width="240" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="scope">
-            <el-button link type="primary" @click="handleEdit(scope.row)">编辑</el-button>
-            <el-button 
-              link 
-              :type="scope.row.status === 'ONLINE' ? 'warning' : 'success'"
-              @click="handleToggleStatus(scope.row)">
-              {{ scope.row.status === 'ONLINE' ? '禁用' : '启用' }}
-            </el-button>
-            <el-button link type="danger" @click="handleDelete(scope.row)">删除</el-button>
+            <el-button link type="primary" :icon="Edit" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button link type="danger" :icon="Delete" @click="handleDelete(scope.row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -116,37 +110,65 @@
         :model="productForm" 
         :rules="formRules" 
         ref="productFormRef" 
-        label-width="100px"
+        label-width="140px"
         class="product-form"
       >
-        <el-form-item label="产品名称" prop="productName">
-          <el-input v-model="productForm.productName" placeholder="请输入产品名称" />
+        <el-form-item label="支付产品名称" prop="productName">
+          <el-input v-model="productForm.productName" placeholder="请输入支付产品名称" />
         </el-form-item>
-        <el-form-item label="产品编码" prop="productCode">
-          <el-input v-model="productForm.productCode" placeholder="请输入产品编码" />
+        <el-form-item label="支付产品编码" prop="productCode">
+          <el-input v-model="productForm.productCode" placeholder="请输入支付产品编码" />
         </el-form-item>
-        <el-form-item label="支付类型" prop="payType">
-          <el-select v-model="productForm.payType" placeholder="请选择支付类型" style="width: 100%">
+        <el-form-item label="供应商通道" prop="channelCode">
+          <el-select v-model="productForm.channelCode" multiple placeholder="请选择供应商通道" style="width: 100%">
             <el-option label="支付宝" value="ALIPAY" />
             <el-option label="微信支付" value="WECHAT" />
             <el-option label="银联支付" value="UNIONPAY" />
           </el-select>
         </el-form-item>
-        <el-form-item label="费率" prop="feeRate">
-          <el-input-number 
-            v-model="productForm.feeRate" 
-            :precision="4" 
-            :step="0.001" 
-            :min="0" 
-            :max="1"
-            style="width: 100%" />
-          <div class="form-tip">费率为百分比的小数形式，如0.25%应填写0.0025</div>
+        <el-form-item label="商户费率" prop="feeRate">
+          <div class="fee-rate-input">
+            <el-input-number 
+              v-model="productForm.feeRate" 
+              :precision="0" 
+              :step="1" 
+              :min="0" 
+              :max="100"
+              style="width: calc(100% - 20px)" />
+            <span class="fee-rate-suffix">%</span>
+          </div>
         </el-form-item>
         <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="productForm.status">
-            <el-radio label="ONLINE">启用</el-radio>
-            <el-radio label="OFFLINE">禁用</el-radio>
-          </el-radio-group>
+          <el-switch
+            v-model="productForm.status"
+            active-value="ONLINE"
+            inactive-value="OFFLINE"
+            active-text="启用"
+            inactive-text="禁用"
+          />
+        </el-form-item>
+        <el-form-item label="是否轮询" prop="isPolling">
+          <el-select v-model="productForm.isPolling" placeholder="请选择轮询方式" style="width: 100%">
+            <el-option label="轮询" value="POLLING" />
+            <el-option label="权重" value="WEIGHT" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="同步费率到商户" prop="syncFeeToMerchant">
+          <el-switch
+            v-model="productForm.syncFeeToMerchant"
+            active-value="YES"
+            inactive-value="NO"
+            active-text="是"
+            inactive-text="否"
+          />
+        </el-form-item>
+        <el-form-item label="超级密码" prop="superPassword" v-if="formType === 'add'">
+          <el-input 
+            v-model="productForm.superPassword" 
+            type="password"
+            placeholder="请输入超级密码"
+            show-password 
+          />
         </el-form-item>
         <el-form-item label="备注" prop="remark">
           <el-input
@@ -172,7 +194,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Delete, Plus, Edit, Refresh } from '@element-plus/icons-vue'
+import { Search, Delete, Plus, Edit, Refresh, Check, Close, Remove } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCleanup } from '@/utils/cleanupUtils'
 
@@ -188,7 +210,7 @@ const tableData = ref([
     productName: '演示产品',
     productCode: '8888',
     payType: 'ALIPAY',
-    feeRate: 0.0025,
+    feeRate: 0,
     status: 'ONLINE',
     remark: '这是演示产品的备注说明'
   },
@@ -197,7 +219,7 @@ const tableData = ref([
     productName: '微信支付产品',
     productCode: 'WECHAT_PAY',
     payType: 'WECHAT',
-    feeRate: 0.0030,
+    feeRate: 0,
     status: 'ONLINE',
     remark: '微信支付通道产品'
   },
@@ -206,7 +228,7 @@ const tableData = ref([
     productName: '银联支付产品',
     productCode: 'UNION_PAY',
     payType: 'UNIONPAY',
-    feeRate: 0.0020,
+    feeRate: 0,
     status: 'OFFLINE',
     remark: '银联支付通道产品，暂时下线维护'
   }
@@ -229,9 +251,12 @@ const productFormRef = ref(null)
 const productForm = reactive({
   productName: '',
   productCode: '',
-  payType: '',
+  channelCode: [],
   feeRate: 0,
   status: 'ONLINE',
+  isPolling: 'POLLING',
+  syncFeeToMerchant: 'NO',
+  superPassword: '',
   remark: ''
 })
 
@@ -245,6 +270,12 @@ const formRules = {
   productCode: [
     { required: true, message: '请输入支付产品编码', trigger: 'blur' },
     { pattern: /^[A-Za-z0-9_]+$/, message: '只能包含字母、数字和下划线', trigger: 'blur' }
+  ],
+  channelCode: [
+    { required: true, type: 'array', message: '请选择供应商通道', trigger: 'change' }
+  ],
+  feeRate: [
+    { required: true, message: '请输入商户费率', trigger: 'blur' }
   ]
 }
 
@@ -288,8 +319,13 @@ const handleAdd = () => {
   
   productForm.productName = ''
   productForm.productCode = ''
-  productForm.remark = ''
+  productForm.channelCode = []
+  productForm.feeRate = 0
   productForm.status = 'ONLINE'
+  productForm.isPolling = 'POLLING'
+  productForm.syncFeeToMerchant = 'NO'
+  productForm.superPassword = ''
+  productForm.remark = ''
   
   formDialogVisible.value = true
 }
@@ -304,7 +340,7 @@ const handleEdit = (row) => {
 
 const handleDelete = (row) => {
   ElMessageBox.confirm(
-    `确认要删除产品"${row.productName}"吗？`,
+    `确认要删除支付产品"${row.productName}"吗？`,
     '删除确认',
     {
       confirmButtonText: '确认',
@@ -323,12 +359,12 @@ const handleDelete = (row) => {
 
 const handleBatchDelete = () => {
   if (selectedRows.value.length === 0) {
-    ElMessage.warning('请选择要删除的产品')
+    ElMessage.warning('请选择要删除的支付产品')
     return
   }
   
   ElMessageBox.confirm(
-    `确认要删除选中的${selectedRows.value.length}个产品吗？`,
+    `确认要删除选中的${selectedRows.value.length}个支付产品吗？`,
     '批量删除确认',
     {
       confirmButtonText: '确认',
@@ -346,30 +382,60 @@ const handleBatchDelete = () => {
 }
 
 const handleBatchApprove = () => {
-  // TODO: 实现产品一键开启逻辑
-  loading.value = true
-  safeTimeout(() => {
-    loading.value = false
-    ElMessage.success('产品一键开启成功')
-  }, 500)
+  ElMessageBox.confirm(
+    '确认要将所有支付产品一键开启吗？',
+    '批量开启确认',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    // TODO: 实现支付产品一键开启逻辑
+    loading.value = true
+    safeTimeout(() => {
+      loading.value = false
+      ElMessage.success('支付产品一键开启成功')
+    }, 500)
+  }).catch(() => {})
 }
 
 const handleBatchReject = () => {
-  // TODO: 实现产品一键关闭逻辑
-  loading.value = true
-  safeTimeout(() => {
-    loading.value = false
-    ElMessage.success('产品一键关闭成功')
-  }, 500)
+  ElMessageBox.confirm(
+    '确认要将所有支付产品一键关闭吗？',
+    '批量关闭确认',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    // TODO: 实现支付产品一键关闭逻辑
+    loading.value = true
+    safeTimeout(() => {
+      loading.value = false
+      ElMessage.success('支付产品一键关闭成功')
+    }, 500)
+  }).catch(() => {})
 }
 
 const handleBatchRemove = () => {
-  // TODO: 实现下架一键关闭逻辑
-  loading.value = true
-  safeTimeout(() => {
-    loading.value = false
-    ElMessage.success('下架一键关闭成功')
-  }, 500)
+  ElMessageBox.confirm(
+    '确认要将所有下单通道一键关闭吗？',
+    '批量关闭确认',
+    {
+      confirmButtonText: '确认',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    // TODO: 实现下单通道一键关闭逻辑
+    loading.value = true
+    safeTimeout(() => {
+      loading.value = false
+      ElMessage.success('下单通道一键关闭成功')
+    }, 500)
+  }).catch(() => {})
 }
 
 const handleFormSubmit = () => {
@@ -391,10 +457,16 @@ const handleFormSubmit = () => {
   })
 }
 
-const handleToggleStatus = (row) => {
-  const action = row.status === 'ONLINE' ? '禁用' : '启用'
+const handleToggleStatus = (row, val) => {
+  // 先恢复到原来的状态，等确认后再修改
+  const oldStatus = row.status;
+  const newStatus = val;
+  // 立即恢复，避免界面上已经切换了
+  row.status = oldStatus;
+  
+  const action = newStatus === 'ONLINE' ? '启用' : '禁用';
   ElMessageBox.confirm(
-    `确认要${action}该产品吗？`,
+    `确认要${action}该支付产品吗？`,
     `${action}确认`,
     {
       confirmButtonText: '确认',
@@ -405,11 +477,14 @@ const handleToggleStatus = (row) => {
     // TODO: 实现状态切换逻辑
     loading.value = true
     safeTimeout(() => {
-      row.status = row.status === 'ONLINE' ? 'OFFLINE' : 'ONLINE'
+      // 确认后修改为新状态
+      row.status = newStatus
       loading.value = false
       ElMessage.success(`${action}成功`)
     }, 500)
-  }).catch(() => {})
+  }).catch(() => {
+    // 取消操作，不做任何改变，因为已经恢复到原状态了
+  })
 }
 
 const handleSizeChange = (val) => {
@@ -442,22 +517,6 @@ const fetchData = () => {
 <style scoped>
 .payment-product {
   padding: 16px;
-}
-
-.page-header {
-  margin-bottom: 16px;
-}
-
-.page-header .title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-  margin-bottom: 8px;
-}
-
-.page-header .description {
-  color: #606266;
-  font-size: 14px;
 }
 
 .filter-container {
@@ -523,5 +582,17 @@ const fetchData = () => {
 
 .product-form .el-form-item {
   margin-bottom: 20px;
+}
+
+.fee-rate-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.fee-rate-suffix {
+  margin-left: 3px;
+  color: #606266;
+  font-size: 14px;
 }
 </style> 

@@ -6,8 +6,8 @@
       <el-form :model="searchForm" inline class="filter-form">
         <!-- 第一行筛选项 -->
         <div class="filter-row">
-          <el-form-item label="ID：">
-            <el-input v-model="searchForm.id" placeholder="请输入ID" style="width: 168px" clearable />
+          <el-form-item label="供应商ID：">
+            <el-input v-model="searchForm.id" placeholder="请输入供应商ID" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="上游通道名称：">
             <el-input v-model="searchForm.supplierName" placeholder="请输入上游通道名称" style="width: 220px" clearable />
@@ -38,8 +38,6 @@
       <div class="table-toolbar">
         <div class="left">
           <el-button type="primary" :icon="Plus" @click="handleAdd">新增</el-button>
-          <el-button type="success" :icon="Check" :disabled="selectedRows.length === 0" @click="handleBatchEnable">批量启用</el-button>
-          <el-button type="danger" :icon="Close" :disabled="selectedRows.length === 0" @click="handleBatchDisable">批量禁用</el-button>
         </div>
         <div class="right">
           <el-tooltip content="刷新数据">
@@ -57,7 +55,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column label="ID" prop="id" width="80" align="center" />
+        <el-table-column label="供应商ID" prop="id" width="80" align="center" />
         <el-table-column label="上游通道名称" prop="supplier" min-width="120" />
         <el-table-column label="上游通道编码" prop="code" width="120" />
         <el-table-column label="上游通道商户号" prop="merchantNo" width="180" />
@@ -81,42 +79,29 @@
             <span>{{ scope.row.remark || '-' }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="是否启用" width="100" align="center">
+        <el-table-column label="状态" width="100" align="center">
           <template #default="scope">
-            <el-tag
-              :type="scope.row.enabled ? 'success' : 'danger'"
-              size="small"
-            >
-              {{ scope.row.enabled ? '启用' : '禁用' }}
-            </el-tag>
+            <el-switch
+              v-model="scope.row.enabled"
+              @change="(val) => handleStatusChange(scope.row, val)"
+            />
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right" align="center">
+        <el-table-column label="操作" width="120" fixed="right" align="center">
           <template #default="scope">
-            <el-button
-              type="primary"
-              link
-              size="small"
-              @click="handleEdit(scope.row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              type="primary"
-              link
-              size="small"
-              @click="handleToggleStatus(scope.row)"
-            >
-              {{ scope.row.enabled ? '禁用' : '启用' }}
-            </el-button>
-            <el-button
-              type="primary"
-              link
-              size="small"
-              @click="handleDetail(scope.row)"
-            >
-              查看
-            </el-button>
+            <el-dropdown @command="(command) => handleCommand(command, scope.row)">
+              <el-button type="primary" link class="operation-button">
+                操作<el-icon class="el-icon--right"><arrow-down /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="edit">编辑</el-dropdown-item>
+                  <el-dropdown-item command="delete" style="color: red;">删除</el-dropdown-item>
+                  <el-dropdown-item command="balance">余额操作</el-dropdown-item>
+                  <el-dropdown-item command="unfreeze">余额解冻</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </template>
         </el-table-column>
       </el-table>
@@ -159,15 +144,6 @@
         <el-form-item label="上游通道商户号" prop="merchantNo">
           <el-input v-model="supplierForm.merchantNo" placeholder="请输入上游通道商户号" />
         </el-form-item>
-        <el-form-item label="余额">
-          <el-input-number v-model="supplierForm.amount" :precision="2" :min="0" :controls="false" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="冻结金额">
-          <el-input-number v-model="supplierForm.freeze" :precision="2" :min="0" :controls="false" style="width: 100%" />
-        </el-form-item>
-        <el-form-item label="提醒阈值">
-          <el-input-number v-model="supplierForm.alertThreshold" :precision="2" :min="0" :controls="false" style="width: 100%" />
-        </el-form-item>
         <el-form-item label="API密钥">
           <el-input v-model="supplierForm.apiKey" placeholder="请输入API密钥" />
         </el-form-item>
@@ -199,10 +175,9 @@
           <el-input v-model="supplierForm.whiteList" placeholder="请输入回调白名单" />
         </el-form-item>
         <el-form-item label="状态" prop="enabled">
-          <el-select v-model="supplierForm.enabled" placeholder="请选择状态" style="width: 100%">
-            <el-option label="启用" :value="true" />
-            <el-option label="禁用" :value="false" />
-          </el-select>
+          <el-switch
+            v-model="supplierForm.enabled"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -222,7 +197,7 @@
       :close-on-click-modal="false"
     >
       <el-descriptions :column="1" border class="detail-descriptions" v-if="currentSupplier">
-        <el-descriptions-item label="ID">{{ currentSupplier.id }}</el-descriptions-item>
+        <el-descriptions-item label="供应商ID">{{ currentSupplier.id }}</el-descriptions-item>
         <el-descriptions-item label="上游通道名称">{{ currentSupplier.supplier }}</el-descriptions-item>
         <el-descriptions-item label="上游通道编码">{{ currentSupplier.code }}</el-descriptions-item>
         <el-descriptions-item label="上游通道商户号">{{ currentSupplier.merchantNo }}</el-descriptions-item>
@@ -237,21 +212,132 @@
         <el-descriptions-item label="回调白名单">{{ currentSupplier.whiteList || '-' }}</el-descriptions-item>
         <el-descriptions-item label="备注">{{ currentSupplier.remark || '-' }}</el-descriptions-item>
         <el-descriptions-item label="状态">
-          <el-tag
-            :type="currentSupplier.enabled ? 'success' : 'danger'"
-            size="small"
-          >
-            {{ currentSupplier.enabled ? '启用' : '禁用' }}
-          </el-tag>
+          <el-switch
+            v-model="currentSupplier.enabled"
+            disabled
+          />
         </el-descriptions-item>
       </el-descriptions>
     </el-drawer>
+    
+    <!-- 余额操作弹窗 -->
+    <el-dialog
+      title="余额操作"
+      v-model="balanceOperationVisible"
+      width="500px"
+      destroy-on-close
+    >
+      <el-form
+        ref="balanceFormRef"
+        :model="balanceForm"
+        :rules="balanceRules"
+        label-width="100px"
+      >
+        <el-form-item label="上游通道名称">
+          <el-input v-model="balanceForm.supplier" disabled />
+        </el-form-item>
+        <el-form-item label="上游通道编码">
+          <el-input v-model="balanceForm.code" disabled />
+        </el-form-item>
+        <el-form-item label="当前余额">
+          <el-input v-model="balanceForm.currentBalance" disabled>
+            <template #append>元</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="操作类型" prop="operationType">
+          <el-radio-group v-model="balanceForm.operationType">
+            <el-radio label="add">增加余额</el-radio>
+            <el-radio label="subtract">减少余额</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="操作金额" prop="amount">
+          <el-input-number 
+            v-model="balanceForm.amount" 
+            :precision="2" 
+            :min="0"
+            :max="999999999"
+            controls-position="right"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input 
+            v-model="balanceForm.remark" 
+            type="textarea" 
+            :rows="3"
+            placeholder="请输入操作备注"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="balanceOperationVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitBalanceOperation">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+    
+    <!-- 余额解冻弹窗 -->
+    <el-dialog
+      title="余额解冻"
+      v-model="unfreezeVisible"
+      width="500px"
+      destroy-on-close
+    >
+      <el-form
+        ref="unfreezeFormRef"
+        :model="unfreezeForm"
+        :rules="unfreezeRules"
+        label-width="100px"
+      >
+        <el-form-item label="上游通道名称">
+          <el-input v-model="unfreezeForm.supplier" disabled />
+        </el-form-item>
+        <el-form-item label="上游通道编码">
+          <el-input v-model="unfreezeForm.code" disabled />
+        </el-form-item>
+        <el-form-item label="当前余额">
+          <el-input v-model="unfreezeForm.currentBalance" disabled>
+            <template #append>元</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="冻结金额">
+          <el-input v-model="unfreezeForm.freezeAmount" disabled>
+            <template #append>元</template>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="解冻金额" prop="amount">
+          <el-input-number 
+            v-model="unfreezeForm.amount" 
+            :precision="2" 
+            :min="0"
+            :max="unfreezeForm.maxAmount"
+            controls-position="right"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="备注" prop="remark">
+          <el-input 
+            v-model="unfreezeForm.remark" 
+            type="textarea" 
+            :rows="3"
+            placeholder="请输入操作备注"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="unfreezeVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitUnfreeze">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Refresh, Plus, Check, Close } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { supplierList } from '@/data/supplierData'
 
@@ -315,6 +401,38 @@ const rules = {
 const drawerVisible = ref(false)
 const currentSupplier = ref(null)
 
+// 余额操作相关
+const balanceOperationVisible = ref(false)
+const balanceFormRef = ref(null)
+const balanceForm = reactive({
+  supplier: '',
+  code: '',
+  currentBalance: '',
+  operationType: 'add',
+  amount: 0,
+  remark: ''
+})
+const balanceRules = {
+  operationType: [{ required: true, message: '请选择操作类型', trigger: 'blur' }],
+  amount: [{ required: true, message: '请输入操作金额', trigger: 'blur' }]
+}
+
+// 余额解冻相关
+const unfreezeVisible = ref(false)
+const unfreezeFormRef = ref(null)
+const unfreezeForm = reactive({
+  supplier: '',
+  code: '',
+  currentBalance: '',
+  freezeAmount: '',
+  amount: 0,
+  maxAmount: 0,
+  remark: ''
+})
+const unfreezeRules = {
+  amount: [{ required: true, message: '请输入解冻金额', trigger: 'blur' }]
+}
+
 // 格式化金额
 const formatAmount = (amount) => {
   return amount.toLocaleString('zh-CN', { 
@@ -367,68 +485,9 @@ const handleReset = () => {
   handleSearch()
 }
 
-// 批量启用
-const handleBatchEnable = () => {
-  if (selectedRows.value.length === 0) {
-    ElMessage.warning('请至少选择一条记录')
-    return
-  }
-  
-  ElMessageBox.confirm(
-    `确认批量启用已选中的 ${selectedRows.value.length} 条记录?`,
-    '批量启用',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }
-  ).then(() => {
-    // 模拟API调用
-    const ids = selectedRows.value.map(item => item.id)
-    tableData.value.forEach(item => {
-      if (ids.includes(item.id)) {
-        item.enabled = true
-      }
-    })
-    ElMessage.success(`批量启用成功`)
-  }).catch(() => {
-    ElMessage.info('已取消操作')
-  })
-}
-
-// 批量禁用
-const handleBatchDisable = () => {
-  if (selectedRows.value.length === 0) {
-    ElMessage.warning('请至少选择一条记录')
-    return
-  }
-  
-  ElMessageBox.confirm(
-    `确认批量禁用已选中的 ${selectedRows.value.length} 条记录?`,
-    '批量禁用',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }
-  ).then(() => {
-    // 模拟API调用
-    const ids = selectedRows.value.map(item => item.id)
-    tableData.value.forEach(item => {
-      if (ids.includes(item.id)) {
-        item.enabled = false
-      }
-    })
-    ElMessage.success(`批量禁用成功`)
-  }).catch(() => {
-    ElMessage.info('已取消操作')
-  })
-}
-
-// 切换状态
-const handleToggleStatus = (row) => {
-  const newStatus = !row.enabled
-  const action = newStatus ? '启用' : '禁用'
+// 状态变更处理
+const handleStatusChange = (row, val) => {
+  const action = val ? '启用' : '禁用'
   
   ElMessageBox.confirm(
     `确认${action}供应商 "${row.supplier}"?`,
@@ -440,9 +499,11 @@ const handleToggleStatus = (row) => {
     }
   ).then(() => {
     // 模拟API调用
-    row.enabled = newStatus
+    row.enabled = val
     ElMessage.success(`${action}成功`)
   }).catch(() => {
+    // 取消操作，恢复原状态
+    row.enabled = !val
     ElMessage.info('已取消操作')
   })
 }
@@ -475,6 +536,69 @@ const handleDetail = (row) => {
   drawerVisible.value = true
 }
 
+// 处理下拉菜单命令
+const handleCommand = (command, row) => {
+  switch (command) {
+    case 'edit':
+      handleEdit(row)
+      break
+    case 'delete':
+      handleDelete(row)
+      break
+    case 'balance':
+      handleBalance(row)
+      break
+    case 'unfreeze':
+      handleUnfreeze(row)
+      break
+    default:
+      break
+  }
+}
+
+// 删除供应商
+const handleDelete = (row) => {
+  ElMessageBox.confirm(
+    `确认删除供应商 "${row.supplier}"?`,
+    '删除确认',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(() => {
+    // 模拟API调用
+    const index = tableData.value.findIndex(item => item.id === row.id)
+    if (index !== -1) {
+      tableData.value.splice(index, 1)
+      ElMessage.success('删除成功')
+    }
+  }).catch(() => {
+    ElMessage.info('已取消操作')
+  })
+}
+
+// 余额操作
+const handleBalance = (row) => {
+  balanceOperationVisible.value = true
+  balanceForm.supplier = row.supplier
+  balanceForm.code = row.code
+  balanceForm.currentBalance = formatAmount(row.amount)
+  balanceForm.amount = 0
+  balanceForm.operationType = 'add'
+}
+
+// 余额解冻
+const handleUnfreeze = (row) => {
+  unfreezeVisible.value = true
+  unfreezeForm.supplier = row.supplier
+  unfreezeForm.code = row.code
+  unfreezeForm.currentBalance = formatAmount(row.amount)
+  unfreezeForm.freezeAmount = formatAmount(row.freeze || 0)
+  unfreezeForm.maxAmount = row.freeze || 0
+  unfreezeForm.amount = 0
+}
+
 // 重置表单
 const resetForm = () => {
   if (formRef.value) {
@@ -496,11 +620,7 @@ const resetForm = () => {
     notifyUrl: '',
     whiteList: '',
     remark: '',
-    enabled: true,
-    amount: 0,
-    freeze: 0,
-    alertThreshold: 5000,
-    flow: 0
+    enabled: true
   })
 }
 
@@ -515,6 +635,8 @@ const handleSubmitForm = () => {
           ...supplierForm,
           id: newId,
           amount: 0,
+          freeze: 0,
+          alertThreshold: 5000,
           flow: 0
         }
         tableData.value.push(newSupplier)
@@ -524,10 +646,12 @@ const handleSubmitForm = () => {
         const index = tableData.value.findIndex(item => item.id === supplierForm.id)
         if (index !== -1) {
           // 保留原有金额和流转数据
-          const { amount, flow } = tableData.value[index]
+          const { amount, freeze, alertThreshold, flow } = tableData.value[index]
           tableData.value[index] = {
             ...supplierForm,
             amount,
+            freeze,
+            alertThreshold,
             flow
           }
           ElMessage.success('更新成功')
@@ -550,6 +674,67 @@ const handleSizeChange = (size) => {
 const handleCurrentChange = (page) => {
   currentPage.value = page
   handleSearch()
+}
+
+// 提交余额操作
+const submitBalanceOperation = () => {
+  balanceFormRef.value.validate((valid) => {
+    if (valid) {
+      // 模拟API调用
+      const index = tableData.value.findIndex(item => item.supplier === balanceForm.supplier && item.code === balanceForm.code)
+      if (index !== -1) {
+        if (balanceForm.operationType === 'add') {
+          // 增加余额
+          tableData.value[index].amount += parseFloat(balanceForm.amount)
+          ElMessage.success(`余额增加成功，当前余额: ${formatAmount(tableData.value[index].amount)}`)
+        } else {
+          // 减少余额
+          if (tableData.value[index].amount < balanceForm.amount) {
+            ElMessage.warning('余额不足，无法扣减')
+            return
+          }
+          tableData.value[index].amount -= parseFloat(balanceForm.amount)
+          ElMessage.success(`余额减少成功，当前余额: ${formatAmount(tableData.value[index].amount)}`)
+        }
+      }
+      balanceOperationVisible.value = false
+    } else {
+      return false
+    }
+  })
+}
+
+// 提交余额解冻
+const submitUnfreeze = () => {
+  unfreezeFormRef.value.validate((valid) => {
+    if (valid) {
+      const index = tableData.value.findIndex(item => item.supplier === unfreezeForm.supplier && item.code === unfreezeForm.code)
+      if (index !== -1) {
+        const freeze = tableData.value[index].freeze || 0
+        
+        if (freeze <= 0) {
+          ElMessage.warning('当前没有冻结金额，无需解冻')
+          return
+        }
+        
+        if (unfreezeForm.amount > freeze) {
+          ElMessage.warning(`解冻金额不能大于当前冻结金额: ${formatAmount(freeze)}`)
+          return
+        }
+        
+        // 执行解冻操作
+        tableData.value[index].freeze = freeze - parseFloat(unfreezeForm.amount)
+        tableData.value[index].amount += parseFloat(unfreezeForm.amount)
+        
+        ElMessage.success(
+          `解冻成功，当前余额: ${formatAmount(tableData.value[index].amount)}，冻结金额: ${formatAmount(tableData.value[index].freeze)}`
+        )
+      }
+      unfreezeVisible.value = false
+    } else {
+      return false
+    }
+  })
 }
 
 // 页面加载时获取数据
@@ -654,5 +839,13 @@ onMounted(() => {
 
 :deep(.el-input-number .el-input__inner) {
   text-align: left;
+}
+
+.operation-button {
+  font-size: 14px;
+}
+
+:deep(.el-dropdown-menu__item) {
+  font-size: 14px;
 }
 </style> 

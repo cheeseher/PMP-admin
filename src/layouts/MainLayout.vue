@@ -111,16 +111,16 @@
         </div>
         
         <div class="header-right">
-          <el-dropdown>
+          <el-dropdown @command="handleCommand">
             <span class="user-info">
               <el-avatar :size="32" src="https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png" />
               <span>管理员</span>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>个人信息</el-dropdown-item>
-                <el-dropdown-item>修改密码</el-dropdown-item>
-                <el-dropdown-item divided>退出登录</el-dropdown-item>
+                <el-dropdown-item command="security">账户安全</el-dropdown-item>
+                <el-dropdown-item command="clearCache">清理缓存</el-dropdown-item>
+                <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -133,11 +133,70 @@
       </el-main>
     </el-container>
   </el-container>
+
+  <!-- 账户安全抽屉 -->
+  <el-drawer
+    v-model="securityDrawerVisible"
+    title="账户安全"
+    direction="rtl"
+    size="400px"
+  >
+    <el-form
+      ref="securityFormRef"
+      :model="securityForm"
+      :rules="securityRules"
+      label-width="120px"
+      class="security-form"
+    >
+      <el-form-item label="用户名" prop="username">
+        <el-input v-model="securityForm.username" />
+      </el-form-item>
+      
+      <el-form-item label="昵称" prop="nickname">
+        <el-input v-model="securityForm.nickname" />
+      </el-form-item>
+      
+      <el-form-item label="输入新密码" prop="password">
+        <el-input 
+          v-model="securityForm.password" 
+          type="password" 
+          placeholder="不填表示不更新密码"
+        />
+      </el-form-item>
+      
+      <el-form-item label="开启google认证" prop="googleAuth">
+        <el-radio-group v-model="securityForm.googleAuth">
+          <el-radio :label="false">禁用</el-radio>
+          <el-radio :label="true">启用</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      
+      <el-form-item>
+        <el-button type="primary" @click="handleSecuritySubmit">确认修改</el-button>
+      </el-form-item>
+    </el-form>
+  </el-drawer>
+
+  <!-- 清理缓存对话框 -->
+  <el-dialog
+    v-model="clearCacheDialogVisible"
+    title="清理缓存"
+    width="400px"
+  >
+    <span>确定要清理系统缓存吗？</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="clearCacheDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleClearCache">确认</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Document,
   Connection,
@@ -163,6 +222,89 @@ const toggleSidebar = () => {
 const handleSelect = (index) => {
   console.log('菜单被点击:', index)  // 添加日志以跟踪点击事件
   router.push(index)
+}
+
+// 账户安全抽屉
+const securityDrawerVisible = ref(false)
+const securityFormRef = ref(null)
+const securityForm = reactive({
+  username: 'admin',
+  nickname: '管理员',
+  password: '',
+  googleAuth: false
+})
+
+// 表单验证规则
+const securityRules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
+  ],
+  nickname: [
+    { required: true, message: '请输入昵称', trigger: 'blur' },
+    { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+  ],
+  password: [
+    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' }
+  ],
+  googleAuth: [
+    { required: true, message: '请选择是否开启Google认证', trigger: 'change' }
+  ]
+}
+
+// 账户安全表单提交
+const handleSecuritySubmit = () => {
+  securityFormRef.value.validate((valid) => {
+    if (valid) {
+      // 模拟提交
+      setTimeout(() => {
+        ElMessage.success('账户信息修改成功')
+        securityDrawerVisible.value = false
+      }, 1000)
+    } else {
+      return false
+    }
+  })
+}
+
+// 清理缓存对话框
+const clearCacheDialogVisible = ref(false)
+
+// 清理缓存处理
+const handleClearCache = () => {
+  // 模拟清理缓存
+  setTimeout(() => {
+    ElMessage.success('系统缓存清理成功')
+    clearCacheDialogVisible.value = false
+  }, 1000)
+}
+
+// 退出登录
+const handleLogout = () => {
+  ElMessageBox.confirm('确定要退出登录吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    // 模拟退出登录
+    ElMessage.success('已退出登录')
+    // router.push('/login')
+  }).catch(() => {})
+}
+
+// 处理下拉菜单命令
+const handleCommand = (command) => {
+  switch (command) {
+    case 'security':
+      securityDrawerVisible.value = true
+      break
+    case 'clearCache':
+      clearCacheDialogVisible.value = true
+      break
+    case 'logout':
+      handleLogout()
+      break
+  }
 }
 </script>
 
@@ -274,5 +416,9 @@ const handleSelect = (index) => {
       color: #fff;
     }
   }
+}
+
+.security-form {
+  padding: 20px;
 }
 </style> 

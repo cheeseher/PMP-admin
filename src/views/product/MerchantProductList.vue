@@ -34,7 +34,6 @@
           <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
         </div>
         <div class="right">
-          <el-button :icon="Printer" plain>打印</el-button>
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="fetchData" />
@@ -82,7 +81,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Refresh, Printer, Download } from '@element-plus/icons-vue'
+import { Search, Refresh, Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { merchantProductList } from '@/data/merchantProductData'
 

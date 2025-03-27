@@ -204,7 +204,6 @@
           <el-tag type="info" size="small" effect="plain">{{ pagination.total }}条记录</el-tag>
         </div>
         <div class="right">
-          <el-button :icon="Printer" plain>打印</el-button>
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="refreshData" />
@@ -259,7 +258,7 @@
               :type="scope.row.pushResult === 'success' ? 'success' : scope.row.pushResult === 'failed' ? 'danger' : 'info'" 
               size="small"
             >
-              {{ scope.row.pushResult === 'success' ? '成功' : scope.row.pushResult === 'failed' ? '失败' : '-' }}
+              {{ '' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -333,7 +332,6 @@ import {
   Search, 
   Refresh, 
   Download, 
-  Printer, 
   ArrowDown, 
   Money, 
   Document, 

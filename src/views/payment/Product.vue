@@ -34,7 +34,6 @@
           <el-button :icon="Delete" plain :disabled="selectedRows.length === 0" @click="handleBatchDelete">批量删除</el-button>
         </div>
         <div class="right">
-          <el-button :icon="Printer" plain>打印</el-button>
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="fetchData" />
@@ -215,7 +214,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from 'vue'
-import { Search, Delete, Plus, Edit, Refresh, Check, Close, Remove, Printer, Download } from '@element-plus/icons-vue'
+import { Search, Delete, Plus, Edit, Refresh, Check, Close, Remove, Download } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCleanup } from '@/utils/cleanupUtils'
 
@@ -412,8 +411,13 @@ const handleBatchDelete = () => {
 }
 
 const handleBatchApprove = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请至少选择一条记录')
+    return
+  }
+
   ElMessageBox.confirm(
-    '确认要将所有支付产品一键开启吗？',
+    `确认要将选中的${selectedRows.value.length}个支付产品开启吗？`,
     '批量开启确认',
     {
       confirmButtonText: '确认',
@@ -424,19 +428,27 @@ const handleBatchApprove = () => {
     // 实现支付产品一键开启逻辑
     loading.value = true
     safeTimeout(() => {
-      // 将所有表格数据状态改为开启
+      // 将选中的记录状态改为开启
+      const selectedIds = selectedRows.value.map(row => row.id)
       tableData.value.forEach(item => {
-        item.status = 'ONLINE'
+        if (selectedIds.includes(item.id)) {
+          item.status = 'ONLINE'
+        }
       })
       loading.value = false
-      ElMessage.success('支付产品一键开启成功')
+      ElMessage.success(`已成功开启${selectedRows.value.length}个支付产品`)
     }, 500)
   }).catch(() => {})
 }
 
 const handleBatchReject = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请至少选择一条记录')
+    return
+  }
+
   ElMessageBox.confirm(
-    '确认要将所有支付产品一键关闭吗？',
+    `确认要将选中的${selectedRows.value.length}个支付产品关闭吗？`,
     '批量关闭确认',
     {
       confirmButtonText: '确认',
@@ -447,12 +459,15 @@ const handleBatchReject = () => {
     // 实现支付产品一键关闭逻辑
     loading.value = true
     safeTimeout(() => {
-      // 将所有表格数据状态改为关闭
+      // 将选中的记录状态改为关闭
+      const selectedIds = selectedRows.value.map(row => row.id)
       tableData.value.forEach(item => {
-        item.status = 'OFFLINE'
+        if (selectedIds.includes(item.id)) {
+          item.status = 'OFFLINE'
+        }
       })
       loading.value = false
-      ElMessage.success('支付产品一键关闭成功')
+      ElMessage.success(`已成功关闭${selectedRows.value.length}个支付产品`)
     }, 500)
   }).catch(() => {})
 }
@@ -467,11 +482,15 @@ const handleBatchRemove = () => {
       type: 'warning'
     }
   ).then(() => {
-    // TODO: 实现下单通道一键关闭逻辑
+    // 实现下单通道一键关闭逻辑
     loading.value = true
     safeTimeout(() => {
+      // 将所有表格数据状态改为关闭
+      tableData.value.forEach(item => {
+        item.status = 'OFFLINE'
+      })
       loading.value = false
-      ElMessage.success('下单通道一键关闭成功')
+      ElMessage.success('已成功关闭所有下单通道')
     }, 500)
   }).catch(() => {})
 }

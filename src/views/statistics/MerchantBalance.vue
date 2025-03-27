@@ -50,7 +50,6 @@
           <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
         </div>
         <div class="right">
-          <el-button :icon="Printer" plain @click="handlePrint">打印</el-button>
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="refreshData" :loading="loading" />
@@ -74,11 +73,6 @@
         <el-table-column prop="availableAmount" label="可用余额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.availableAmount) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="frozenAmount" label="冻结余额" width="150" align="right">
-          <template #default="{ row }">
-            <span class="amount-cell">{{ formatAmount(row.frozenAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="snapshotTime" label="备份时间" width="180" align="center" />
@@ -111,7 +105,6 @@
         <el-descriptions-item label="快照时间">{{ currentMerchant.snapshotTime }}</el-descriptions-item>
         <el-descriptions-item label="账户余额">{{ formatAmount(currentMerchant.balance) }}</el-descriptions-item>
         <el-descriptions-item label="可用金额">{{ formatAmount(currentMerchant.availableAmount) }}</el-descriptions-item>
-        <el-descriptions-item label="冻结金额">{{ formatAmount(currentMerchant.frozenAmount) }}</el-descriptions-item>
         <el-descriptions-item label="今日流水" :span="2">
           <el-tag type="success">收入: {{ formatAmount(currentMerchant.todayIncome) }}</el-tag>
           <el-tag type="danger" style="margin-left: 10px;">支出: {{ formatAmount(currentMerchant.todayOutcome) }}</el-tag>
@@ -126,9 +119,6 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="detailDialogVisible = false">关闭</el-button>
-          <el-button type="primary" @click="printDetail">
-            <el-icon><Printer /></el-icon>打印明细
-          </el-button>
         </div>
       </template>
     </el-dialog>
@@ -145,7 +135,6 @@ import {
   Search, 
   RefreshRight,
   View,
-  Printer,
   Clock
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -271,11 +260,6 @@ const handleExport = () => {
     .catch(() => {})
 }
 
-// 打印数据
-const handlePrint = () => {
-  ElMessage.success('打印指令已发送')
-}
-
 // 刷新数据
 const refreshData = () => {
   loading.value = true
@@ -365,12 +349,6 @@ const viewDetail = (row) => {
       chartContainer.appendChild(chartBars);
     }
   }, 100);
-}
-
-// 打印明细
-const printDetail = () => {
-  ElMessage.success('明细打印指令已发送')
-  detailDialogVisible.value = false
 }
 
 // 页面加载时获取数据

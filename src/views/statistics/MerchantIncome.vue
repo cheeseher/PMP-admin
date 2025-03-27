@@ -124,10 +124,9 @@
           <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
         </div>
         <div class="right">
-          <el-button :icon="Printer" plain>打印</el-button>
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
-            <el-button :icon="Refresh" circle plain @click="refreshData" :loading="loading" />
+            <el-button :icon="Refresh" circle plain @click="refreshData" />
           </el-tooltip>
         </div>
       </div>
@@ -194,7 +193,7 @@
 
 <script setup>
 import { ref, reactive, watch, computed } from 'vue'
-import { Search, Refresh, Download, Printer, Money, Plus, Discount, Wallet, Document } from '@element-plus/icons-vue'
+import { Search, Refresh, Download, Money, Plus, Discount, Wallet, Document } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
 

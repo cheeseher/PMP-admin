@@ -40,7 +40,6 @@
           <el-button type="primary" :icon="Plus" @click="handleAdd">新增</el-button>
         </div>
         <div class="right">
-          <el-button :icon="Printer" plain>打印</el-button>
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="handleSearch" />
@@ -64,11 +63,6 @@
         <el-table-column label="余额" prop="amount" width="120" align="right">
           <template #default="scope">
             <span class="amount-cell">{{ formatAmount(scope.row.amount) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="冻结金额" prop="freeze" width="120" align="right">
-          <template #default="scope">
-            <span class="amount-cell">{{ formatAmount(scope.row.freeze || 0) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="提醒阈值" prop="alertThreshold" width="120" align="right">
@@ -100,7 +94,6 @@
                   <el-dropdown-item command="edit">编辑</el-dropdown-item>
                   <el-dropdown-item command="delete" style="color: red;">删除</el-dropdown-item>
                   <el-dropdown-item command="balance">余额操作</el-dropdown-item>
-                  <el-dropdown-item command="unfreeze">余额解冻</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -204,7 +197,6 @@
         <el-descriptions-item label="上游通道编码">{{ currentSupplier.code }}</el-descriptions-item>
         <el-descriptions-item label="上游通道商户号">{{ currentSupplier.merchantNo }}</el-descriptions-item>
         <el-descriptions-item label="余额">{{ formatAmount(currentSupplier.amount) }}</el-descriptions-item>
-        <el-descriptions-item label="冻结金额">{{ formatAmount(currentSupplier.freeze || 0) }}</el-descriptions-item>
         <el-descriptions-item label="提醒阈值">{{ formatAmount(currentSupplier.alertThreshold || 5000) }}</el-descriptions-item>
         <el-descriptions-item label="API密钥">{{ currentSupplier.apiKey || '-' }}</el-descriptions-item>
         <el-descriptions-item label="应用APPID">{{ currentSupplier.appId || '-' }}</el-descriptions-item>
@@ -278,68 +270,12 @@
         </div>
       </template>
     </el-dialog>
-    
-    <!-- 余额解冻弹窗 -->
-    <el-dialog
-      title="余额解冻"
-      v-model="unfreezeVisible"
-      width="500px"
-      destroy-on-close
-    >
-      <el-form
-        ref="unfreezeFormRef"
-        :model="unfreezeForm"
-        :rules="unfreezeRules"
-        label-width="100px"
-      >
-        <el-form-item label="上游通道名称">
-          <el-input v-model="unfreezeForm.supplier" disabled />
-        </el-form-item>
-        <el-form-item label="上游通道编码">
-          <el-input v-model="unfreezeForm.code" disabled />
-        </el-form-item>
-        <el-form-item label="当前余额">
-          <el-input v-model="unfreezeForm.currentBalance" disabled>
-            <template #append>元</template>
-          </el-input>
-        </el-form-item>
-        <el-form-item label="冻结金额">
-          <el-input v-model="unfreezeForm.freezeAmount" disabled>
-            <template #append>元</template>
-          </el-input>
-        </el-form-item>
-        <el-form-item label="解冻金额" prop="amount">
-          <el-input-number 
-            v-model="unfreezeForm.amount" 
-            :precision="2" 
-            :min="0"
-            :max="unfreezeForm.maxAmount"
-            controls-position="right"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input 
-            v-model="unfreezeForm.remark" 
-            type="textarea" 
-            :rows="3"
-            placeholder="请输入操作备注"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="unfreezeVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitUnfreeze">确认</el-button>
-        </div>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { Search, Refresh, Plus, ArrowDown, Printer, Download } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, ArrowDown, Download } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { supplierList } from '@/data/supplierData'
 
@@ -417,22 +353,6 @@ const balanceForm = reactive({
 const balanceRules = {
   operationType: [{ required: true, message: '请选择操作类型', trigger: 'blur' }],
   amount: [{ required: true, message: '请输入操作金额', trigger: 'blur' }]
-}
-
-// 余额解冻相关
-const unfreezeVisible = ref(false)
-const unfreezeFormRef = ref(null)
-const unfreezeForm = reactive({
-  supplier: '',
-  code: '',
-  currentBalance: '',
-  freezeAmount: '',
-  amount: 0,
-  maxAmount: 0,
-  remark: ''
-})
-const unfreezeRules = {
-  amount: [{ required: true, message: '请输入解冻金额', trigger: 'blur' }]
 }
 
 // 格式化金额
@@ -550,9 +470,6 @@ const handleCommand = (command, row) => {
     case 'balance':
       handleBalance(row)
       break
-    case 'unfreeze':
-      handleUnfreeze(row)
-      break
     default:
       break
   }
@@ -588,17 +505,6 @@ const handleBalance = (row) => {
   balanceForm.currentBalance = formatAmount(row.amount)
   balanceForm.amount = 0
   balanceForm.operationType = 'add'
-}
-
-// 余额解冻
-const handleUnfreeze = (row) => {
-  unfreezeVisible.value = true
-  unfreezeForm.supplier = row.supplier
-  unfreezeForm.code = row.code
-  unfreezeForm.currentBalance = formatAmount(row.amount)
-  unfreezeForm.freezeAmount = formatAmount(row.freeze || 0)
-  unfreezeForm.maxAmount = row.freeze || 0
-  unfreezeForm.amount = 0
 }
 
 // 重置表单
@@ -700,39 +606,6 @@ const submitBalanceOperation = () => {
         }
       }
       balanceOperationVisible.value = false
-    } else {
-      return false
-    }
-  })
-}
-
-// 提交余额解冻
-const submitUnfreeze = () => {
-  unfreezeFormRef.value.validate((valid) => {
-    if (valid) {
-      const index = tableData.value.findIndex(item => item.supplier === unfreezeForm.supplier && item.code === unfreezeForm.code)
-      if (index !== -1) {
-        const freeze = tableData.value[index].freeze || 0
-        
-        if (freeze <= 0) {
-          ElMessage.warning('当前没有冻结金额，无需解冻')
-          return
-        }
-        
-        if (unfreezeForm.amount > freeze) {
-          ElMessage.warning(`解冻金额不能大于当前冻结金额: ${formatAmount(freeze)}`)
-          return
-        }
-        
-        // 执行解冻操作
-        tableData.value[index].freeze = freeze - parseFloat(unfreezeForm.amount)
-        tableData.value[index].amount += parseFloat(unfreezeForm.amount)
-        
-        ElMessage.success(
-          `解冻成功，当前余额: ${formatAmount(tableData.value[index].amount)}，冻结金额: ${formatAmount(tableData.value[index].freeze)}`
-        )
-      }
-      unfreezeVisible.value = false
     } else {
       return false
     }

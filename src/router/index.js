@@ -22,7 +22,7 @@ const router = createRouter({
         {
           path: '/order',
           name: 'Order',
-          redirect: '/order/recharge',
+          redirect: '/order/merchant',
           meta: { title: '订单管理' },
           children: [
             {
@@ -30,12 +30,6 @@ const router = createRouter({
               name: 'MerchantOrder',
               component: () => import('@/views/order/MerchantOrder.vue'),
               meta: { title: '商户订单管理' }
-            },
-            {
-              path: 'recharge',
-              name: 'RechargeList',
-              component: () => import('@/views/order/Recharge.vue'),
-              meta: { title: '商户充值列表' }
             },
             {
               path: 'withdraw',

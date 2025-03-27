@@ -54,7 +54,6 @@
           <el-button :icon="Setting" plain :disabled="!selectedRows.length" @click="handleBatchConfig">批量配置产品</el-button>
         </div>
         <div class="right">
-          <el-button :icon="Printer" plain>打印</el-button>
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="fetchData" />
@@ -81,11 +80,6 @@
             <span class="amount-cell">{{ formatAmount(scope.row.balance) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="freeze" label="冻结金额" width="100" align="right">
-          <template #default="scope">
-            <span class="amount-cell">{{ formatAmount(scope.row.freeze || 0) }}</span>
-          </template>
-        </el-table-column>
         <el-table-column prop="authIp" label="上次登录IP" width="140" />
         <el-table-column prop="loginCount" label="登录次数" width="100" />
         <el-table-column prop="googleAuth" label="谷歌认证" width="100">
@@ -103,7 +97,6 @@
             <el-button link type="primary" @click="handleQuickLogin(scope.row)">登录</el-button>
           </template>
         </el-table-column>
-        <el-table-column prop="role" label="角色" width="100" />
         <el-table-column prop="verified" label="状态" width="90">
           <template #default="scope">
             <el-switch
@@ -126,7 +119,6 @@
                   <el-dropdown-item command="edit">编辑商户</el-dropdown-item>
                   <el-dropdown-item command="resetGoogle">重置谷歌</el-dropdown-item>
                   <el-dropdown-item command="resetApiKey">重置APIKEY</el-dropdown-item>
-                  <el-dropdown-item command="unfreeze">余额解冻</el-dropdown-item>
                   <el-dropdown-item command="balance">余额操作</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -540,7 +532,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
-import { Search, Refresh, Plus, Delete, Setting, Edit, ArrowDown, Printer, Download } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, Delete, Setting, Edit, ArrowDown, Download } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { productList } from '@/data/productData'
 import { merchantProductList } from '@/data/merchantProductData'
@@ -1014,9 +1006,6 @@ const handleCommand = (command, row) => {
     case 'resetApiKey':
       handleResetApiKey(row)
       break
-    case 'unfreeze':
-      handleUnfreeze(row)
-      break
     case 'balance':
       handleBalance(row)
       break
@@ -1071,40 +1060,6 @@ const handleResetApiKey = (row) => {
         const newApiKey = generateApiKey()
         productList[index].apiKey = newApiKey
         ElMessage.success(`已重置 ${row.productName} 的APIKEY: ${newApiKey}`)
-      }
-      loading.value = false
-    }, 300)
-  }).catch(() => {
-    ElMessage.info('已取消操作')
-  })
-}
-
-// 余额解冻
-const handleUnfreeze = (row) => {
-  if (!row.freeze || row.freeze <= 0) {
-    ElMessage.warning(`商户 ${row.productName} 没有冻结余额`)
-    return
-  }
-
-  ElMessageBox.confirm(
-    `确定要解冻商户 ${row.productName} 的冻结余额 ${formatAmount(row.freeze)} 元吗？`,
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  ).then(() => {
-    loading.value = true
-    setTimeout(() => {
-      // 模拟API请求
-      const index = productList.findIndex(item => item.id === row.id)
-      if (index !== -1) {
-        // 将冻结金额加回余额中
-        productList[index].balance = (productList[index].balance || 0) + (productList[index].freeze || 0)
-        productList[index].freeze = 0
-        ElMessage.success(`已解冻 ${row.productName} 的余额`)
-        fetchData()
       }
       loading.value = false
     }, 300)

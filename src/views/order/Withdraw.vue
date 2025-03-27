@@ -47,7 +47,6 @@
           <el-tag type="info" size="small" effect="plain">{{ pagination.total }}条记录</el-tag>
         </div>
         <div class="right">
-          <el-button :icon="Printer" plain>打印</el-button>
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="refreshData" :loading="loading" />
@@ -71,29 +70,14 @@
             <span class="amount-cell">{{ scope.row.beforeAmount }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="frozenAmount" label="原始冻结" width="120" align="right">
-          <template #default="scope">
-            <span class="amount-cell">{{ scope.row.frozenAmount || '0.00' }}</span>
-          </template>
-        </el-table-column>
         <el-table-column prop="amount" label="提现金额" width="120" align="right">
           <template #default="scope">
             <span class="amount-cell outcome">{{ scope.row.amount }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="fee" label="手续费" width="80" align="right">
-          <template #default="scope">
-            <span class="amount-cell outcome">{{ scope.row.fee }}</span>
-          </template>
-        </el-table-column>
         <el-table-column prop="afterAmount" label="提现后余额" width="120" align="right">
           <template #default="scope">
             <span class="amount-cell">{{ scope.row.afterAmount }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="afterFrozen" label="提现后冻结" width="120" align="right">
-          <template #default="scope">
-            <span class="amount-cell">{{ scope.row.afterFrozen || '0.00' }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="150" show-overflow-tooltip />
@@ -196,7 +180,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { Search, Refresh, Download, Close, View, Check, Printer } from '@element-plus/icons-vue'
+import { Search, Refresh, Download, Close, View, Check } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 搜索表单数据

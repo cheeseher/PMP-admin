@@ -142,7 +142,7 @@
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column prop="merchantId" label="商户ID" width="120" align="center" />
         <el-table-column prop="merchantAccount" label="商户账户" width="150" align="center" />
-        <el-table-column prop="merchantName" label="商户名" min-width="150" show-overflow-tooltip align="center" />
+        <el-table-column prop="merchantName" label="商户名称" min-width="150" show-overflow-tooltip align="center" />
         <el-table-column prop="date" label="日期" width="120" align="center" />
         <el-table-column prop="successAmount" label="成功收款金额" width="150" align="right">
           <template #default="{ row }">

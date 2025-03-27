@@ -26,8 +26,8 @@
               />
             </div>
           </el-form-item>
-          <el-form-item label="产品名称：">
-            <el-input v-model="searchForm.productName" placeholder="请输入产品名称" style="width: 220px" clearable />
+          <el-form-item label="支付产品名称：">
+            <el-input v-model="searchForm.productName" placeholder="请输入支付产品名称" style="width: 220px" clearable />
           </el-form-item>
           <el-form-item label="商户：">
             <el-select 
@@ -118,8 +118,8 @@
         style="width: 100%"
       >
         <el-table-column type="selection" width="50" align="center" />
-        <el-table-column prop="productId" label="产品ID" width="90" align="center" />
-        <el-table-column prop="productName" label="产品名称" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="productId" label="支付产品ID" width="90" align="center" />
+        <el-table-column prop="productName" label="支付产品名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="merchantName" label="商户名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="successAmount" label="收款金额" width="150" align="right">
           <template #default="{ row }">

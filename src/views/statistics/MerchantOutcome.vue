@@ -189,11 +189,11 @@ import dayjs from 'dayjs'
 
 // 商户选项
 const merchantOptions = ref([
-  { value: 'M001', label: '测试商户' },
-  { value: 'M002', label: '示例商户' },
-  { value: 'M003', label: '演示商户' },
-  { value: 'M004', label: '测试商户A' },
-  { value: 'M005', label: '测试商户B' }
+  { value: '1', label: '商户A' },
+  { value: '2', label: '商户B' },
+  { value: '3', label: '商户C' },
+  { value: '4', label: '商户D' },
+  { value: '5', label: '商户E' }
 ])
 
 // 搜索表单数据
@@ -205,42 +205,47 @@ const searchForm = reactive({
 // 表格数据
 const tableData = ref([
   {
-    merchantId: 'M001',
-    merchantAccount: 'test001',
-    merchantName: '测试商户',
+    merchantId: '1',
+    merchantAccount: 'account001',
+    merchantName: '商户A',
     date: '2024-03-14',
     successAmount: 50000.00,
     supplementAmount: 1000.00,
     totalAmount: 51000.00,
     fee: 255.00,
-    actualAmount: 50745.00,
+    actualAmount: 0.00,
     successCount: 980
   },
   {
-    merchantId: 'M002',
-    merchantAccount: 'test002',
-    merchantName: '示例商户',
+    merchantId: '2',
+    merchantAccount: 'account002',
+    merchantName: '商户B',
     date: '2024-03-14',
     successAmount: 48000.00,
     supplementAmount: 800.00,
     totalAmount: 48800.00,
     fee: 244.00,
-    actualAmount: 48556.00,
+    actualAmount: 0.00,
     successCount: 940
   },
   {
-    merchantId: 'M003',
-    merchantAccount: 'test003',
-    merchantName: '演示商户',
+    merchantId: '3',
+    merchantAccount: 'account003',
+    merchantName: '商户C',
     date: '2024-03-14',
     successAmount: 45000.00,
     supplementAmount: 500.00,
     totalAmount: 45500.00,
     fee: 227.50,
-    actualAmount: 45272.50,
+    actualAmount: 0.00,
     successCount: 880
   }
 ])
+
+// 重新计算实际金额 = 总出款金额 - 手续费
+tableData.value.forEach(item => {
+  item.actualAmount = item.totalAmount - item.fee
+})
 
 // 统计数据计算
 const totalSuccessAmount = computed(() => {

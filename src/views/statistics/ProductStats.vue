@@ -172,9 +172,9 @@ import dayjs from 'dayjs'
 
 // 商户选项
 const merchantOptions = [
-  { label: '测试商户', value: '1' },
-  { label: '示例商户', value: '2' },
-  { label: '新商户', value: '3' }
+  { label: '商户A', value: '1' },
+  { label: '商户B', value: '2' },
+  { label: '商户C', value: '3' }
 ]
 
 // 根据时间类型获取日期范围
@@ -227,9 +227,9 @@ watch(() => searchForm.timeType, (newType) => {
 const tableData = ref([
   {
     date: '2024-03-14',
-    productId: '001',
-    productName: '微信支付',
-    merchantName: '测试商户',
+    productId: '1',
+    productName: '支付产品A',
+    merchantName: '商户A',
     orderCount: 1000,
     orderAmount: 50000.00,
     successCount: 980,
@@ -241,9 +241,9 @@ const tableData = ref([
   },
   {
     date: '2024-03-14',
-    productId: '002',
-    productName: '支付宝',
-    merchantName: '测试商户',
+    productId: '2',
+    productName: '支付产品B',
+    merchantName: '商户A',
     orderCount: 850,
     orderAmount: 42500.00,
     successCount: 825,
@@ -255,9 +255,9 @@ const tableData = ref([
   },
   {
     date: '2024-03-14',
-    productId: '003',
-    productName: '银联支付',
-    merchantName: '示例商户',
+    productId: '3',
+    productName: '支付产品C',
+    merchantName: '商户B',
     orderCount: 500,
     orderAmount: 75000.00,
     successCount: 485,
@@ -269,9 +269,9 @@ const tableData = ref([
   },
   {
     date: '2024-03-14',
-    productId: '004',
-    productName: '快捷支付',
-    merchantName: '新商户',
+    productId: '4',
+    productName: '支付产品D',
+    merchantName: '商户C',
     orderCount: 200,
     orderAmount: 30000.00,
     successCount: 180,
@@ -283,9 +283,9 @@ const tableData = ref([
   },
   {
     date: '2024-03-13',
-    productId: '001',
-    productName: '微信支付',
-    merchantName: '测试商户',
+    productId: '1',
+    productName: '支付产品A',
+    merchantName: '商户A',
     orderCount: 950,
     orderAmount: 47500.00,
     successCount: 920,

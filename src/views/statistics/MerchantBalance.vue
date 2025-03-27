@@ -155,11 +155,11 @@ import dayjs from 'dayjs'
 
 // 商户选项
 const merchantOptions = ref([
-  { value: 'M001', label: '测试商户' },
-  { value: 'M002', label: '示例商户' },
-  { value: 'M003', label: '演示商户' },
-  { value: 'M004', label: '测试商户A' },
-  { value: 'M005', label: '测试商户B' }
+  { value: '1', label: '商户A' },
+  { value: '2', label: '商户B' },
+  { value: '3', label: '商户C' },
+  { value: '4', label: '商户D' },
+  { value: '5', label: '商户E' }
 ])
 
 // 搜索表单数据
@@ -189,7 +189,7 @@ const initTableData = () => {
   const data = merchantBalanceData.map(item => ({
     ...item,
     date: item.snapshotTime ? item.snapshotTime.split(' ')[0] : '',
-    merchantAccount: `account${item.merchantId.substring(1)}`
+    merchantAccount: `account${item.merchantId}`
   }))
   tableData.value = data
   // 更新总数据量
@@ -222,7 +222,7 @@ const handleSearch = () => {
     const processedData = filteredData.map(item => ({
       ...item,
       date: item.snapshotTime ? item.snapshotTime.split(' ')[0] : '',
-      merchantAccount: `account${item.merchantId.substring(1)}`
+      merchantAccount: `account${item.merchantId}`
     }))
     
     tableData.value = processedData

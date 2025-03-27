@@ -219,8 +219,8 @@ watch(() => searchForm.timeType, (newType) => {
 const tableData = ref([
   {
     date: '2024-03-14',
-    upstreamId: '001',
-    channelName: '微信官方',
+    upstreamId: '1',
+    channelName: '上游通道A',
     successCount: 980,
     orderCount: 1000,
     successAmount: 49000.00,
@@ -230,8 +230,8 @@ const tableData = ref([
   },
   {
     date: '2024-03-14',
-    upstreamId: '002',
-    channelName: '支付宝官方',
+    upstreamId: '2',
+    channelName: '上游通道B',
     successCount: 825,
     orderCount: 850,
     successAmount: 41250.00,
@@ -241,8 +241,8 @@ const tableData = ref([
   },
   {
     date: '2024-03-14',
-    upstreamId: '003',
-    channelName: '银联直连',
+    upstreamId: '3',
+    channelName: '上游通道C',
     successCount: 485,
     orderCount: 500,
     successAmount: 72750.00,
@@ -252,8 +252,8 @@ const tableData = ref([
   },
   {
     date: '2024-03-14',
-    upstreamId: '004',
-    channelName: '快捷支付',
+    upstreamId: '4',
+    channelName: '上游通道D',
     successCount: 180,
     orderCount: 200,
     successAmount: 27000.00,

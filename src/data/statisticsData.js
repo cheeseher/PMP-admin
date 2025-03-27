@@ -6,8 +6,8 @@
 // 商户余额快照数据
 export const merchantBalanceData = [
   {
-    merchantName: '云端科技有限公司',
-    merchantId: 'M2024031401',
+    merchantName: '商户A',
+    merchantId: '1',
     balance: 125000.00,
     frozenAmount: 20000.00,
     availableAmount: 105000.00,
@@ -16,8 +16,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '星辰电子商务',
-    merchantId: 'M2024031402',
+    merchantName: '商户B',
+    merchantId: '2',
     balance: 75800.50,
     frozenAmount: 5000.00,
     availableAmount: 70800.50,
@@ -26,8 +26,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '蓝海国际贸易',
-    merchantId: 'M2024031403',
+    merchantName: '商户C',
+    merchantId: '3',
     balance: 235000.00,
     frozenAmount: 35000.00,
     availableAmount: 200000.00,
@@ -36,8 +36,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '绿洲生态科技',
-    merchantId: 'M2024031404',
+    merchantName: '商户D',
+    merchantId: '4',
     balance: 50000.00,
     frozenAmount: 0.00,
     availableAmount: 50000.00,
@@ -46,8 +46,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '红日网络科技',
-    merchantId: 'M2024031405',
+    merchantName: '商户E',
+    merchantId: '5',
     balance: 180000.00,
     frozenAmount: 30000.00,
     availableAmount: 150000.00,
@@ -56,8 +56,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '金鑫金融服务',
-    merchantId: 'M2024031406',
+    merchantName: '商户F',
+    merchantId: '6',
     balance: 520000.00,
     frozenAmount: 120000.00,
     availableAmount: 400000.00,
@@ -66,8 +66,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '银河支付平台',
-    merchantId: 'M2024031407',
+    merchantName: '商户G',
+    merchantId: '7',
     balance: 1200000.00,
     frozenAmount: 300000.00,
     availableAmount: 900000.00,
@@ -76,8 +76,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '翠竹电商平台',
-    merchantId: 'M2024031408',
+    merchantName: '商户H',
+    merchantId: '8',
     balance: 98000.00,
     frozenAmount: 8000.00,
     availableAmount: 90000.00,
@@ -86,8 +86,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '海鸥跨境电商',
-    merchantId: 'M2024031409',
+    merchantName: '商户I',
+    merchantId: '9',
     balance: 180000.00,
     frozenAmount: 0.00,
     availableAmount: 180000.00,
@@ -96,8 +96,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '紫荆科技服务',
-    merchantId: 'M2024031410',
+    merchantName: '商户J',
+    merchantId: '10',
     balance: 65000.00,
     frozenAmount: 5000.00,
     availableAmount: 60000.00,
@@ -106,8 +106,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '北斗导航科技',
-    merchantId: 'M2024031411',
+    merchantName: '商户K',
+    merchantId: '11',
     balance: 450000.00,
     frozenAmount: 50000.00,
     availableAmount: 400000.00,
@@ -116,8 +116,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '南极电子商务',
-    merchantId: 'M2024031412',
+    merchantName: '商户L',
+    merchantId: '12',
     balance: 320000.00,
     frozenAmount: 20000.00,
     availableAmount: 300000.00,
@@ -126,8 +126,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '太阳能源科技',
-    merchantId: 'M2024031413',
+    merchantName: '商户M',
+    merchantId: '13',
     balance: 750000.00,
     frozenAmount: 150000.00,
     availableAmount: 600000.00,
@@ -136,8 +136,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '月亮湾支付',
-    merchantId: 'M2024031414',
+    merchantName: '商户N',
+    merchantId: '14',
     balance: 85000.00,
     frozenAmount: 15000.00,
     availableAmount: 70000.00,
@@ -146,8 +146,8 @@ export const merchantBalanceData = [
     snapshotTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '星星科技创新',
-    merchantId: 'M2024031415',
+    merchantName: '商户O',
+    merchantId: '15',
     balance: 1800000.00,
     frozenAmount: 300000.00,
     availableAmount: 1500000.00,
@@ -160,8 +160,8 @@ export const merchantBalanceData = [
 // 商户收入统计数据
 export const merchantIncomeData = [
   {
-    merchantName: '云端科技有限公司',
-    merchantId: 'M2024031401',
+    merchantName: '商户A',
+    merchantId: '1',
     totalIncome: 1250000.00,
     todayIncome: 50000.00,
     weekIncome: 350000.00,
@@ -171,8 +171,8 @@ export const merchantIncomeData = [
     updateTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '星辰电子商务',
-    merchantId: 'M2024031402',
+    merchantName: '商户B',
+    merchantId: '2',
     totalIncome: 758000.50,
     todayIncome: 12500.00,
     weekIncome: 87500.00,
@@ -182,8 +182,8 @@ export const merchantIncomeData = [
     updateTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '蓝海国际贸易',
-    merchantId: 'M2024031403',
+    merchantName: '商户C',
+    merchantId: '3',
     totalIncome: 2350000.00,
     todayIncome: 85000.00,
     weekIncome: 590000.00,
@@ -193,8 +193,8 @@ export const merchantIncomeData = [
     updateTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '绿洲生态科技',
-    merchantId: 'M2024031404',
+    merchantName: '商户D',
+    merchantId: '4',
     totalIncome: 500000.00,
     todayIncome: 25000.00,
     weekIncome: 175000.00,
@@ -204,8 +204,8 @@ export const merchantIncomeData = [
     updateTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '红日网络科技',
-    merchantId: 'M2024031405',
+    merchantName: '商户E',
+    merchantId: '5',
     totalIncome: 1800000.00,
     todayIncome: 60000.00,
     weekIncome: 420000.00,
@@ -219,8 +219,8 @@ export const merchantIncomeData = [
 // 商户出款统计数据
 export const merchantOutcomeData = [
   {
-    merchantName: '云端科技有限公司',
-    merchantId: 'M2024031401',
+    merchantName: '商户A',
+    merchantId: '1',
     totalOutcome: 750000.00,
     todayOutcome: 30000.00,
     weekOutcome: 210000.00,
@@ -230,8 +230,8 @@ export const merchantOutcomeData = [
     updateTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '星辰电子商务',
-    merchantId: 'M2024031402',
+    merchantName: '商户B',
+    merchantId: '2',
     totalOutcome: 455000.50,
     todayOutcome: 8000.00,
     weekOutcome: 56000.00,
@@ -241,19 +241,19 @@ export const merchantOutcomeData = [
     updateTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '蓝海国际贸易',
-    merchantId: 'M2024031403',
+    merchantName: '商户C',
+    merchantId: '3',
     totalOutcome: 1450000.00,
     todayOutcome: 45000.00,
     weekOutcome: 315000.00,
     monthOutcome: 1450000.00,
     successRate: 0.985,
-    withdrawCount: 150,
+    withdrawCount: 120,
     updateTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '绿洲生态科技',
-    merchantId: 'M2024031404',
+    merchantName: '商户D',
+    merchantId: '4',
     totalOutcome: 250000.00,
     todayOutcome: 0.00,
     weekOutcome: 75000.00,
@@ -263,8 +263,8 @@ export const merchantOutcomeData = [
     updateTime: '2024-03-14 15:30:00'
   },
   {
-    merchantName: '红日网络科技',
-    merchantId: 'M2024031405',
+    merchantName: '商户E',
+    merchantId: '5',
     totalOutcome: 1050000.00,
     todayOutcome: 35000.00,
     weekOutcome: 245000.00,
@@ -329,7 +329,7 @@ export const merchantRankData = [
   {
     rank: 1,
     merchantName: '蓝海国际贸易',
-    merchantId: 'M2024031403',
+    merchantId: '3',
     totalAmount: 2350000.00,
     orderCount: 2450,
     averageAmount: 959.18,
@@ -338,7 +338,7 @@ export const merchantRankData = [
   {
     rank: 2,
     merchantName: '红日网络科技',
-    merchantId: 'M2024031405',
+    merchantId: '5',
     totalAmount: 1800000.00,
     orderCount: 1850,
     averageAmount: 972.97,
@@ -347,7 +347,7 @@ export const merchantRankData = [
   {
     rank: 3,
     merchantName: '云端科技有限公司',
-    merchantId: 'M2024031401',
+    merchantId: '1',
     totalAmount: 1250000.00,
     orderCount: 1250,
     averageAmount: 1000.00,
@@ -356,7 +356,7 @@ export const merchantRankData = [
   {
     rank: 4,
     merchantName: '星辰电子商务',
-    merchantId: 'M2024031402',
+    merchantId: '2',
     totalAmount: 758000.50,
     orderCount: 850,
     averageAmount: 891.77,
@@ -365,7 +365,7 @@ export const merchantRankData = [
   {
     rank: 5,
     merchantName: '绿洲生态科技',
-    merchantId: 'M2024031404',
+    merchantId: '4',
     totalAmount: 500000.00,
     orderCount: 520,
     averageAmount: 961.54,
@@ -377,7 +377,7 @@ export const merchantRankData = [
 export const channelStatsData = [
   {
     channelName: '微信支付通道A',
-    channelId: 'CH2024010101',
+    channelId: '1',
     totalAmount: 985000.00,
     orderCount: 3250,
     successRate: 0.992,
@@ -387,7 +387,7 @@ export const channelStatsData = [
   },
   {
     channelName: '支付宝通道B',
-    channelId: 'CH2024010102',
+    channelId: '2',
     totalAmount: 875000.00,
     orderCount: 2850,
     successRate: 0.985,
@@ -397,7 +397,7 @@ export const channelStatsData = [
   },
   {
     channelName: '银联快捷支付',
-    channelId: 'CH2024010103',
+    channelId: '3',
     totalAmount: 650000.00,
     orderCount: 1950,
     successRate: 0.978,
@@ -407,7 +407,7 @@ export const channelStatsData = [
   },
   {
     channelName: '云闪付通道',
-    channelId: 'CH2024010104',
+    channelId: '4',
     totalAmount: 520000.00,
     orderCount: 1650,
     successRate: 0.995,
@@ -417,7 +417,7 @@ export const channelStatsData = [
   },
   {
     channelName: '数字人民币通道',
-    channelId: 'CH2024010105',
+    channelId: '5',
     totalAmount: 350000.00,
     orderCount: 950,
     successRate: 0.998,
@@ -431,7 +431,7 @@ export const channelStatsData = [
 export const upstreamData = [
   {
     upstreamName: '金钥匙支付',
-    upstreamId: 'UP2024010101',
+    upstreamId: '1',
     totalAmount: 1250000.00,
     orderCount: 4250,
     successRate: 0.988,
@@ -441,7 +441,7 @@ export const upstreamData = [
   },
   {
     upstreamName: '通联支付',
-    upstreamId: 'UP2024010102',
+    upstreamId: '2',
     totalAmount: 985000.00,
     orderCount: 3350,
     successRate: 0.975,
@@ -451,7 +451,7 @@ export const upstreamData = [
   },
   {
     upstreamName: '汇付天下',
-    upstreamId: 'UP2024010103',
+    upstreamId: '3',
     totalAmount: 750000.00,
     orderCount: 2550,
     successRate: 0.982,
@@ -461,7 +461,7 @@ export const upstreamData = [
   },
   {
     upstreamName: '易宝支付',
-    upstreamId: 'UP2024010104',
+    upstreamId: '4',
     totalAmount: 560000.00,
     orderCount: 1850,
     successRate: 0.990,
@@ -471,7 +471,7 @@ export const upstreamData = [
   },
   {
     upstreamName: '钱方支付',
-    upstreamId: 'UP2024010105',
+    upstreamId: '5',
     totalAmount: 420000.00,
     orderCount: 1450,
     successRate: 0.985,
@@ -485,7 +485,7 @@ export const upstreamData = [
 export const productStatsData = [
   {
     productName: '微信支付',
-    productId: 'P2024010101',
+    productId: '1',
     totalAmount: 1850000.00,
     orderCount: 6250,
     successRate: 0.990,
@@ -495,7 +495,7 @@ export const productStatsData = [
   },
   {
     productName: '支付宝',
-    productId: 'P2024010102',
+    productId: '2',
     totalAmount: 1650000.00,
     orderCount: 5850,
     successRate: 0.985,
@@ -505,7 +505,7 @@ export const productStatsData = [
   },
   {
     productName: '银联快捷',
-    productId: 'P2024010103',
+    productId: '3',
     totalAmount: 950000.00,
     orderCount: 3250,
     successRate: 0.975,
@@ -515,7 +515,7 @@ export const productStatsData = [
   },
   {
     productName: '云闪付',
-    productId: 'P2024010104',
+    productId: '4',
     totalAmount: 750000.00,
     orderCount: 2650,
     successRate: 0.995,
@@ -525,7 +525,7 @@ export const productStatsData = [
   },
   {
     productName: '数字人民币',
-    productId: 'P2024010105',
+    productId: '5',
     totalAmount: 450000.00,
     orderCount: 1450,
     successRate: 0.998,

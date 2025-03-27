@@ -204,8 +204,8 @@ watch(() => searchForm.timeType, (newType) => {
 const tableData = ref([
   {
     date: '2024-03-14',
-    channelId: '1001',
-    channelName: '微信支付直连',
+    channelId: '1',
+    channelName: '支付通道A',
     payType: 'wechat',
     orderCount: 1000,
     orderAmount: 50000.00,
@@ -216,8 +216,8 @@ const tableData = ref([
   },
   {
     date: '2024-03-14',
-    channelId: '1002',
-    channelName: '支付宝直连',
+    channelId: '2',
+    channelName: '支付通道B',
     payType: 'alipay',
     orderCount: 850,
     orderAmount: 42500.00,
@@ -228,8 +228,8 @@ const tableData = ref([
   },
   {
     date: '2024-03-14',
-    channelId: '1003',
-    channelName: '银联直连',
+    channelId: '3',
+    channelName: '支付通道C',
     payType: 'unionpay',
     orderCount: 500,
     orderAmount: 75000.00,
@@ -240,8 +240,8 @@ const tableData = ref([
   },
   {
     date: '2024-03-14',
-    channelId: '1004',
-    channelName: '快捷支付',
+    channelId: '4',
+    channelName: '支付通道D',
     payType: 'quick',
     orderCount: 200,
     orderAmount: 30000.00,

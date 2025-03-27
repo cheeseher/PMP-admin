@@ -193,8 +193,8 @@ const tableData = ref([
     date: '2024-03-14',
     successAmount: 50000.00,
     channelCost: 250.00,
-    profitAfterChannel: 49750.00,
-    fee: 250.00,
+    profitAfterChannel: 0.00,
+    fee: 500.00,
     orderCount: 1000,
     successCount: 980,
     successRate: 0.98
@@ -203,8 +203,8 @@ const tableData = ref([
     date: '2024-03-13',
     successAmount: 48000.00,
     channelCost: 240.00,
-    profitAfterChannel: 47760.00,
-    fee: 240.00,
+    profitAfterChannel: 0.00,
+    fee: 480.00,
     orderCount: 960,
     successCount: 940,
     successRate: 0.98
@@ -213,8 +213,8 @@ const tableData = ref([
     date: '2024-03-12',
     successAmount: 45000.00,
     channelCost: 225.00,
-    profitAfterChannel: 44775.00,
-    fee: 225.00,
+    profitAfterChannel: 0.00,
+    fee: 450.00,
     orderCount: 900,
     successCount: 880,
     successRate: 0.98
@@ -223,8 +223,8 @@ const tableData = ref([
     date: '2024-03-11',
     successAmount: 42000.00,
     channelCost: 210.00,
-    profitAfterChannel: 41790.00,
-    fee: 210.00,
+    profitAfterChannel: 0.00,
+    fee: 420.00,
     orderCount: 840,
     successCount: 820,
     successRate: 0.98
@@ -233,13 +233,18 @@ const tableData = ref([
     date: '2024-03-10',
     successAmount: 40000.00,
     channelCost: 200.00,
-    profitAfterChannel: 39800.00,
-    fee: 200.00,
+    profitAfterChannel: 0.00,
+    fee: 400.00,
     orderCount: 800,
     successCount: 780,
     successRate: 0.98
   }
 ])
+
+// 重新计算除通道成本后利润
+tableData.value.forEach(item => {
+  item.profitAfterChannel = item.fee - item.channelCost
+})
 
 // 统计数据计算
 const totalSuccessAmount = computed(() => {

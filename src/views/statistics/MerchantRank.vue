@@ -225,7 +225,7 @@ watch(() => searchForm.timeType, (newType) => {
 // 表格数据
 const tableData = ref([
   {
-    merchantId: '1001',
+    merchantId: '1',
     merchantNo: 'MER20240301',
     merchantAccount: 'merchant1',
     merchantName: '顶级商户A',
@@ -237,7 +237,7 @@ const tableData = ref([
     netAmount: 2437750.00
   },
   {
-    merchantId: '1002',
+    merchantId: '2',
     merchantNo: 'MER20240302',
     merchantAccount: 'merchant2',
     merchantName: '优质商户B',
@@ -249,7 +249,7 @@ const tableData = ref([
     netAmount: 1840750.00
   },
   {
-    merchantId: '1003',
+    merchantId: '3',
     merchantNo: 'MER20240303',
     merchantAccount: 'merchant3',
     merchantName: '标准商户C',
@@ -261,7 +261,7 @@ const tableData = ref([
     netAmount: 1572100.00
   },
   {
-    merchantId: '1004',
+    merchantId: '4',
     merchantNo: 'MER20240304',
     merchantAccount: 'merchant4',
     merchantName: '普通商户D',
@@ -273,7 +273,7 @@ const tableData = ref([
     netAmount: 975100.00
   },
   {
-    merchantId: '1005',
+    merchantId: '5',
     merchantNo: 'MER20240305',
     merchantAccount: 'merchant5',
     merchantName: '小型商户E',

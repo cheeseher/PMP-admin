@@ -5,8 +5,8 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="ID：">
-            <el-input v-model="searchForm.id" placeholder="请输入ID" style="width: 168px" clearable />
+          <el-form-item label="商户ID：">
+            <el-input v-model="searchForm.id" placeholder="请输入商户ID" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="商户账号：">
             <el-input v-model="searchForm.merchantNo" placeholder="请输入商户账号" style="width: 220px" clearable />
@@ -30,7 +30,8 @@
       <!-- 表格工具栏 -->
       <div class="table-toolbar">
         <div class="left">
-          <!-- 删除新增关联按钮 -->
+          <span class="table-title">商户产品列表</span>
+          <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
         </div>
         <div class="right">
           <el-button :icon="Printer" plain>打印</el-button>
@@ -49,7 +50,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" fixed="left" />
-        <el-table-column prop="id" label="ID" width="80" sortable />
+        <el-table-column prop="id" label="商户ID" width="80" sortable />
         <el-table-column prop="merchantNo" label="商户账号" min-width="120" />
         <el-table-column prop="merchantName" label="商户名称" min-width="150" />
         <el-table-column prop="productName" label="支付产品名称" min-width="150" />
@@ -227,8 +228,15 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.table-toolbar .left .el-button {
-  margin-right: 8px;
+.table-toolbar .left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-title {
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .table-toolbar .right .el-button {

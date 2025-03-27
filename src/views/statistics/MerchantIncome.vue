@@ -217,9 +217,9 @@ const getDateRangeByType = (type) => {
 
 // 商户选项数据
 const merchantOptions = ref([
-  { value: 'M001', label: '测试商户' },
-  { value: 'M002', label: '示例商户' },
-  { value: 'M003', label: '演示商户' }
+  { value: 'M001', label: '商户A' },
+  { value: 'M002', label: '商户B' },
+  { value: 'M003', label: '商户C' }
 ])
 
 // 搜索表单数据
@@ -239,9 +239,9 @@ watch(() => searchForm.timeType, (newType) => {
 // 表格数据
 const tableData = ref([
   {
-    merchantId: 'M001',
-    merchantAccount: 'test001',
-    merchantName: '测试商户',
+    merchantId: '1',
+    merchantAccount: 'account001',
+    merchantName: '商户A',
     date: '2024-03-14',
     successAmount: 50000.00,
     supplementAmount: 1000.00,
@@ -251,9 +251,9 @@ const tableData = ref([
     successCount: 980
   },
   {
-    merchantId: 'M002',
-    merchantAccount: 'test002',
-    merchantName: '示例商户',
+    merchantId: '2',
+    merchantAccount: 'account002',
+    merchantName: '商户B',
     date: '2024-03-14',
     successAmount: 48000.00,
     supplementAmount: 800.00,
@@ -263,9 +263,9 @@ const tableData = ref([
     successCount: 940
   },
   {
-    merchantId: 'M003',
-    merchantAccount: 'test003',
-    merchantName: '演示商户',
+    merchantId: '3',
+    merchantAccount: 'account003',
+    merchantName: '商户C',
     date: '2024-03-14',
     successAmount: 45000.00,
     supplementAmount: 500.00,
@@ -314,8 +314,8 @@ const initTableData = () => {
     // 这里是示例数据
     {
       date: '2024-03-14',
-      merchantId: 'M001',
-      merchantName: '测试商户',
+      merchantId: '1',
+      merchantName: '商户A',
       payType: '支付宝',
       orderCount: 120,
       orderAmount: 56000,

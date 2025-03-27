@@ -1116,7 +1116,9 @@ const handleUnfreeze = (row) => {
 // 一键登录
 const handleQuickLogin = (row) => {
   ElMessage.success(`正在登录商户账户：${row.productId}`)
-  // 实际登录逻辑这里仅作演示
+  // 在新标签页中打开商户后台
+  const merchantAdminUrl = `/merchant/dashboard?merchant=${row.productId}&token=admin_token_${row.id}`
+  window.open(merchantAdminUrl, '_blank')
 }
 
 // 导出数据

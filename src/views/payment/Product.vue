@@ -108,14 +108,14 @@
         <el-form-item label="供应商通道" prop="channelCode">
           <el-select v-model="productForm.channelCode" multiple placeholder="请选择供应商通道" style="width: 100%" @change="handleChannelChange">
             <el-option-group label="未分组">
-              <el-option label="支付宝" value="ALIPAY" />
-              <el-option label="微信支付" value="WECHAT" />
-              <el-option label="银联支付" value="UNIONPAY" />
+              <el-option label="通道A" value="ALIPAY" />
+              <el-option label="通道B" value="WECHAT" />
+              <el-option label="通道C" value="UNIONPAY" />
             </el-option-group>
             <el-option-group label="分组">
-              <el-option label="分组 1" value="GROUP_1" />
-              <el-option label="分组 2" value="GROUP_2" />
-              <el-option label="分组 3" value="GROUP_3" />
+              <el-option label="分组A" value="GROUP_1" />
+              <el-option label="分组B" value="GROUP_2" />
+              <el-option label="分组C" value="GROUP_3" />
             </el-option-group>
           </el-select>
         </el-form-item>
@@ -228,7 +228,7 @@ const searchForm = reactive({
 const tableData = ref([
   {
     id: 1,
-    productName: '演示产品',
+    productName: '支付产品A',
     productCode: '8888',
     payType: 'ALIPAY',
     feeRate: 0,
@@ -237,7 +237,7 @@ const tableData = ref([
   },
   {
     id: 2,
-    productName: '微信支付产品',
+    productName: '支付产品B',
     productCode: 'WECHAT_PAY',
     payType: 'WECHAT',
     feeRate: 0,
@@ -246,7 +246,7 @@ const tableData = ref([
   },
   {
     id: 3,
-    productName: '银联支付产品',
+    productName: '支付产品C',
     productCode: 'UNION_PAY',
     payType: 'UNIONPAY',
     feeRate: 0,
@@ -545,17 +545,17 @@ const handleChannelChange = (selectedChannels) => {
   // 定义分组内容
   const groups = {
     GROUP_1: [
-      { code: 'ALIPAY_GROUP1', name: '支付宝通道 1' },
-      { code: 'WECHAT_GROUP1', name: '微信支付通道 1' }
+      { code: 'ALIPAY_GROUP1', name: '通道A-1' },
+      { code: 'WECHAT_GROUP1', name: '通道B-1' }
     ],
     GROUP_2: [
-      { code: 'ALIPAY_GROUP2', name: '支付宝通道 2' },
-      { code: 'WECHAT_GROUP2', name: '微信支付通道 2' },
-      { code: 'JD_GROUP2', name: '京东支付通道' }
+      { code: 'ALIPAY_GROUP2', name: '通道A-2' },
+      { code: 'WECHAT_GROUP2', name: '通道B-2' },
+      { code: 'JD_GROUP2', name: '通道D' }
     ],
     GROUP_3: [
-      { code: 'UNIONPAY_GROUP3', name: '银联支付通道' },
-      { code: 'BAIDU_GROUP3', name: '百度钱包通道' }
+      { code: 'UNIONPAY_GROUP3', name: '通道C-1' },
+      { code: 'BAIDU_GROUP3', name: '通道E' }
     ]
   };
   
@@ -575,9 +575,9 @@ const handleChannelChange = (selectedChannels) => {
     } else if (!channel.startsWith('GROUP_')) {
       // 如果是单独的通道，直接添加
       let channelName = '';
-      if (channel === 'ALIPAY') channelName = '支付宝';
-      else if (channel === 'WECHAT') channelName = '微信支付';
-      else if (channel === 'UNIONPAY') channelName = '银联支付';
+      if (channel === 'ALIPAY') channelName = '通道A';
+      else if (channel === 'WECHAT') channelName = '通道B';
+      else if (channel === 'UNIONPAY') channelName = '通道C';
       
       processedChannels.push({
         channelCode: channel,

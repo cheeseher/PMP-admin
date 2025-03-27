@@ -201,11 +201,11 @@ const getDateRangeByType = (type) => {
 
 // 商户选项数据
 const merchantOptions = ref([
-  { value: '1001', label: '顶级商户A' },
-  { value: '1002', label: '优质商户B' },
-  { value: '1003', label: '标准商户C' },
-  { value: '1004', label: '普通商户D' },
-  { value: '1005', label: '小型商户E' }
+  { value: '1001', label: '商户A' },
+  { value: '1002', label: '商户B' },
+  { value: '1003', label: '商户C' },
+  { value: '1004', label: '商户D' },
+  { value: '1005', label: '商户E' }
 ])
 
 // 搜索表单数据
@@ -228,7 +228,7 @@ const tableData = ref([
     merchantId: '1',
     merchantNo: 'MER20240301',
     merchantAccount: 'merchant1',
-    merchantName: '顶级商户A',
+    merchantName: '商户A',
     orderCount: 5000,
     successCount: 4850,
     successAmount: 2450000.00,
@@ -240,7 +240,7 @@ const tableData = ref([
     merchantId: '2',
     merchantNo: 'MER20240302',
     merchantAccount: 'merchant2',
-    merchantName: '优质商户B',
+    merchantName: '商户B',
     orderCount: 4200,
     successCount: 4116,
     successAmount: 1850000.00,
@@ -252,7 +252,7 @@ const tableData = ref([
     merchantId: '3',
     merchantNo: 'MER20240303',
     merchantAccount: 'merchant3',
-    merchantName: '标准商户C',
+    merchantName: '商户C',
     orderCount: 3600,
     successCount: 3492,
     successAmount: 1580000.00,
@@ -264,7 +264,7 @@ const tableData = ref([
     merchantId: '4',
     merchantNo: 'MER20240304',
     merchantAccount: 'merchant4',
-    merchantName: '普通商户D',
+    merchantName: '商户D',
     orderCount: 2800,
     successCount: 2604,
     successAmount: 980000.00,
@@ -276,7 +276,7 @@ const tableData = ref([
     merchantId: '5',
     merchantNo: 'MER20240305',
     merchantAccount: 'merchant5',
-    merchantName: '小型商户E',
+    merchantName: '商户E',
     orderCount: 1200,
     successCount: 1128,
     successAmount: 560000.00,

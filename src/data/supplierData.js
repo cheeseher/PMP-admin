@@ -2,7 +2,7 @@
 export const supplierList = [
   {
     id: 1,
-    supplier: '新沪电支付',
+    supplier: '上游通道A',
     code: 'NewSdPay',
     merchantNo: '20241029130123',
     amount: 656690.00,
@@ -13,7 +13,7 @@ export const supplierList = [
   },
   {
     id: 2,
-    supplier: '融通付',
+    supplier: '上游通道B',
     code: 'RTpay',
     merchantNo: '20240315124578',
     amount: 423560.50,
@@ -24,7 +24,7 @@ export const supplierList = [
   },
   {
     id: 3,
-    supplier: '易宝支付',
+    supplier: '上游通道C',
     code: 'YeePay',
     merchantNo: '20230926785432',
     amount: 890750.75,
@@ -35,7 +35,7 @@ export const supplierList = [
   },
   {
     id: 4,
-    supplier: '快捷通',
+    supplier: '上游通道D',
     code: 'QuickPay',
     merchantNo: '20240112654321',
     amount: 325680.30,
@@ -46,7 +46,7 @@ export const supplierList = [
   },
   {
     id: 5,
-    supplier: '钱方支付',
+    supplier: '上游通道E',
     code: 'QFPay',
     merchantNo: '20230815132435',
     amount: 542890.60,
@@ -57,7 +57,7 @@ export const supplierList = [
   },
   {
     id: 6,
-    supplier: '汇付天下',
+    supplier: '上游通道F',
     code: 'Huifu',
     merchantNo: '20230718987654',
     amount: 986420.15,
@@ -68,7 +68,7 @@ export const supplierList = [
   },
   {
     id: 7,
-    supplier: '宝付支付',
+    supplier: '上游通道G',
     code: 'BaofuPay',
     merchantNo: '20240212345678',
     amount: 421570.40,
@@ -79,7 +79,7 @@ export const supplierList = [
   },
   {
     id: 8,
-    supplier: '国付宝',
+    supplier: '上游通道H',
     code: 'GuofuPay',
     merchantNo: '20230625876543',
     amount: 756840.25,
@@ -90,7 +90,7 @@ export const supplierList = [
   },
   {
     id: 9,
-    supplier: '通联支付',
+    supplier: '上游通道I',
     code: 'Allinpay',
     merchantNo: '20240103567890',
     amount: 865230.90,
@@ -101,7 +101,7 @@ export const supplierList = [
   },
   {
     id: 10,
-    supplier: '随行付',
+    supplier: '上游通道J',
     code: 'SuixingPay',
     merchantNo: '20230930246813',
     amount: 368470.55,

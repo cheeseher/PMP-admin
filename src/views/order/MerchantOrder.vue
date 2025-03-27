@@ -71,9 +71,9 @@
           <el-form-item label="支付产品：">
             <el-select v-model="searchForm.productName" placeholder="请选择" class="input-normal" clearable>
               <el-option label="全部产品" value="all" />
-              <el-option label="支付宝" value="alipay" />
-              <el-option label="微信支付" value="wxpay" />
-              <el-option label="银联" value="unionpay" />
+              <el-option label="支付产品A" value="productA" />
+              <el-option label="支付产品B" value="productB" />
+              <el-option label="支付产品C" value="productC" />
             </el-select>
           </el-form-item>
         </div>
@@ -87,9 +87,9 @@
           <el-form-item label="供应商：">
             <el-select v-model="searchForm.supplier" placeholder="请选择" class="input-normal" clearable>
               <el-option label="全部供应商" value="all" />
-              <el-option label="供应商A" value="A" />
-              <el-option label="供应商B" value="B" />
-              <el-option label="供应商C" value="C" />
+              <el-option label="上游通道A" value="A" />
+              <el-option label="上游通道B" value="B" />
+              <el-option label="上游通道C" value="C" />
             </el-select>
           </el-form-item>
           
@@ -391,13 +391,13 @@ const searchForm = reactive({
 const tableData = ref([
   {
     merchantId: '1',
-    merchantName: '测试账号',
-    upstream: '新吓你',
+    merchantName: '商户账号A',
+    upstream: '上游通道A',
     channelCode: 'wx_h5',
     orderNo: '102',
     merchantOrderNo: 'MO20230314001',
     productCode: '8888',
-    productName: '淘宝产品',
+    productName: '支付产品A',
     orderAmount: '100.00',
     receiveAmount: '98.50',
     fee: '1.50',
@@ -414,13 +414,13 @@ const tableData = ref([
   },
   {
     merchantId: '2',
-    merchantName: '商户二号',
-    upstream: '通道A',
+    merchantName: '商户账号B',
+    upstream: '上游通道B',
     channelCode: 'alipay_h5',
     orderNo: '103',
     merchantOrderNo: 'MO20240228001',
     productCode: '9999',
-    productName: '支付宝产品',
+    productName: '支付产品B',
     orderAmount: '200.00',
     receiveAmount: '196.00',
     fee: '4.00',
@@ -437,13 +437,13 @@ const tableData = ref([
   },
   {
     merchantId: '3',
-    merchantName: '测试三号',
-    upstream: '通道B',
+    merchantName: '商户账号C',
+    upstream: '上游通道C',
     channelCode: 'union_qr',
     orderNo: '104',
     merchantOrderNo: 'MO20240331001',
     productCode: '7777',
-    productName: '银联产品',
+    productName: '支付产品C',
     orderAmount: '300.00',
     receiveAmount: '294.00',
     fee: '6.00',

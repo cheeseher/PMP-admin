@@ -120,57 +120,57 @@ const searchForm = reactive({
 const tableData = ref([
   { 
     id: 1, 
-    typeName: '微信扫码', 
+    typeName: '类型A', 
     createTime: '2023-01-01 10:00:00',
-    remark: '微信扫码支付' 
+    remark: '类型A支付' 
   },
   { 
     id: 2, 
-    typeName: '微信H5', 
+    typeName: '类型B', 
     createTime: '2023-01-01 10:00:00',
-    remark: '微信H5支付' 
+    remark: '类型B支付' 
   },
   { 
     id: 3, 
-    typeName: '支付宝扫码', 
+    typeName: '类型C', 
     createTime: '2023-01-01 10:00:00',
-    remark: '支付宝扫码支付' 
+    remark: '类型C支付' 
   },
   { 
     id: 4, 
-    typeName: '支付宝H5', 
+    typeName: '类型D', 
     createTime: '2023-01-01 10:00:00',
-    remark: '支付宝H5支付' 
+    remark: '类型D支付' 
   },
   { 
     id: 5, 
-    typeName: '银行卡', 
+    typeName: '类型E', 
     createTime: '2023-01-01 10:00:00',
-    remark: '银行卡支付' 
+    remark: '类型E支付' 
   },
   { 
     id: 6, 
-    typeName: 'QQH5', 
+    typeName: '类型F', 
     createTime: '2023-01-01 10:00:00',
-    remark: 'QQ支付H5' 
+    remark: '类型F支付' 
   },
   { 
     id: 7, 
-    typeName: '云闪付', 
+    typeName: '类型G', 
     createTime: '2023-01-01 10:00:00',
-    remark: '银联云闪付' 
+    remark: '类型G支付' 
   },
   { 
     id: 8, 
-    typeName: '数字人民币', 
+    typeName: '类型H', 
     createTime: '2023-01-01 10:00:00',
-    remark: '数字人民币支付' 
+    remark: '类型H支付' 
   },
   { 
     id: 9, 
-    typeName: 'QQ扫码', 
+    typeName: '类型I', 
     createTime: '2023-01-01 10:00:00',
-    remark: 'QQ扫码支付' 
+    remark: '类型I支付' 
   }
 ])
 

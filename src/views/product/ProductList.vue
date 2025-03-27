@@ -164,9 +164,6 @@
         <el-form-item label="密码" prop="password">
           <el-input v-model="productForm.password" type="password" placeholder="不填表示不更新密码" show-password />
         </el-form-item>
-        <el-form-item label="手机" prop="mobile">
-          <el-input v-model="productForm.mobile" placeholder="请输入手机号" />
-        </el-form-item>
         <el-form-item label="商户号" prop="productNo">
           <el-input v-model="productForm.productNo" placeholder="请输入商户号" />
         </el-form-item>
@@ -184,9 +181,6 @@
         </el-form-item>
         <el-form-item label="开启提现">
           <el-switch v-model="productForm.enableWithdraw" />
-        </el-form-item>
-        <el-form-item label="区分手机系统">
-          <el-switch v-model="productForm.distinguishMobileOS" />
         </el-form-item>
         <el-form-item label="下单IP白名单" prop="depositIpWhitelist">
           <el-input 
@@ -688,7 +682,6 @@ const resetProductForm = () => {
     productName: '',
     productNo: generateMerchantNo(),
     password: '',
-    mobile: '',
     apiKey: generateApiKey(),
     callbackUrl: '',
     withdrawPassword: '',
@@ -696,7 +689,6 @@ const resetProductForm = () => {
     freeze: 0,
     enableDeposit: true,
     enableWithdraw: true,
-    distinguishMobileOS: false,
     depositIpWhitelist: '',
     withdrawIpWhitelist: '',
     adminIpWhitelist: '',

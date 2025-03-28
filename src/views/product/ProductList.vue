@@ -75,7 +75,7 @@
         <el-table-column prop="productId" label="商户账号" min-width="120" />
         <el-table-column prop="productName" label="商户名称" min-width="150" />
         <el-table-column prop="productNo" label="商户号" min-width="120" />
-        <el-table-column prop="balance" label="余额" width="100" align="right">
+        <el-table-column prop="balance" label="余额" width="130" align="right">
           <template #default="scope">
             <span class="amount-cell">{{ formatAmount(scope.row.balance) }}</span>
           </template>
@@ -195,26 +195,6 @@
         </el-form-item>
         <el-form-item label="开启进单">
           <el-switch v-model="productForm.enableDeposit" />
-        </el-form-item>
-        <el-form-item label="渠道限制" prop="restrictedChannels">
-          <el-select 
-            v-model="productForm.restrictedChannels" 
-            multiple 
-            collapse-tags
-            collapse-tags-tooltip
-            placeholder="请选择限制渠道，不选则不限制"
-            style="width: 100%"
-          >
-            <el-option 
-              v-for="item in channelOptions" 
-              :key="item.value" 
-              :label="item.label" 
-              :value="item.value" 
-            />
-          </el-select>
-          <div class="form-tip">
-            限制商户仅可以使用选择的渠道产品，不选择则不限制
-          </div>
         </el-form-item>
         <el-form-item label="开启提现">
           <el-switch v-model="productForm.enableWithdraw" />
@@ -382,12 +362,9 @@
           </div>
           <div class="form-tip">已选择 {{ selectedRows.length }} 个商户</div>
         </el-form-item>
-        <el-form-item label="支付产品" prop="selectedProducts">
+        <el-form-item label="支付产品" prop="selectedProduct">
           <el-select 
-            v-model="batchConfigForm.selectedProducts" 
-            multiple 
-            collapse-tags
-            collapse-tags-tooltip
+            v-model="batchConfigForm.selectedProduct" 
             placeholder="请选择支付产品"
             style="width: 100%"
           >
@@ -498,10 +475,7 @@
         </el-form-item>
         <el-form-item label="选择支付产品">
           <el-select 
-            v-model="productConfigForm.selectedProducts" 
-            multiple 
-            collapse-tags
-            collapse-tags-tooltip
+            v-model="productConfigForm.selectedProduct" 
             placeholder="请选择支付产品"
             style="width: 100%"
           >
@@ -510,8 +484,60 @@
               :key="item.id" 
               :label="item.productName" 
               :value="item.id" 
+              :default-first-option="true"
             />
           </el-select>
+        </el-form-item>
+        
+        <el-form-item label="支付产品编码" prop="productCode">
+          <el-input 
+            v-model="productConfigForm.productCode" 
+            placeholder="请输入支付产品编码"
+            style="width: 100%"
+          />
+        </el-form-item>
+        
+        <el-form-item label="商户费率" prop="merchantRate">
+          <div class="rate-input-group">
+            <el-input-number 
+              v-model="productConfigForm.merchantRate" 
+              :precision="2" 
+              :step="0.1" 
+              :min="0" 
+              :max="20"
+              controls-position="right"
+              style="width: 120px"
+            />
+            <span class="rate-unit">%</span>
+          </div>
+        </el-form-item>
+        
+        <el-form-item label="自定义选项">
+          <el-switch 
+            v-model="productConfigForm.customOption" 
+            active-text="启用"
+            inactive-text="禁用"
+          />
+          <div class="form-tip">启用后可以自定义选择供应商通道</div>
+        </el-form-item>
+        
+        <el-form-item label="供应商通道" v-if="productConfigForm.customOption">
+          <el-select 
+            v-model="productConfigForm.selectedChannels" 
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
+            placeholder="请选择供应商通道"
+            style="width: 100%"
+          >
+            <el-option 
+              v-for="item in supplierChannels" 
+              :key="item.id" 
+              :label="item.channelName" 
+              :value="item.id" 
+            />
+          </el-select>
+          <div class="form-tip">可以选择多个供应商通道</div>
         </el-form-item>
         
         <!-- 支付产品费率列表 -->
@@ -658,6 +684,38 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { productList } from '@/data/productData'
 import { merchantProductList } from '@/data/merchantProductData'
 
+// 支付产品数据
+const paymentProducts = ref([
+  { id: 1, productName: '产品A', productCode: '8888', rate: 10.00 },
+  { id: 2, productName: '产品B', productCode: 'WX001', rate: 3.50 },
+  { id: 3, productName: '产品C', productCode: 'ZFB001', rate: 3.00 },
+  { id: 4, productName: '产品D', productCode: 'YL001', rate: 2.80 },
+  { id: 5, productName: '产品E', productCode: 'YSF001', rate: 2.50 },
+  { id: 6, productName: '产品F', productCode: 'ICC001', rate: 4.50 },
+  { id: 7, productName: '产品G', productCode: 'QP001', rate: 2.60 },
+  { id: 8, productName: '产品H', productCode: 'AGG001', rate: 3.80 },
+  { id: 9, productName: '产品I', productCode: 'SCAN001', rate: 2.20 }
+])
+
+// 供应商通道数据
+const supplierChannels = ref([
+  { id: 101, channelName: '通道A', channelCode: '102', rate: 6.00 },
+  { id: 102, channelName: '通道B', channelCode: '0000', rate: 6.00 },
+  { id: 103, channelName: '通道C', channelCode: '201', rate: 5.80 },
+  { id: 104, channelName: '通道D', channelCode: '202', rate: 5.90 },
+  { id: 105, channelName: '通道E', channelCode: '301', rate: 6.20 },
+  { id: 106, channelName: '通道F', channelCode: '302', rate: 6.30 }
+])
+
+// 渠道选项
+const channelOptions = ref([
+  { label: '通道A', value: 'channel_a' },
+  { label: '通道B', value: 'channel_b' },
+  { label: '通道C', value: 'channel_c' },
+  { label: '通道D', value: 'channel_d' },
+  { label: '通道E', value: 'channel_e' }
+])
+
 // 搜索表单
 const searchForm = reactive({
   id: '',
@@ -730,7 +788,7 @@ const fetchData = () => {
 
 // 格式化金额
 const formatAmount = (amount) => {
-  return amount?.toFixed(2) || '0.00'
+  return '￥' + (amount?.toFixed(2) || '0.00')
 }
 
 // 搜索与重置
@@ -776,8 +834,7 @@ const productForm = reactive({
   verified: 'N',
   subAccounts: [],
   enableDeposit: true,
-  enableWithdraw: true,
-  restrictedChannels: []
+  enableWithdraw: true
 })
 
 const productRules = {
@@ -803,322 +860,21 @@ const generateApiKey = () => {
   return result;
 }
 
-const resetProductForm = () => {
-  if (productFormRef.value) {
-    productFormRef.value.resetFields()
-  }
-  Object.assign(productForm, {
-    id: '',
-    productId: '',
-    productName: '',
-    productNo: generateMerchantNo(),
-    password: '',
-    apiKey: generateApiKey(),
-    callbackUrl: '',
-    withdrawPassword: '',
-    balance: 0,
-    freeze: 0,
-    enableDeposit: true,
-    enableWithdraw: true,
-    restrictedChannels: [],
-    depositIpWhitelist: '',
-    withdrawIpWhitelist: '',
-    adminIpWhitelist: '',
-    remark: '',
-    role: 'merchant',
-    googleAuth: false,
-    verified: 'N',
-    subAccounts: []
-  })
-}
-
-const handleAdd = () => {
-  resetProductForm()
-  dialogTitle.value = '新增商户'
-  dialogVisible.value = true
-}
-
-const handleEdit = (row) => {
-  resetProductForm()
-  dialogTitle.value = '编辑商户'
-  Object.assign(productForm, { ...row })
-  dialogVisible.value = true
-}
-
-const submitForm = async () => {
-  if (!productFormRef.value) return
-  
-  try {
-    await productFormRef.value.validate()
-    
-    loading.value = true
-    setTimeout(() => {
-      // 模拟提交
-      if (productForm.id) {
-        // 编辑
-        const index = productList.findIndex(item => item.id === productForm.id)
-        if (index !== -1) {
-          Object.assign(productList[index], {
-            ...productForm,
-            subAccounts: productForm.subAccounts
-          })
-          ElMessage.success('编辑成功')
-        }
-      } else {
-        // 添加
-        const newProduct = {
-          ...productForm,
-          id: productList.length + 1,
-          authIp: '',
-          loginCount: 0,
-          freeze: productForm.freeze || 0,
-          subAccounts: productForm.subAccounts,
-          registerTime: new Date().toLocaleString('zh-CN', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-          }).replace(/\//g, '-')
-        }
-        productList.unshift(newProduct)
-        ElMessage.success('添加成功')
-      }
-      
-      dialogVisible.value = false
-      fetchData()
-      loading.value = false
-    }, 300)
-    
-  } catch (error) {
-    console.error('表单验证失败', error)
-  }
-}
-
-// 删除商户
-const handleDelete = (row) => {
-  ElMessageBox.confirm(
-    `确定要删除商户 ${row.productName} 吗？`,
-    '警告',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  ).then(() => {
-    loading.value = true
-    setTimeout(() => {
-      const index = productList.findIndex(item => item.id === row.id)
-      if (index !== -1) {
-        productList.splice(index, 1)
-        ElMessage.success('删除成功')
-        fetchData()
-      }
-      loading.value = false
-    }, 300)
-  }).catch(() => {
-    ElMessage.info('已取消删除')
-  })
-}
-
-// 批量删除
-const handleBatchDelete = () => {
-  if (selectedRows.value.length === 0) {
-    ElMessage.warning('请至少选择一条记录')
-    return
-  }
-  
-  ElMessageBox.confirm(
-    `确定要删除选中的 ${selectedRows.value.length} 条记录吗？`,
-    '警告',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  ).then(() => {
-    loading.value = true
-    setTimeout(() => {
-      const ids = selectedRows.value.map(row => row.id)
-      let deleteCount = 0
-      
-      for (let i = productList.length - 1; i >= 0; i--) {
-        if (ids.includes(productList[i].id)) {
-          productList.splice(i, 1)
-          deleteCount++
-        }
-      }
-      
-      ElMessage.success(`成功删除 ${deleteCount} 条记录`)
-      fetchData()
-      loading.value = false
-    }, 300)
-  }).catch(() => {
-    ElMessage.info('已取消删除')
-  })
-}
-
-// 配置商户
-const handleConfig = (row) => {
-  productConfigForm.merchantId = row.id
-  productConfigForm.productId = row.productId
-  productConfigForm.productName = row.productName
-  productConfigForm.selectedProducts = []
-  productConfigForm.productRates = []
-  
-  // 获取商户已关联的产品
-  const existingProducts = merchantProductList.filter(item => 
-    item.merchantNo === row.productNo || item.merchantName === row.productName
-  )
-  
-  if (existingProducts.length > 0) {
-    // 如果有已关联产品，加载它们
-    productConfigForm.productRates = existingProducts.map(item => ({
-      productId: paymentProducts.value.find(p => p.productName === item.productName)?.id || 0,
-      productName: item.productName,
-      productCode: item.productCode,
-      rate: item.rate,
-      weight: item.weight
-    }))
-    
-    productConfigForm.selectedProducts = productConfigForm.productRates.map(item => item.productId)
-  }
-  
-  productConfigVisible.value = true
-}
-
-// 监听选择产品变化
-const watchSelectedProducts = () => {
-  // 当选择的产品变化时，更新产品费率列表
-  const currentProductIds = productConfigForm.productRates.map(item => item.productId)
-  
-  // 添加新选择的产品
-  productConfigForm.selectedProducts.forEach(productId => {
-    if (!currentProductIds.includes(productId)) {
-      const product = paymentProducts.value.find(item => item.id === productId)
-      if (product) {
-        productConfigForm.productRates.push({
-          productId: product.id,
-          productName: product.productName,
-          productCode: product.productCode,
-          rate: productConfigForm.batchRate,
-          weight: 10 // 默认权重
-        })
-      }
-    }
-  })
-  
-  // 移除取消选择的产品
-  productConfigForm.productRates = productConfigForm.productRates.filter(
-    item => productConfigForm.selectedProducts.includes(item.productId)
-  )
-}
-
-// 应用批量费率
-const applyBatchRate = () => {
-  if (productConfigForm.productRates.length > 0) {
-    productConfigForm.productRates.forEach(item => {
-      item.rate = productConfigForm.batchRate
-    })
-    ElMessage.success('已应用批量费率')
-  } else {
-    ElMessage.warning('请先选择产品')
-  }
-}
-
-// 提交产品配置
-const submitProductConfig = () => {
-  if (productConfigForm.selectedProducts.length === 0) {
-    ElMessage.warning('请至少选择一个产品')
-    return
-  }
-  
-  loading.value = true
-  setTimeout(() => {
-    // 实际应用中这里应调用API保存商户产品配置
-    ElMessage.success(`商户 ${productConfigForm.productName} 的产品配置已更新`)
-    productConfigVisible.value = false
-    loading.value = false
-  }, 300)
-}
-
-// 处理状态开关切换
-const handleStatusChange = (row) => {
-  ElMessage.success(`商户 ${row.productName} 状态已更新为${row.verified === 'Y' ? '开启' : '关闭'}`)
-  
-  // 实际应用中这里会调用API更新商户状态
-  // 这里仅做演示
-}
-
-// 余额操作
-const balanceOperationVisible = ref(false)
-const balanceFormRef = ref(null)
-const balanceForm = reactive({
+// 产品配置
+const productConfigVisible = ref(false)
+const productConfigFormRef = ref(null)
+const productConfigForm = reactive({
   merchantId: '',
   productId: '',
   productName: '',
-  currentBalance: 0,
-  operationType: 'add',
-  amount: 0,
-  remark: ''
+  selectedProduct: '',
+  productCode: '',
+  merchantRate: 3.00,
+  batchRate: 3.00,
+  productRates: [],
+  customOption: false,
+  selectedChannels: []
 })
-
-const balanceRules = {
-  operationType: [{ required: true, message: '请选择操作类型', trigger: 'change' }],
-  amount: [{ required: true, message: '请输入操作金额', trigger: 'blur' }],
-  remark: [{ required: true, message: '请输入操作备注', trigger: 'blur' }]
-}
-
-// 处理余额操作
-const handleBalance = (row) => {
-  balanceForm.merchantId = row.id
-  balanceForm.productId = row.productId
-  balanceForm.productName = row.productName
-  balanceForm.currentBalance = row.balance || 0
-  balanceForm.operationType = 'add'
-  balanceForm.amount = 0
-  balanceForm.remark = ''
-  
-  balanceOperationVisible.value = true
-}
-
-// 提交余额操作
-const submitBalanceOperation = async () => {
-  if (!balanceFormRef.value) return
-  
-  try {
-    await balanceFormRef.value.validate()
-    
-    loading.value = true
-    setTimeout(() => {
-      // 模拟提交
-      const index = productList.findIndex(item => item.id === balanceForm.merchantId)
-      if (index !== -1) {
-        if (balanceForm.operationType === 'add') {
-          productList[index].balance += Number(balanceForm.amount)
-          ElMessage.success(`已成功为 ${balanceForm.productName} 增加余额 ${balanceForm.amount} 元`)
-        } else {
-          if (productList[index].balance < balanceForm.amount) {
-            ElMessage.warning('余额不足，无法扣减')
-            loading.value = false
-            return
-          }
-          productList[index].balance -= Number(balanceForm.amount)
-          ElMessage.success(`已成功从 ${balanceForm.productName} 减少余额 ${balanceForm.amount} 元`)
-        }
-      }
-      
-      balanceOperationVisible.value = false
-      fetchData()
-      loading.value = false
-    }, 300)
-    
-  } catch (error) {
-    console.error('表单验证失败', error)
-  }
-}
 
 // 处理下拉菜单操作
 const handleCommand = (command, row) => {
@@ -1143,371 +899,591 @@ const handleCommand = (command, row) => {
   }
 }
 
-// 重置谷歌认证
-const handleResetGoogle = (row) => {
-  ElMessageBox.confirm(
-    `确定要重置商户 ${row.productName} 的谷歌认证吗？`,
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  ).then(() => {
-    loading.value = true
-    setTimeout(() => {
-      // 模拟API请求
-      const index = productList.findIndex(item => item.id === row.id)
-      if (index !== -1) {
-        productList[index].googleAuth = false
-        ElMessage.success(`已重置 ${row.productName} 的谷歌验证`)
-        fetchData()
+// 配置商户
+const handleConfig = (row) => {
+  productConfigForm.merchantId = row.id
+  productConfigForm.productId = row.productId
+  productConfigForm.productName = row.productName
+  productConfigForm.selectedProduct = ''
+  productConfigForm.productCode = '' // 重置产品编码
+  productConfigForm.merchantRate = 3.00 // 重置默认费率
+  productConfigForm.productRates = []
+  productConfigForm.customOption = false
+  productConfigForm.selectedChannels = []
+  
+  // 获取商户已关联的产品
+  const existingProducts = merchantProductList.filter(item => 
+    item.merchantNo === row.productNo || item.merchantName === row.productName
+  )
+  
+  if (existingProducts.length > 0 && existingProducts[0]) {
+    // 加载第一个关联产品
+    const firstProduct = existingProducts[0]
+    const productId = paymentProducts.value.find(p => p.productName === firstProduct.productName)?.id
+    
+    if (productId) {
+      // 如果是标准产品
+      productConfigForm.selectedProduct = productId
+      productConfigForm.productCode = firstProduct.productCode // 设置产品编码
+      productConfigForm.merchantRate = firstProduct.rate // 设置商户费率
+      productConfigForm.productRates = [{
+        productId: productId,
+        productName: firstProduct.productName,
+        productCode: firstProduct.productCode,
+        rate: firstProduct.rate,
+        weight: firstProduct.weight || 10
+      }]
+    } else if (firstProduct.productName.startsWith('自定义-')) {
+      // 如果是自定义产品
+      productConfigForm.customOption = true
+      const channelName = firstProduct.productName.replace('自定义-', '')
+      const channel = supplierChannels.value.find(c => c.channelName === channelName)
+      
+      if (channel) {
+        productConfigForm.selectedChannels = [channel.id]
+        productConfigForm.productCode = firstProduct.productCode // 设置产品编码
+        productConfigForm.merchantRate = firstProduct.rate // 设置商户费率
+        productConfigForm.productRates = [{
+          productId: firstProduct.productId,
+          productName: firstProduct.productName,
+          productCode: firstProduct.productCode,
+          rate: firstProduct.rate,
+          weight: firstProduct.weight || 10
+        }]
       }
-      loading.value = false
-    }, 300)
-  }).catch(() => {
-    ElMessage.info('已取消操作')
-  })
-}
-
-// 重置APIKEY
-const handleResetApiKey = (row) => {
-  ElMessageBox.confirm(
-    `确定要重置商户 ${row.productName} 的APIKEY吗？`,
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
     }
-  ).then(() => {
-    loading.value = true
-    setTimeout(() => {
-      // 模拟API请求
-      const index = productList.findIndex(item => item.id === row.id)
-      if (index !== -1) {
-        const newApiKey = generateApiKey()
-        productList[index].apiKey = newApiKey
-        ElMessage.success(`已重置 ${row.productName} 的APIKEY: ${newApiKey}`)
-      }
-      loading.value = false
-    }, 300)
-  }).catch(() => {
-    ElMessage.info('已取消操作')
-  })
+  }
+  
+  productConfigVisible.value = true
 }
 
-// 一键登录
-const handleQuickLogin = (row) => {
-  ElMessage.success(`正在登录商户账户：${row.productId}`)
-  // 在新标签页中打开商户后台
-  const merchantAdminUrl = `/merchant/dashboard?merchant=${row.productId}&token=admin_token_${row.id}`
-  window.open(merchantAdminUrl, '_blank')
-}
-
-// 导出数据
-const handleExport = () => {
-  ElMessage.success('商户数据导出成功')
-}
-
-// 批量配置
-const batchConfigVisible = ref(false)
-const batchConfigFormRef = ref(null)
-const batchConfigForm = reactive({
-  verified: 'Y',
-  selectedProducts: [],
-  rate: 3.00,
-  productRates: []
+// 监听自定义选项变化
+watch(() => productConfigForm.customOption, (newVal) => {
+  if (newVal) {
+    // 启用自定义选项时，清空选择的产品
+    productConfigForm.selectedProduct = ''
+    productConfigForm.productCode = '' // 清空产品编码
+    productConfigForm.productRates = []
+  } else {
+    // 禁用自定义选项时，清空已选通道
+    productConfigForm.selectedChannels = []
+  }
 })
 
-const handleBatchConfig = () => {
-  if (selectedRows.value.length === 0) {
-    ElMessage.warning('请至少选择一条记录')
+// 监听支付产品变化
+watch(() => productConfigForm.selectedProduct, (newVal) => {
+  if (newVal && !productConfigForm.customOption) {
+    // 选择了标准支付产品时
+    const selectedProduct = paymentProducts.value.find(p => p.id === newVal)
+    if (selectedProduct) {
+      // 自动设置产品编码 (可以根据需要修改这个逻辑)
+      productConfigForm.productCode = `PROD_${selectedProduct.id}`
+      // 为所选产品添加到费率列表中
+      if (!productConfigForm.productRates.some(item => item.productId === newVal)) {
+        productConfigForm.productRates = [{
+          productId: newVal,
+          productName: selectedProduct.productName,
+          productCode: productConfigForm.productCode,
+          rate: productConfigForm.merchantRate,
+          weight: 10
+        }]
+      }
+    }
+  }
+})
+
+// 监听自定义通道选择
+watch(() => productConfigForm.selectedChannels, (newVal) => {
+  if (newVal.length > 0 && productConfigForm.customOption) {
+    // 清空之前的费率列表
+    productConfigForm.productRates = []
+    
+    // 添加选择的通道
+    const selectedChannels = supplierChannels.value.filter(item => newVal.includes(item.id))
+    
+    selectedChannels.forEach(channel => {
+      productConfigForm.productRates.push({
+        productId: `channel_${channel.id}`,
+        productName: `自定义-${channel.channelName}`,
+        productCode: `CUSTOM_${channel.id}`,
+        rate: productConfigForm.merchantRate, // 使用商户费率字段
+        weight: 10 // 默认权重
+      })
+    })
+  }
+}, { deep: true })
+
+// 监听商户费率变化
+watch(() => productConfigForm.merchantRate, (newVal) => {
+  // 当直接更改商户费率时，如果已选产品或通道，则更新费率表中的费率值
+  if (productConfigForm.productRates.length === 1) {
+    productConfigForm.productRates[0].rate = newVal;
+  }
+})
+
+// 批量设置费率
+const applyBatchRate = () => {
+  productConfigForm.productRates.forEach(item => {
+    item.rate = productConfigForm.batchRate
+  })
+  ElMessage.success('已应用批量费率')
+}
+
+// 删除产品配置
+const removeProductRate = (productId) => {
+  const index = productConfigForm.productRates.findIndex(item => item.productId === productId)
+  if (index !== -1) {
+    productConfigForm.productRates.splice(index, 1)
+  }
+}
+
+// 获取子账户名称
+const getSubAccountName = (id) => {
+  const account = productList.find(item => item.id === id)
+  return account ? account.productName : `未知账户(${id})`
+}
+
+// 提交产品配置
+const submitProductConfig = () => {
+  // 验证必填字段
+  if (!productConfigForm.productCode.trim()) {
+    ElMessage.warning('请输入支付产品编码')
     return
   }
   
-  // 重置表单
-  batchConfigForm.selectedProducts = []
-  batchConfigForm.rate = 3.00
+  // 更新商户费率到产品费率列表
+  if (productConfigForm.productRates.length === 1) {
+    productConfigForm.productRates[0].rate = productConfigForm.merchantRate
+    productConfigForm.productRates[0].productCode = productConfigForm.productCode
+  }
+  
+  // 构造提交数据
+  const submitData = {
+    merchantId: productConfigForm.merchantId,
+    productId: productConfigForm.productId,
+    productName: productConfigForm.productName,
+    productCode: productConfigForm.productCode,
+    merchantRate: productConfigForm.merchantRate,
+    products: productConfigForm.productRates.map(item => ({
+      productId: item.productId,
+      productName: item.productName,
+      productCode: item.productCode || productConfigForm.productCode,
+      rate: item.rate,
+      weight: item.weight || 10
+    })),
+    customOption: productConfigForm.customOption,
+    selectedChannels: productConfigForm.selectedChannels
+  }
+  
+  console.log('提交的产品配置数据:', submitData)
+  
+  // 这里应该是调用API保存数据
+  // saveProductConfig(submitData)
+  
+  // 模拟提交成功
+  setTimeout(() => {
+    ElMessage.success('产品配置保存成功')
+    productConfigVisible.value = false
+    // 刷新表格
+    fetchData()
+  }, 500)
+}
+
+// 批量配置相关
+const batchConfigVisible = ref(false)
+const batchConfigFormRef = ref(null)
+const batchConfigForm = reactive({
+  selectedProduct: '',
+  productRates: [],
+  rate: 3.00
+})
+
+// 批量设置费率
+const applyBatchConfigRate = () => {
+  batchConfigForm.productRates.forEach(item => {
+    item.rate = batchConfigForm.rate
+  })
+  ElMessage.success('已应用批量费率')
+}
+
+// 删除批量配置产品
+const removeBatchProductRate = (productId) => {
+  const index = batchConfigForm.productRates.findIndex(item => item.productId === productId)
+  if (index !== -1) {
+    batchConfigForm.productRates.splice(index, 1)
+  }
+}
+
+// 提交批量配置
+const submitBatchConfig = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请选择至少一个商户')
+    return
+  }
+  
+  if (batchConfigForm.productRates.length === 0) {
+    ElMessage.warning('请选择至少一个支付产品')
+    return
+  }
+  
+  // 构造提交数据
+  const submitData = {
+    merchantIds: selectedRows.value.map(row => row.id),
+    products: batchConfigForm.productRates.map(item => ({
+      productId: item.productId,
+      productName: item.productName,
+      productCode: item.productCode,
+      rate: item.rate
+    }))
+  }
+  
+  console.log('提交的批量配置数据:', submitData)
+  
+  // 这里应该是调用API保存数据
+  // saveBatchConfig(submitData)
+  
+  // 模拟提交成功
+  setTimeout(() => {
+    ElMessage.success('批量配置保存成功')
+    batchConfigVisible.value = false
+    // 刷新表格
+    fetchData()
+  }, 500)
+}
+
+// 处理批量配置
+const handleBatchConfig = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请选择要批量配置的商户')
+    return
+  }
+  
+  batchConfigForm.selectedProduct = ''
   batchConfigForm.productRates = []
+  batchConfigForm.rate = 3.00
   
   batchConfigVisible.value = true
 }
 
-// 监听批量配置中选择产品变化
-const watchBatchSelectedProducts = () => {
-  // 当选择的产品变化时，更新产品费率列表
-  const currentProductIds = batchConfigForm.productRates.map(item => item.productId)
+// 监听批量配置中的支付产品选择
+watch(() => batchConfigForm.selectedProduct, (newVal) => {
+  if (newVal) {
+    // 选择了支付产品
+    const selectedProduct = paymentProducts.value.find(p => p.id === newVal)
+    if (selectedProduct && !batchConfigForm.productRates.some(item => item.productId === newVal)) {
+      batchConfigForm.productRates.push({
+        productId: newVal,
+        productName: selectedProduct.productName,
+        productCode: selectedProduct.productCode,
+        rate: batchConfigForm.rate
+      })
+    }
+  }
+})
+
+// 余额操作相关
+const balanceOperationVisible = ref(false)
+const balanceFormRef = ref(null)
+const balanceForm = reactive({
+  id: '',
+  productId: '',
+  productName: '',
+  currentBalance: '0.00',
+  operationType: 'add',
+  amount: 0,
+  remark: ''
+})
+
+const balanceRules = {
+  operationType: [{ required: true, message: '请选择操作类型', trigger: 'change' }],
+  amount: [{ required: true, message: '请输入操作金额', trigger: 'blur' }],
+  remark: [{ required: true, message: '请输入操作备注', trigger: 'blur' }]
+}
+
+// 处理余额操作
+const handleBalance = (row) => {
+  balanceForm.id = row.id
+  balanceForm.productId = row.productId
+  balanceForm.productName = row.productName
+  balanceForm.currentBalance = formatAmount(row.balance)
+  balanceForm.operationType = 'add'
+  balanceForm.amount = 0
+  balanceForm.remark = ''
   
-  // 添加新选择的产品
-  batchConfigForm.selectedProducts.forEach(productId => {
-    if (!currentProductIds.includes(productId)) {
-      const product = paymentProducts.value.find(item => item.id === productId)
-      if (product) {
-        batchConfigForm.productRates.push({
-          productId: product.id,
-          productName: product.productName,
-          productCode: product.productCode,
-          rate: batchConfigForm.rate,
-          weight: 10 // 默认权重
-        })
+  balanceOperationVisible.value = true
+}
+
+// 提交余额操作
+const submitBalanceOperation = () => {
+  balanceFormRef.value.validate((valid) => {
+    if (valid) {
+      // 构造提交数据
+      const submitData = {
+        id: balanceForm.id,
+        operationType: balanceForm.operationType,
+        amount: balanceForm.amount,
+        remark: balanceForm.remark
       }
+      
+      console.log('提交的余额操作数据:', submitData)
+      
+      // 这里应该是调用API保存数据
+      // saveBalanceOperation(submitData)
+      
+      // 模拟提交成功
+      setTimeout(() => {
+        ElMessage.success('余额操作成功')
+        balanceOperationVisible.value = false
+        // 刷新表格
+        fetchData()
+      }, 500)
+    }
+  })
+}
+
+// 商户相关处理函数
+const handleAdd = () => {
+  dialogTitle.value = '新增商户'
+  // 清空表单
+  Object.keys(productForm).forEach(key => {
+    if (key === 'verified') {
+      productForm[key] = 'N'
+    } else if (key === 'enableDeposit' || key === 'enableWithdraw') {
+      productForm[key] = true
+    } else if (key === 'subAccounts') {
+      productForm[key] = []
+    } else {
+      productForm[key] = ''
     }
   })
   
-  // 移除取消选择的产品
-  batchConfigForm.productRates = batchConfigForm.productRates.filter(
-    item => batchConfigForm.selectedProducts.includes(item.productId)
-  )
-}
-
-// 移除批量配置中的产品费率
-const removeBatchProductRate = (productId) => {
-  // 从产品费率列表中移除
-  const index = batchConfigForm.productRates.findIndex(item => item.productId === productId);
-  if (index !== -1) {
-    batchConfigForm.productRates.splice(index, 1);
-  }
+  // 生成随机商户号和API密钥
+  productForm.productNo = generateMerchantNo()
+  productForm.apiKey = generateApiKey()
   
-  // 从已选产品中移除
-  const selectedIndex = batchConfigForm.selectedProducts.indexOf(productId);
-  if (selectedIndex !== -1) {
-    batchConfigForm.selectedProducts.splice(selectedIndex, 1);
-  }
+  dialogVisible.value = true
 }
 
-// 应用批量配置费率
-const applyBatchConfigRate = () => {
-  if (batchConfigForm.productRates.length > 0) {
-    batchConfigForm.productRates.forEach(item => {
-      item.rate = batchConfigForm.rate
-    })
-    ElMessage.success('已应用批量费率')
-  } else {
-    ElMessage.warning('请先选择产品')
-  }
+const handleEdit = (row) => {
+  dialogTitle.value = '编辑商户'
+  // 填充表单
+  Object.keys(productForm).forEach(key => {
+    if (key in row) {
+      productForm[key] = row[key]
+    }
+  })
+  
+  // 清空密码字段
+  productForm.password = ''
+  productForm.withdrawPassword = ''
+  
+  dialogVisible.value = true
 }
 
-const submitBatchConfig = () => {
-  if (batchConfigForm.selectedProducts.length === 0) {
-    ElMessage.warning('请至少选择一个支付产品')
+// 提交商户表单
+const submitForm = () => {
+  productFormRef.value.validate((valid) => {
+    if (valid) {
+      // 这里应该是调用API保存数据
+      // saveProduct(productForm)
+      
+      // 模拟提交成功
+      setTimeout(() => {
+        ElMessage.success(dialogTitle.value === '新增商户' ? '商户添加成功' : '商户编辑成功')
+        dialogVisible.value = false
+        // 刷新表格
+        fetchData()
+      }, 500)
+    }
+  })
+}
+
+// 处理状态变更
+const handleStatusChange = (row) => {
+  const statusText = row.verified === 'Y' ? '启用' : '禁用'
+  
+  // 这里应该是调用API保存状态
+  // updateStatus(row.id, row.verified)
+  
+  ElMessage.success(`已${statusText}商户: ${row.productName}`)
+}
+
+// 重置谷歌认证
+const handleResetGoogle = (row) => {
+  ElMessageBox.confirm(`确定要重置商户 ${row.productName} 的谷歌认证吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    // 这里应该是调用API重置谷歌认证
+    // resetGoogleAuth(row.id)
+    
+    // 模拟操作成功
+    setTimeout(() => {
+      ElMessage.success('谷歌认证重置成功')
+      // 刷新表格
+      fetchData()
+    }, 500)
+  }).catch(() => {})
+}
+
+// 重置API密钥
+const handleResetApiKey = (row) => {
+  ElMessageBox.confirm(`确定要重置商户 ${row.productName} 的API密钥吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    const newApiKey = generateApiKey()
+    
+    // 这里应该是调用API重置API密钥
+    // resetApiKey(row.id, newApiKey)
+    
+    // 模拟操作成功
+    setTimeout(() => {
+      ElMessage.success(`API密钥重置成功: ${newApiKey}`)
+      // 刷新表格
+      fetchData()
+    }, 500)
+  }).catch(() => {})
+}
+
+// 批量删除
+const handleBatchDelete = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请选择要删除的商户')
     return
   }
   
-  loading.value = true
-  setTimeout(() => {
-    // 在实际应用中，这里应该调用API为多个商户配置产品和费率
-    const merchantCount = selectedRows.value.length
-    const productCount = batchConfigForm.productRates.length
-    const rateInfo = batchConfigForm.productRates.map(item => 
-      `${item.productName}(${item.rate}%)`
-    ).join('、')
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedRows.value.length} 个商户吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    const ids = selectedRows.value.map(row => row.id)
     
-    ElMessage.success(`已为 ${merchantCount} 个商户配置产品：${rateInfo}`)
-    batchConfigVisible.value = false
-    loading.value = false
-  }, 300)
+    // 这里应该是调用API批量删除
+    // batchDelete(ids)
+    
+    // 模拟操作成功
+    setTimeout(() => {
+      ElMessage.success('批量删除成功')
+      // 刷新表格
+      fetchData()
+    }, 500)
+  }).catch(() => {})
 }
 
-// 产品配置
-const productConfigVisible = ref(false)
-const productConfigFormRef = ref(null)
-const productConfigForm = reactive({
-  merchantId: '',
-  productId: '',
-  productName: '',
-  selectedProducts: [],
-  batchRate: 3.00,
-  productRates: []
-})
-
-// 移除产品费率
-const removeProductRate = (productId) => {
-  // 从产品费率列表中移除
-  const index = productConfigForm.productRates.findIndex(item => item.productId === productId);
-  if (index !== -1) {
-    productConfigForm.productRates.splice(index, 1);
-  }
+// 导出数据
+const handleExport = () => {
+  ElMessage.success('正在导出数据，请稍候...')
   
-  // 从已选产品中移除
-  const selectedIndex = productConfigForm.selectedProducts.indexOf(productId);
-  if (selectedIndex !== -1) {
-    productConfigForm.selectedProducts.splice(selectedIndex, 1);
-  }
+  // 这里应该是调用API导出数据
+  // exportData(searchForm)
+  
+  // 模拟操作成功
+  setTimeout(() => {
+    ElMessage.success('数据导出成功')
+  }, 1500)
 }
 
-// 支付产品列表
-const paymentProducts = ref([
-  { id: 1, productName: '微信支付', productCode: 'WX001' },
-  { id: 2, productName: '支付宝', productCode: 'ZFB001' },
-  { id: 3, productName: '银联支付', productCode: 'YL001' },
-  { id: 4, productName: '云闪付', productCode: 'YSF001' },
-  { id: 5, productName: '快捷支付', productCode: 'QP001' },
-  { id: 6, productName: '扫码支付', productCode: 'SCAN001' },
-  { id: 7, productName: '国际信用卡', productCode: 'ICC001' },
-  { id: 8, productName: '聚合支付', productCode: 'AGG001' }
-])
-
-// 渠道选项数据
-const channelOptions = ref([
-  { label: '渠道A', value: 'channel_a' },
-  { label: '渠道B', value: 'channel_b' },
-  { label: '渠道C', value: 'channel_c' },
-  { label: '渠道D', value: 'channel_d' },
-  { label: '渠道E', value: 'channel_e' },
-  { label: '渠道F', value: 'channel_f' },
-  { label: '渠道G', value: 'channel_g' },
-  { label: '渠道H', value: 'channel_h' }
-])
-
-// 监听选择产品变化
-watch(() => productConfigForm.selectedProducts, (newVal, oldVal) => {
-  if (newVal && oldVal) {
-    watchSelectedProducts()
-  }
-}, { deep: true })
-
-// 监听批量配置中选择产品变化
-watch(() => batchConfigForm.selectedProducts, (newVal, oldVal) => {
-  if (newVal && oldVal) {
-    watchBatchSelectedProducts()
-  }
-}, { deep: true })
-
-// 计算穿梭框数据源
-const transferData = computed(() => {
-  return productList
-    .filter(item => item.id !== productForm.id) // 排除当前商户
-    .map(item => ({
-      key: item.id,
-      label: `${item.productName} (${item.productId})`,
-      disabled: false, // 默认都可选
-      productName: item.productName,
-      productId: item.productId
-    }))
-})
-
-// 可选商户数量
-const availableMerchantsCount = computed(() => {
-  return transferData.value.length
-})
-
-// 获取子账户名称
-const getSubAccountName = (accountId) => {
-  const account = productList.find(item => item.id === accountId)
-  return account ? account.productName : ''
+// 一键登录
+const handleQuickLogin = (row) => {
+  ElMessage.success(`正在登录商户 ${row.productName} 的后台...`)
+  
+  // 生成授权令牌
+  const timestamp = new Date().getTime()
+  const token = `${timestamp}_${row.id}_${generateApiKey().substring(0, 8)}`
+  
+  // 直接跳转到商户后台，使用内部路由
+  const merchantBackendUrl = `/merchant/dashboard?merchant=${row.id}&token=${token}`
+  window.open(merchantBackendUrl, '_blank')
 }
 
-// 全选或清空子账户
-const handleCheckAll = (isCheckAll) => {
-  if (isCheckAll) {
-    // 全选所有子账户
-    productForm.subAccounts = transferData.value.map(item => item.key)
-    ElMessage.success('已全选所有可用商户')
-  } else {
-    // 清空所有子账户
-    productForm.subAccounts = []
-    ElMessage.success('已清空所有子账户')
-  }
-}
-
-// 自定义过滤方法，只根据商户名称过滤
-const filterByMerchantName = (query, item) => {
-  return item.productName.toLowerCase().includes(query.toLowerCase());
-}
-
-// 页面加载时获取数据
-onMounted(() => {
-  fetchData()
-})
-
-// 商户搜索文本
+// 商户选择相关
 const merchantSearchText = ref('')
-
-// 根据搜索过滤后的可用商户列表
-const availableMerchants = computed(() => {
-  // 获取所有可用商户（排除当前编辑的商户和已选择的商户）
-  const selectedIds = productForm.subAccounts
-  const allAvailable = productList
-    .filter(item => item.id !== productForm.id && !selectedIds.includes(item.id))
-    .map(item => ({
-      id: item.id,
-      productName: item.productName,
-      productId: item.productId
-    }))
-  
-  // 如果有搜索文本，按名称过滤
-  if (merchantSearchText.value) {
-    return allAvailable.filter(item => 
-      item.productName.toLowerCase().includes(merchantSearchText.value.toLowerCase())
-    )
-  }
-  
-  return allAvailable
-})
-
-// 新增临时选择变量
 const tempSelectedMerchants = ref([])
 const tempRightSelectedMerchants = ref([])
 
-// 更新左侧选择
+// 可选商户列表
+const availableMerchants = computed(() => {
+  // 过滤出未被选为子账户的商户
+  let merchants = productList.filter(item => 
+    !productForm.subAccounts.includes(item.id) && 
+    item.id !== productForm.id
+  )
+  
+  // 如果有搜索文本，再进一步过滤
+  if (merchantSearchText.value) {
+    const searchText = merchantSearchText.value.toLowerCase()
+    merchants = merchants.filter(item => 
+      item.productName.toLowerCase().includes(searchText) ||
+      item.productId.toLowerCase().includes(searchText)
+    )
+  }
+  
+  return merchants
+})
+
+// 更新选中的商户
 const updateSelectedMerchants = () => {
-  // 不需要做任何事，只是为了处理复选框的变化
+  // 这个函数空实现即可，仅用于触发checkbox的变化
 }
 
-// 更新右侧选择
+// 更新右侧选中的商户
 const updateRightSelectedMerchants = () => {
-  // 不需要做任何事，只是为了处理复选框的变化
+  // 这个函数空实现即可，仅用于触发checkbox的变化
 }
 
-// 移动选中项
-const moveSelected = (toRight) => {
-  if (toRight) {
-    // 将选中的项移到右侧
+// 移动选中的商户
+const moveSelected = (isToRight) => {
+  if (isToRight) {
+    // 添加到子账户
     if (tempSelectedMerchants.value.length === 0) {
-      ElMessage.warning('请先选择要添加的子账户')
+      ElMessage.warning('请选择要添加的商户')
       return
     }
     
+    // 将选中的商户添加到子账户列表
     tempSelectedMerchants.value.forEach(id => {
       if (!productForm.subAccounts.includes(id)) {
         productForm.subAccounts.push(id)
       }
     })
     
-    // 清空临时选择
+    // 清空选择
     tempSelectedMerchants.value = []
-    ElMessage.success('已添加选中的子账户')
   } else {
-    // 将选中的项移到左侧（即从右侧移除）
+    // 从子账户移除
     if (tempRightSelectedMerchants.value.length === 0) {
-      ElMessage.warning('请先选择要移除的子账户')
+      ElMessage.warning('请选择要移除的商户')
       return
     }
     
-    // 移除选中的项
-    productForm.subAccounts = productForm.subAccounts.filter(
-      id => !tempRightSelectedMerchants.value.includes(id)
+    // 从子账户列表移除选中的商户
+    productForm.subAccounts = productForm.subAccounts.filter(id => 
+      !tempRightSelectedMerchants.value.includes(id)
     )
     
-    // 清空临时选择
+    // 清空选择
     tempRightSelectedMerchants.value = []
-    ElMessage.success('已移除选中的子账户')
   }
 }
+
+// 组件挂载时获取数据
+onMounted(() => {
+  fetchData()
+})
 </script>
 
 <style scoped>
+/* 商户列表样式 */
 .product-list-container {
   padding: 20px;
 }
 
 .filter-container {
   margin-bottom: 16px;
-}
-
-.el-card {
-  overflow-x: auto;
 }
 
 .filter-form {
@@ -1517,34 +1493,48 @@ const moveSelected = (toRight) => {
 
 .filter-row {
   display: flex;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
   width: 100%;
+  margin-bottom: 16px;
+  align-items: center;
 }
 
 .filter-row:last-child {
   margin-bottom: 0;
 }
 
-.filter-row .el-form-item {
-  margin-bottom: 0;
-  margin-right: 20px;
-}
-
 .filter-buttons {
-  display: flex;
-  justify-content: flex-end;
   margin-left: auto;
+  display: flex;
+  align-items: center;
 }
 
 .filter-buttons .el-button + .el-button {
-  margin-left: 12px;
+  margin-left: 8px;
 }
 
 .table-toolbar {
   display: flex;
   justify-content: space-between;
   margin-bottom: 16px;
+}
+
+.table-toolbar .left {
+  display: flex;
+  align-items: center;
+}
+
+.table-toolbar .right {
+  display: flex;
+  align-items: center;
+}
+
+.table-toolbar .el-button {
+  margin-right: 8px;
+}
+
+.table-toolbar .right .el-button {
+  margin-right: 0;
+  margin-left: 8px;
 }
 
 .pagination-container {
@@ -1554,23 +1544,149 @@ const moveSelected = (toRight) => {
 }
 
 .operation-dropdown {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.el-dropdown-link {
   cursor: pointer;
   color: var(--el-color-primary);
+}
+
+.form-tip {
+  font-size: 12px;
+  color: #909399;
+  line-height: 1.2;
+  margin-top: 5px;
+}
+
+/* 子账户显示样式 */
+.sub-accounts-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sub-account-tag {
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+.no-sub-accounts {
+  color: #909399;
+}
+
+.amount-cell {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  color: #606266;
+  letter-spacing: 0.5px;
+  display: inline-block;
+  min-width: 120px;
+  text-align: right;
+}
+
+/* 自定义Transfer组件样式 */
+.custom-transfer {
+  width: 100%;
+  min-height: 200px;
+}
+
+.transfer-container {
+  display: flex;
+  align-items: stretch;
+  height: 300px;
+  border: 1px solid #EBEEF5;
+  border-radius: 4px;
+}
+
+.transfer-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #EBEEF5;
+}
+
+.transfer-panel:last-child {
+  border-right: none;
+}
+
+.panel-header {
+  height: 40px;
+  padding: 0 12px;
+  border-bottom: 1px solid #EBEEF5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #F5F7FA;
+}
+
+.search-box {
+  width: 180px;
+}
+
+.panel-body {
+  flex: 1;
+  overflow: hidden;
+}
+
+.transfer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.transfer-item {
+  padding: 8px 12px;
+  transition: background-color 0.2s;
+}
+
+.transfer-item:hover {
+  background-color: #F5F7FA;
+}
+
+.transfer-buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 10px;
+}
+
+.transfer-buttons .el-button {
+  margin: 5px 0;
+}
+
+.empty-text {
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #909399;
 }
 
-.product-form {
-  max-height: 60vh;
-  overflow-y: auto;
-  padding-right: 10px;
+/* 商户标签样式 */
+.merchant-tag {
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.selected-merchants {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+/* 产品费率相关样式 */
+.product-rate-list {
+  margin-top: 20px;
+}
+
+.batch-rate-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.batch-rate-input {
+  display: flex;
+  align-items: center;
 }
 
 .rate-input-group {
@@ -1580,134 +1696,10 @@ const moveSelected = (toRight) => {
 
 .rate-unit {
   margin-left: 5px;
-  color: var(--el-text-color-regular);
+  color: #606266;
 }
 
-/* 强制表格自动填充空间 */
-.product-rate-list .el-table {
-  width: 100%;
-  table-layout: fixed;
+.product-form .el-form-item {
+  margin-bottom: 18px;
 }
-
-.product-rate-list .el-table__body {
-  width: 100% !important;
-}
-
-.form-tip {
-  margin-top: 5px;
-  font-size: 12px;
-  color: var(--el-text-color-secondary);
-}
-
-.product-rate-list {
-  margin-top: 20px;
-}
-
-.selected-merchants {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.merchant-tag {
-  margin-right: 5px;
-  margin-bottom: 5px;
-}
-
-.sub-accounts-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.sub-account-tag {
-  margin: 2px;
-}
-
-.no-sub-accounts {
-  color: var(--el-text-color-secondary);
-}
-
-/* 自定义穿梭框 */
-.custom-transfer {
-  margin-bottom: 15px;
-}
-
-.transfer-container {
-  display: flex;
-  align-items: stretch;
-  border-radius: 4px;
-  overflow: hidden;
-  border: 1px solid var(--el-border-color-light);
-}
-
-.transfer-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--el-fill-color-blank);
-  min-height: 320px;
-}
-
-.left-panel {
-  border-right: 1px solid var(--el-border-color-light);
-}
-
-.panel-header {
-  padding: 12px 15px;
-  background-color: var(--el-fill-color-light);
-  border-bottom: 1px solid var(--el-border-color-light);
-  font-weight: bold;
-}
-
-.panel-header .search-box {
-  margin-top: 8px;
-}
-
-.panel-body {
-  flex: 1;
-  overflow: hidden;
-}
-
-.transfer-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.transfer-item {
-  padding: 8px 15px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.transfer-item:hover {
-  background-color: var(--el-fill-color-light);
-}
-
-.transfer-buttons {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 15px;
-  padding: 0 10px;
-  background-color: var(--el-fill-color-light);
-}
-
-.transfer-buttons .el-button {
-  width: 80px;
-  margin: 0;
-}
-
-.empty-text {
-  padding: 15px;
-  color: var(--el-text-color-secondary);
-  text-align: center;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-</style> 
+</style>

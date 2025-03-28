@@ -56,9 +56,23 @@
           </template>
         </el-table-column>
         <el-table-column label="通道编码" prop="channelCode" width="100" align="center" />
-        <el-table-column label="通道费率" width="90" align="right">
+        <el-table-column label="通道费率" width="200" align="right">
           <template #default="scope">
-            <span class="rate-cell">{{ scope.row.rate.toFixed(2) }}%</span>
+            <div class="fee-rate-container">
+              <div class="current-fee">
+                <span class="fee-label">当前费率：</span>
+                <span class="fee-value">{{ scope.row.rate.toFixed(2) }}%</span>
+              </div>
+              
+              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingFeeRate !== undefined" class="pending-fee">
+                <span class="fee-label">定时费率：</span>
+                <span class="fee-value pending">{{ scope.row.pendingFeeRate.toFixed(2) }}%</span>
+                <div class="effective-time">
+                  <el-icon><timer /></el-icon>
+                  <span>{{ getRemainingTimeText(scope.row.scheduledFeeTime) }}生效</span>
+                </div>
+              </div>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="渠道名称" prop="supplier" min-width="120" />
@@ -141,6 +155,34 @@
             />
             <div class="rate-addon">%</div>
           </div>
+        </el-form-item>
+        <el-form-item label="定时生效" prop="scheduledFeeEnabled" v-if="dialogType === 'edit'">
+          <el-switch
+            v-model="channelForm.scheduledFeeEnabled"
+            active-value="YES"
+            inactive-value="NO"
+            active-text="启用"
+            inactive-text="禁用"
+          />
+          <div class="form-tip" v-if="channelForm.scheduledFeeEnabled === 'YES'">
+            启用后，费率变更将在指定时间生效而非立即生效
+          </div>
+        </el-form-item>
+        
+        <el-form-item 
+          label="生效时间" 
+          prop="scheduledFeeTime" 
+          v-if="dialogType === 'edit' && channelForm.scheduledFeeEnabled === 'YES'"
+        >
+          <el-date-picker
+            v-model="channelForm.scheduledFeeTime"
+            type="datetime"
+            placeholder="选择费率变更生效时间"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            :disabledDate="disabledDate"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="渠道名称" prop="supplier">
           <el-select v-model="channelForm.supplier" placeholder="请选择渠道" clearable style="width: 100%">
@@ -266,8 +308,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed, watch } from 'vue'
-import { Search, Refresh, Plus, Check, Close, EditPen, DocumentCopy, SetUp, Delete, Download } from '@element-plus/icons-vue'
+import { ref, reactive, onMounted, computed, watch, onBeforeUnmount } from 'vue'
+import { Search, Refresh, Plus, Check, Close, EditPen, DocumentCopy, SetUp, Delete, Download, Timer } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { channelList, payTypeOptions, categoryOptions } from '@/data/channelData'
 import { supplierList } from '@/data/supplierData'
@@ -304,7 +346,10 @@ const channelForm = reactive({
   minAmount: 0.00,
   maxAmount: 50000.00,
   remark: '',
-  enabled: true
+  enabled: true,
+  scheduledFeeEnabled: 'NO',
+  scheduledFeeTime: '',
+  pendingFeeRate: undefined
 })
 
 // 批量设置分组相关
@@ -333,7 +378,10 @@ const rules = {
   supplier: [{ required: true, message: '请选择渠道', trigger: 'change' }],
   payType: [{ required: true, message: '请选择支付类型', trigger: 'change' }],
   minAmount: [{ required: true, message: '请输入单笔最小金额', trigger: 'blur' }],
-  maxAmount: [{ required: true, message: '请输入单笔最大金额', trigger: 'blur' }]
+  maxAmount: [{ required: true, message: '请输入单笔最大金额', trigger: 'blur' }],
+  scheduledFeeTime: [
+    { required: true, message: '请选择费率变更生效时间', trigger: 'change' }
+  ]
 }
 
 // 上游选项
@@ -354,6 +402,40 @@ watch(() => channelForm.supplier, (newVal) => {
     channelForm.supplierCode = ''
   }
 })
+
+// 禁用过去的日期
+const disabledDate = (time) => {
+  return time.getTime() < Date.now() - 8.64e7 // 禁用今天之前的日期
+}
+
+// 计算剩余时间文本
+const getRemainingTimeText = (scheduledTime) => {
+  if (!scheduledTime) return '时间未设置';
+  
+  const targetTime = new Date(scheduledTime).getTime();
+  const now = Date.now();
+  
+  // 如果已经过了生效时间
+  if (now >= targetTime) {
+    return '已生效';
+  }
+  
+  // 计算剩余时间
+  const diffMs = targetTime - now;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (diffDays > 0) {
+    return `${diffDays}天${diffHours}小时后`;
+  } else if (diffHours > 0) {
+    return `${diffHours}小时${diffMinutes}分钟后`;
+  } else if (diffMinutes > 0) {
+    return `${diffMinutes}分钟后`;
+  } else {
+    return `即将`;
+  }
+}
 
 // 获取数据
 const fetchData = () => {
@@ -416,6 +498,17 @@ const handleEdit = (row) => {
       channelForm[key] = row[key]
     }
   })
+  
+  // 如果存在待生效的费率，则填充到表单的费率字段中
+  if (row.pendingFeeRate !== undefined && row.scheduledFeeEnabled === 'YES') {
+    channelForm.rate = row.pendingFeeRate;
+    channelForm.scheduledFeeEnabled = 'YES';
+    channelForm.scheduledFeeTime = row.scheduledFeeTime;
+  } else {
+    // 默认不启用定时生效
+    channelForm.scheduledFeeEnabled = 'NO';
+    channelForm.scheduledFeeTime = '';
+  }
   
   dialogVisible.value = true
 }
@@ -565,7 +658,10 @@ const resetForm = () => {
     minAmount: 0.00,
     maxAmount: 50000.00,
     remark: '',
-    enabled: true
+    enabled: true,
+    scheduledFeeEnabled: 'NO',
+    scheduledFeeTime: '',
+    pendingFeeRate: undefined
   })
 }
 
@@ -573,6 +669,17 @@ const resetForm = () => {
 const handleSubmitForm = () => {
   formRef.value.validate((valid) => {
     if (valid) {
+      // 验证定时费率时间是否合法（如果启用）
+      if (dialogType.value === 'edit' && channelForm.scheduledFeeEnabled === 'YES') {
+        const now = new Date();
+        const scheduledTime = new Date(channelForm.scheduledFeeTime);
+        
+        if (scheduledTime <= now) {
+          ElMessage.warning('费率变更生效时间必须晚于当前时间');
+          return false;
+        }
+      }
+      
       if (dialogType.value === 'add') {
         // 添加操作
         const newId = Math.max(...tableData.value.map(item => item.id), 0) + 1
@@ -586,7 +693,26 @@ const handleSubmitForm = () => {
         // 编辑操作
         const index = tableData.value.findIndex(item => item.id === channelForm.id)
         if (index !== -1) {
-          tableData.value[index] = { ...channelForm }
+          if (channelForm.scheduledFeeEnabled === 'YES') {
+            // 保存原始费率
+            const originalRate = tableData.value[index].rate;
+            // 设置定时生效信息
+            tableData.value[index] = {
+              ...channelForm,
+              rate: originalRate, // 保持原始费率不变
+              pendingFeeRate: channelForm.rate, // 设置待生效费率
+              scheduledFeeEnabled: 'YES',
+              scheduledFeeTime: channelForm.scheduledFeeTime
+            };
+          } else {
+            // 立即生效
+            tableData.value[index] = {
+              ...channelForm,
+              scheduledFeeEnabled: 'NO',
+              scheduledFeeTime: '',
+              pendingFeeRate: undefined // 移除待生效费率
+            };
+          }
           ElMessage.success('更新成功')
         }
       }
@@ -617,7 +743,52 @@ const handleSelectionChange = (selection) => {
 // 页面加载时获取数据
 onMounted(() => {
   fetchData()
+  
+  // 设置定时检查
+  feeRateTimer = setInterval(() => {
+    checkScheduledFeeRates();
+  }, 60000); // 每分钟检查一次
 })
+
+// 组件销毁前清除定时器
+onBeforeUnmount(() => {
+  if (feeRateTimer) {
+    clearInterval(feeRateTimer);
+    feeRateTimer = null;
+  }
+})
+
+// 检查是否有定时费率需要生效
+const checkScheduledFeeRates = () => {
+  const now = new Date();
+  let hasUpdates = false;
+  
+  tableData.value.forEach(item => {
+    if (item.scheduledFeeEnabled === 'YES' && item.scheduledFeeTime && item.pendingFeeRate !== undefined) {
+      const scheduledTime = new Date(item.scheduledFeeTime);
+      
+      // 如果已到达或超过设定时间，应用新费率
+      if (now >= scheduledTime) {
+        // 更新费率
+        item.rate = item.pendingFeeRate;
+        // 禁用定时费率设置（避免重复应用）
+        item.scheduledFeeEnabled = 'NO';
+        item.scheduledFeeTime = '';
+        // 清除待生效费率
+        delete item.pendingFeeRate;
+        hasUpdates = true;
+      }
+    }
+  });
+  
+  // 如果有更新，提示用户
+  if (hasUpdates) {
+    ElMessage.success('系统已自动应用定时费率变更');
+  }
+}
+
+// 设置定时器，每分钟检查一次是否有定时费率需要生效
+let feeRateTimer = null;
 </script>
 
 <style scoped>
@@ -704,5 +875,57 @@ onMounted(() => {
   margin-left: 8px;
   font-size: 14px;
   color: #606266;
+}
+
+.fee-rate-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.current-fee, .pending-fee {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  line-height: 1.5;
+}
+
+.pending-fee {
+  margin-top: 4px;
+}
+
+.fee-label {
+  color: #909399;
+  margin-right: 4px;
+  font-size: 13px;
+}
+
+.fee-value {
+  font-weight: 500;
+  color: #303133;
+}
+
+.fee-value.pending {
+  color: #E6A23C;
+  font-weight: bold;
+}
+
+.effective-time {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #909399;
+  margin-top: 2px;
+  margin-left: 4px;
+}
+
+.effective-time .el-icon {
+  margin-right: 4px;
+  font-size: 12px;
+}
+
+.form-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
 }
 </style> 

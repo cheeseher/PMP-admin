@@ -537,9 +537,7 @@
         </el-form-item>
         
         <!-- 已选择的通道表格 -->
-        <el-form-item v-if="productConfigForm.customOption && productConfigForm.selectedChannels.length > 0">
-          <el-divider content-position="left">已选择的通道</el-divider>
-          
+        <el-form-item v-if="productConfigForm.customOption && productConfigForm.selectedChannels.length > 0" label="已选择的通道">
           <!-- 轮询方式选择 -->
           <div class="polling-option" style="margin-bottom: 12px;">
             <el-radio-group v-model="productConfigForm.routingMode" size="small">
@@ -551,7 +549,7 @@
             </div>
           </div>
           
-          <el-table :data="getSelectedChannelsData()" border style="width: 100%">
+          <el-table :data="getSelectedChannelsData()" border style="width: 100%;">
             <el-table-column prop="channelName" label="通道名称" min-width="160">
               <template #default="scope">
                 <span>渠道{{ scope.row.channelCode }} | {{ scope.row.channelName }}</span>
@@ -577,6 +575,18 @@
                   style="width: 100px"
                   @change="(val) => updateChannelWeight(scope.row.id, val)"
                 />
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="80" align="center">
+              <template #default="scope">
+                <el-button 
+                  type="danger" 
+                  link 
+                  size="small" 
+                  @click="removeSelectedChannel(scope.row.id)"
+                >
+                  移除
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -1072,6 +1082,16 @@ const getSubAccountName = (id) => {
 // 更新通道权重映射
 const updateChannelWeight = (channelId, weight) => {
   productConfigForm.channelsWeightMap[channelId] = weight;
+}
+
+// 移除已选择的通道
+const removeSelectedChannel = (channelId) => {
+  // 从已选择的通道中移除
+  productConfigForm.selectedChannels = productConfigForm.selectedChannels.filter(id => id !== channelId);
+  // 从权重映射中移除
+  if (channelId in productConfigForm.channelsWeightMap) {
+    delete productConfigForm.channelsWeightMap[channelId];
+  }
 }
 
 // 监听表格中权重的变化

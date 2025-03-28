@@ -114,8 +114,8 @@
             </div>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item @click="goToProfile">商户资料</el-dropdown-item>
-                <el-dropdown-item @click="goToSecurity">安全设置</el-dropdown-item>
+                <el-dropdown-item @click="goToAccountInfo">账户信息</el-dropdown-item>
+                <el-dropdown-item @click="showChangePasswordDialog">修改密码</el-dropdown-item>
                 <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -133,10 +133,61 @@
       </el-main>
     </el-container>
   </el-container>
+
+  <!-- 修改密码弹窗 -->
+  <el-dialog
+    v-model="passwordDialogVisible"
+    title="修改密码"
+    width="500px"
+    :close-on-click-modal="false"
+    @close="resetPasswordForm"
+  >
+    <el-form
+      ref="passwordFormRef"
+      :model="passwordForm"
+      :rules="passwordRules"
+      label-width="80px"
+      status-icon
+    >
+      <el-form-item label="旧密码" prop="oldPassword">
+        <el-input
+          v-model="passwordForm.oldPassword"
+          placeholder="请输入旧密码"
+          type="password"
+          show-password
+        />
+      </el-form-item>
+      
+      <el-form-item label="新密码" prop="newPassword">
+        <el-input
+          v-model="passwordForm.newPassword"
+          placeholder="请输入新密码"
+          type="password"
+          show-password
+        />
+      </el-form-item>
+      
+      <el-form-item label="确认新密码" prop="confirmPassword">
+        <el-input
+          v-model="passwordForm.confirmPassword"
+          placeholder="请再次输入新密码"
+          type="password"
+          show-password
+        />
+      </el-form-item>
+    </el-form>
+    
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="passwordDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="submitPasswordForm" :loading="passwordLoading">确 定</el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
@@ -197,14 +248,92 @@ const fetchMerchantInfo = () => {
   }, 300)
 }
 
-// 跳转到商户资料页
-const goToProfile = () => {
-  router.push('/merchant/setting/profile')
+// 修改密码弹窗状态
+const passwordDialogVisible = ref(false)
+const passwordLoading = ref(false)
+const passwordFormRef = ref(null)
+
+// 密码表单数据
+const passwordForm = reactive({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: ''
+})
+
+// 密码验证规则
+const validatePass = (rule, value, callback) => {
+  if (value === '') {
+    callback(new Error('请输入密码'))
+  } else {
+    if (passwordForm.confirmPassword !== '') {
+      passwordFormRef.value?.validateField('confirmPassword')
+    }
+    callback()
+  }
 }
 
-// 跳转到安全设置页
-const goToSecurity = () => {
-  router.push('/merchant/setting/security')
+const validatePass2 = (rule, value, callback) => {
+  if (value === '') {
+    callback(new Error('请再次输入密码'))
+  } else if (value !== passwordForm.newPassword) {
+    callback(new Error('两次输入密码不一致'))
+  } else {
+    callback()
+  }
+}
+
+const passwordRules = {
+  oldPassword: [
+    { required: true, message: '请输入旧密码', trigger: 'blur' }
+  ],
+  newPassword: [
+    { required: true, validator: validatePass, trigger: 'blur' },
+    { min: 6, message: '密码长度不能小于6位', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, validator: validatePass2, trigger: 'blur' }
+  ]
+}
+
+// 显示修改密码弹窗
+const showChangePasswordDialog = () => {
+  passwordDialogVisible.value = true
+}
+
+// 重置密码表单
+const resetPasswordForm = () => {
+  passwordForm.oldPassword = ''
+  passwordForm.newPassword = ''
+  passwordForm.confirmPassword = ''
+  passwordFormRef.value?.resetFields()
+}
+
+// 提交密码表单
+const submitPasswordForm = () => {
+  passwordFormRef.value?.validate((valid) => {
+    if (valid) {
+      passwordLoading.value = true
+      // 模拟API调用
+      setTimeout(() => {
+        passwordLoading.value = false
+        passwordDialogVisible.value = false
+        ElMessage.success('密码修改成功')
+        resetPasswordForm()
+      }, 1000)
+    } else {
+      return false
+    }
+  })
+}
+
+// 跳转到账户信息页
+const goToAccountInfo = () => {
+  router.push('/merchant/account/info')
+}
+
+// 修改密码页面跳转改为直接显示弹窗
+const goToChangePassword = () => {
+  showChangePasswordDialog()
 }
 
 // 退出登录
@@ -366,5 +495,11 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style> 

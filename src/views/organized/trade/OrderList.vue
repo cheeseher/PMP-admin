@@ -20,7 +20,7 @@
             </el-select>
           </el-form-item>
           
-          <el-form-item label="通道状态：">
+          <el-form-item label="通知状态：">
             <el-select v-model="searchForm.channelStatus" placeholder="请选择" clearable style="width: 150px">
               <el-option v-for="item in channelStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
@@ -78,22 +78,47 @@
         </div>
         
         <div class="filter-line">
-          <el-form-item label="显示已回调：">
-            <el-select v-model="searchForm.showCallbacks" placeholder="请选择" style="width: 100px">
-              <el-option label="全部" value="all" />
-              <el-option label="已回调" value="yes" />
-              <el-option label="未回调" value="no" />
+          <el-form-item label="订单金额：">
+            <el-select v-model="searchForm.amountOperator" placeholder="请选择" clearable style="width: 100px">
+              <el-option v-for="item in amountOperators" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+            <el-input v-model="searchForm.orderAmount" placeholder="请输入金额" clearable style="width: 120px; margin-left: 10px" />
+          </el-form-item>
+          
+          <el-form-item label="隔日回调：">
+            <el-select v-model="searchForm.showCallbacks" placeholder="请选择" clearable style="width: 100px">
+              <el-option label="是" value="yes" />
+              <el-option label="否" value="no" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="是否补单：">
+            <el-select v-model="searchForm.supplementStatus" placeholder="请选择" clearable style="width: 100px">
+              <el-option label="是" value="yes" />
+              <el-option label="否" value="no" />
+            </el-select>
+     </el-form-item>
+
+          <el-form-item label="测试清账：">
+            <el-select v-model="searchForm.testClearStatus" placeholder="请选择" clearable style="width: 100px">
+              <el-option label="是" value="yes" />
+              <el-option label="否" value="no" />
             </el-select>
           </el-form-item>
           
           <el-form-item label="时间过滤：">
             <el-select v-model="searchForm.timeFilter" style="width: 100px" @change="handleTimeFilterChange">
+              <el-option label="1分钟" value="1min" />
+              <el-option label="5分钟" value="5min" />
+              <el-option label="15分钟" value="15min" />
+              <el-option label="30分钟" value="30min" />
+              <el-option label="1小时" value="1hour" />
               <el-option label="今天" value="today" />
               <el-option label="昨天" value="yesterday" />
+              <el-option label="前天" value="beforeYesterday" />
               <el-option label="近三天" value="last3days" />
               <el-option label="近七天" value="last7days" />
+              <el-option label="本周" value="thisWeek" />
               <el-option label="本月" value="thisMonth" />
-              <el-option label="上月" value="lastMonth" />
             </el-select>
           </el-form-item>
           
@@ -194,9 +219,9 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="merchantNotify" label="商户通知" min-width="120" align="center">
+        <el-table-column prop="merchantNotify" label="通知状态" min-width="120" align="center">
           <template #default="scope">
-            <el-tag :type="scope.row.merchantNotify === '回调成功' ? 'success' : (scope.row.merchantNotify === '未通知' ? 'info' : 'danger')" size="small">
+            <el-tag :type="getNotifyStatusType(scope.row.merchantNotify)" size="small">
               {{ scope.row.merchantNotify }}
             </el-tag>
           </template>
@@ -259,48 +284,64 @@ const channelOptions = ref([
 // 订单状态选项
 const statusOptions = ref([
   { value: 'waiting', label: '等待支付' },
+  { value: 'no_code', label: '未出码' },
   { value: 'success', label: '支付成功' },
   { value: 'failed', label: '支付失败' },
-  { value: 'processing', label: '处理中' },
-  { value: 'canceled', label: '已取消' }
+  { value: 'timeout', label: '超时关闭' },
+  { value: 'manual_close', label: '手动关闭' },
+  { value: 'test_reverse', label: '测试冲正' }
 ])
 
-// 通道状态选项
+// 通知状态选项
 const channelStatusOptions = ref([
-  { value: 'success', label: '处理成功' },
-  { value: 'failed', label: '处理失败' },
-  { value: 'blocked', label: '未出账' },
-  { value: 'pending', label: '超时关闭' }
+  { value: 'waiting_callback', label: '待回调' },
+  { value: 'callback_success', label: '隔日回调' },
+  { value: 'callback_failed', label: '回调失败' },
+  { value: 'not_notified', label: '未通知' },
+  { value: 'error_not_notified', label: '异常未通知' },
+  { value: 'no_more_callback', label: '不再回调' }
 ])
 
 // 根据时间类型获取日期范围
 const getDateRangeByType = (type) => {
-  const today = dayjs()
+  const now = dayjs()
   
   switch (type) {
+    case '1min':
+      return [now.subtract(1, 'minute').format('YYYY-MM-DD HH:mm'), now.format('YYYY-MM-DD HH:mm')]
+    case '5min':
+      return [now.subtract(5, 'minute').format('YYYY-MM-DD HH:mm'), now.format('YYYY-MM-DD HH:mm')]
+    case '15min':
+      return [now.subtract(15, 'minute').format('YYYY-MM-DD HH:mm'), now.format('YYYY-MM-DD HH:mm')]
+    case '30min':
+      return [now.subtract(30, 'minute').format('YYYY-MM-DD HH:mm'), now.format('YYYY-MM-DD HH:mm')]
+    case '1hour':
+      return [now.subtract(1, 'hour').format('YYYY-MM-DD HH:mm'), now.format('YYYY-MM-DD HH:mm')]
     case 'today':
-      return [today.format('YYYY-MM-DD 00:00'), today.format('YYYY-MM-DD 23:59')]
+      return [now.format('YYYY-MM-DD 00:00'), now.format('YYYY-MM-DD 23:59')]
     case 'yesterday': {
-      const yesterday = today.subtract(1, 'day')
+      const yesterday = now.subtract(1, 'day')
       return [yesterday.format('YYYY-MM-DD 00:00'), yesterday.format('YYYY-MM-DD 23:59')]
     }
+    case 'beforeYesterday': {
+      const beforeYesterday = now.subtract(2, 'day')
+      return [beforeYesterday.format('YYYY-MM-DD 00:00'), beforeYesterday.format('YYYY-MM-DD 23:59')]
+    }
     case 'last3days': {
-      const threeDay = today.subtract(2, 'day')
-      return [threeDay.format('YYYY-MM-DD 00:00'), today.format('YYYY-MM-DD 23:59')]
+      const threeDay = now.subtract(2, 'day')
+      return [threeDay.format('YYYY-MM-DD 00:00'), now.format('YYYY-MM-DD 23:59')]
     }
     case 'last7days': {
-      const sevenDay = today.subtract(6, 'day')
-      return [sevenDay.format('YYYY-MM-DD 00:00'), today.format('YYYY-MM-DD 23:59')]
+      const sevenDay = now.subtract(6, 'day')
+      return [sevenDay.format('YYYY-MM-DD 00:00'), now.format('YYYY-MM-DD 23:59')]
+    }
+    case 'thisWeek': {
+      const firstDay = now.startOf('week')
+      return [firstDay.format('YYYY-MM-DD 00:00'), now.format('YYYY-MM-DD 23:59')]
     }
     case 'thisMonth': {
-      const firstDay = today.startOf('month')
-      return [firstDay.format('YYYY-MM-DD 00:00'), today.format('YYYY-MM-DD 23:59')]
-    }
-    case 'lastMonth': {
-      const lastMonth = today.subtract(1, 'month')
-      const firstDay = lastMonth.startOf('month')
-      const lastDay = lastMonth.endOf('month')
-      return [firstDay.format('YYYY-MM-DD 00:00'), lastDay.format('YYYY-MM-DD 23:59')]
+      const firstDay = now.startOf('month')
+      return [firstDay.format('YYYY-MM-DD 00:00'), now.format('YYYY-MM-DD 23:59')]
     }
     default:
       return ['', '']
@@ -308,6 +349,15 @@ const getDateRangeByType = (type) => {
 }
 
 // 搜索表单
+// 金额比较操作符选项
+const amountOperators = ref([
+  { value: '=', label: '等于' },
+  { value: '>', label: '大于' },
+  { value: '<', label: '小于' },
+  { value: '>=', label: '大于等于' },
+  { value: '<=', label: '小于等于' }
+])
+
 const searchForm = reactive({
   orderNo: '',
   paymentChannel: [],
@@ -317,8 +367,12 @@ const searchForm = reactive({
   createEndTime: '',
   payStartTime: '',
   payEndTime: '',
-  showCallbacks: 'all',
-  timeFilter: 'today'
+  showCallbacks: '',
+  supplementStatus: '',
+  testClearStatus: '',
+  timeFilter: 'today',
+  amountOperator: '',
+  orderAmount: ''
 })
 
 // 设置初始的时间过滤器
@@ -326,6 +380,7 @@ onMounted(() => {
   const [start, end] = getDateRangeByType('today')
   searchForm.createStartTime = start
   searchForm.createEndTime = end
+  searchForm.timeFilter = 'today'
 })
 
 // 分页数据
@@ -456,7 +511,7 @@ const displayDateRange = computed(() => {
   if (searchForm.createStartTime && searchForm.createEndTime) {
     return `${searchForm.createStartTime.split(' ')[0]} ~ ${searchForm.createEndTime.split(' ')[0]}`
   }
-  return '今天'
+  return ''
 })
 
 // 处理选中行变化
@@ -478,17 +533,29 @@ const formatAmount = (amount, includeCurrency = true) => {
   return includeCurrency ? `¥${formattedAmount}` : formattedAmount
 }
 
+// 获取通知状态类型
+const getNotifyStatusType = (status) => {
+  const typeMap = {
+    '待回调': 'warning',
+    '回调成功': 'success',
+    '回调失败': 'danger',
+    '未通知': 'info',
+    '异常未通知': 'danger',
+    '不再回调': 'info'
+  }
+  return typeMap[status] || 'info'
+}
+
 // 获取状态类型
 const getStatusType = (status) => {
   const typeMap = {
-    '支付成功': 'success',
     '等待支付': 'warning',
     '未出码': 'danger',
+    '支付成功': 'success',
     '支付失败': 'danger',
     '超时关闭': 'info',
     '手动关闭': 'info',
-    '测试冲正': 'warning',
-    '未出账': 'danger'
+    '测试冲正': 'warning'
   }
   return typeMap[status] || 'info'
 }
@@ -529,7 +596,11 @@ const handleReset = () => {
     }
   })
   searchForm.timeFilter = timeFilter
-  searchForm.showCallbacks = 'all'
+  searchForm.showCallbacks = ''
+  searchForm.supplementStatus = ''
+  searchForm.testClearStatus = ''
+  searchForm.amountOperator = ''
+  searchForm.orderAmount = ''
   
   // 重置时间
   const [start, end] = getDateRangeByType(timeFilter)

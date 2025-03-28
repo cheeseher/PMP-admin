@@ -293,12 +293,6 @@ const router = createRouter({
           name: 'MerchantSettingProfile',
           component: () => import('@/views/organized/setting/UserProfile.vue'),
           meta: { title: '修改资料' }
-        },
-        {
-          path: 'setting/security',
-          name: 'MerchantSecurity',
-          component: () => import('@/views/organized/setting/Security.vue'),
-          meta: { title: '安全设置' }
         }
       ]
     }

@@ -9,11 +9,11 @@
           <el-form-item label="供应商ID：">
             <el-input v-model="searchForm.id" placeholder="请输入供应商ID" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="上游通道名称：">
-            <el-input v-model="searchForm.supplierName" placeholder="请输入上游通道名称" style="width: 220px" clearable />
+          <el-form-item label="渠道名称：">
+            <el-input v-model="searchForm.supplierName" placeholder="请输入渠道名称" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="上游通道编码：">
-            <el-input v-model="searchForm.supplierCode" placeholder="请输入上游通道编码" style="width: 220px" clearable />
+          <el-form-item label="渠道编码：">
+            <el-input v-model="searchForm.supplierCode" placeholder="请输入渠道编码" style="width: 220px" clearable />
           </el-form-item>
           <el-form-item label="状态：">
             <el-select v-model="searchForm.status" placeholder="请选择状态" style="width: 168px" clearable>
@@ -57,9 +57,9 @@
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="供应商ID" prop="id" width="80" align="center" />
-        <el-table-column label="上游通道名称" prop="supplier" min-width="120" />
-        <el-table-column label="上游通道编码" prop="code" width="120" />
-        <el-table-column label="上游通道商户号" prop="merchantNo" width="180" />
+        <el-table-column label="渠道名称" prop="supplier" min-width="120" />
+        <el-table-column label="渠道编码" prop="code" width="120" />
+        <el-table-column label="渠道商户号" prop="merchantNo" width="180" />
         <el-table-column label="余额" prop="amount" width="120" align="right">
           <template #default="scope">
             <span class="amount-cell">{{ formatAmount(scope.row.amount) }}</span>
@@ -130,14 +130,14 @@
         label-width="120px"
         class="supplier-form"
       >
-        <el-form-item label="上游通道名称" prop="supplier">
-          <el-input v-model="supplierForm.supplier" placeholder="请输入上游通道名称" />
+        <el-form-item label="渠道名称" prop="supplier">
+          <el-input v-model="supplierForm.supplier" placeholder="请输入渠道名称" />
         </el-form-item>
-        <el-form-item label="上游通道编码" prop="code">
-          <el-input v-model="supplierForm.code" placeholder="请输入上游通道编码" />
+        <el-form-item label="渠道编码" prop="code">
+          <el-input v-model="supplierForm.code" placeholder="请输入渠道编码" />
         </el-form-item>
-        <el-form-item label="上游通道商户号" prop="merchantNo">
-          <el-input v-model="supplierForm.merchantNo" placeholder="请输入上游通道商户号" />
+        <el-form-item label="渠道商户号" prop="merchantNo">
+          <el-input v-model="supplierForm.merchantNo" placeholder="请输入渠道商户号" />
         </el-form-item>
         <el-form-item label="API密钥">
           <el-input v-model="supplierForm.apiKey" placeholder="请输入API密钥" />
@@ -193,9 +193,9 @@
     >
       <el-descriptions :column="1" border class="detail-descriptions" v-if="currentSupplier">
         <el-descriptions-item label="供应商ID">{{ currentSupplier.id }}</el-descriptions-item>
-        <el-descriptions-item label="上游通道名称">{{ currentSupplier.supplier }}</el-descriptions-item>
-        <el-descriptions-item label="上游通道编码">{{ currentSupplier.code }}</el-descriptions-item>
-        <el-descriptions-item label="上游通道商户号">{{ currentSupplier.merchantNo }}</el-descriptions-item>
+        <el-descriptions-item label="渠道名称">{{ currentSupplier.supplier }}</el-descriptions-item>
+        <el-descriptions-item label="渠道编码">{{ currentSupplier.code }}</el-descriptions-item>
+        <el-descriptions-item label="渠道商户号">{{ currentSupplier.merchantNo }}</el-descriptions-item>
         <el-descriptions-item label="余额">{{ formatAmount(currentSupplier.amount) }}</el-descriptions-item>
         <el-descriptions-item label="提醒阈值">{{ formatAmount(currentSupplier.alertThreshold || 5000) }}</el-descriptions-item>
         <el-descriptions-item label="API密钥">{{ currentSupplier.apiKey || '-' }}</el-descriptions-item>
@@ -227,10 +227,10 @@
         :rules="balanceRules"
         label-width="100px"
       >
-        <el-form-item label="上游通道名称">
+        <el-form-item label="渠道名称">
           <el-input v-model="balanceForm.supplier" disabled />
         </el-form-item>
-        <el-form-item label="上游通道编码">
+        <el-form-item label="渠道编码">
           <el-input v-model="balanceForm.code" disabled />
         </el-form-item>
         <el-form-item label="当前余额">
@@ -328,8 +328,8 @@ const supplierForm = reactive({
   flow: 0
 })
 const rules = {
-  supplier: [{ required: true, message: '请输入上游通道名称', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入上游通道编码', trigger: 'blur' }],
+  supplier: [{ required: true, message: '请输入渠道名称', trigger: 'blur' }],
+  code: [{ required: true, message: '请输入渠道编码', trigger: 'blur' }],
   merchantNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }],
   gatewayUrl: [{ required: true, message: '请输入网关地址', trigger: 'blur' }],
   notifyUrl: [{ required: true, message: '请输入异步通知网址', trigger: 'blur' }]

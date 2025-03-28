@@ -1,7 +1,7 @@
 <!-- 原型设计中占位模板 -->
 <template>
   <div class="prototype-container">
-    <el-empty description="原型设计中" />
+    <el-empty description="商户对接文档" />
   </div>
 </template>
 

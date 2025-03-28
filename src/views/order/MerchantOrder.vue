@@ -67,6 +67,31 @@
           <el-form-item label="上游单号：">
             <el-input v-model="searchForm.upstreamOrderNo" placeholder="请输入上游单号" class="input-large" clearable />
           </el-form-item>
+        </div>
+
+        <!-- 第三行筛选项 -->
+        <div class="filter-line">
+          <el-form-item label="订单金额：">
+            <div class="amount-range-container">
+              <el-input-number
+                v-model="searchForm.minAmount"
+                :min="0"
+                :precision="2"
+                controls-position="right"
+                placeholder="最小金额"
+                class="amount-input"
+              />
+              <el-button type="default" class="amount-separator">-</el-button>
+              <el-input-number
+                v-model="searchForm.maxAmount"
+                :min="0"
+                :precision="2"
+                controls-position="right"
+                placeholder="最大金额"
+                class="amount-input"
+              />
+            </div>
+          </el-form-item>
 
           <el-form-item label="支付产品：">
             <el-select v-model="searchForm.productName" placeholder="请选择" class="input-normal" clearable>
@@ -76,14 +101,11 @@
               <el-option label="支付产品C" value="productC" />
             </el-select>
           </el-form-item>
-        </div>
 
-        <!-- 第三行筛选项 -->
-        <div class="filter-line">
           <el-form-item label="支付产品编码：">
             <el-input v-model="searchForm.productCode" placeholder="请输入编码" class="input-normal" clearable />
           </el-form-item>
-          
+
           <el-form-item label="供应商：">
             <el-select v-model="searchForm.supplier" placeholder="请选择" class="input-normal" clearable>
               <el-option label="全部供应商" value="all" />
@@ -92,7 +114,10 @@
               <el-option label="上游通道C" value="C" />
             </el-select>
           </el-form-item>
-          
+        </div>
+
+        <!-- 第四行筛选项 -->
+        <div class="filter-line">
           <el-form-item label="供应商通道：">
             <el-select v-model="searchForm.supplierChannel" placeholder="请选择" class="input-normal" clearable>
               <el-option label="全部通道" value="all" />
@@ -101,11 +126,19 @@
               <el-option label="通道C" value="C" />
             </el-select>
           </el-form-item>
-          
+
           <el-form-item label="通道编码：">
             <el-input v-model="searchForm.upstreamChannelCode" placeholder="请输入编码" class="input-normal" clearable />
           </el-form-item>
-          
+
+          <el-form-item label="隔日补单：">
+            <el-select v-model="searchForm.isNextDay" placeholder="请选择" class="input-normal" clearable>
+              <el-option label="全部" value="" />
+              <el-option label="是" :value="true" />
+              <el-option label="否" :value="false" />
+            </el-select>
+          </el-form-item>
+
           <el-form-item label="订单状态：">
             <el-select v-model="searchForm.orderStatus" placeholder="请选择" class="input-normal" clearable>
               <el-option label="全部状态" value="all" />
@@ -382,7 +415,10 @@ const searchForm = reactive({
   supplier: '',
   supplierChannel: '',
   upstreamChannelCode: '',
-  orderStatus: ''
+  orderStatus: '',
+  minAmount: null,
+  maxAmount: null,
+  isNextDay: ''
 })
 
 // 表格数据
@@ -558,7 +594,10 @@ const handleReset = () => {
     supplier: '',
     supplierChannel: '',
     upstreamChannelCode: '',
-    orderStatus: ''
+    orderStatus: '',
+    minAmount: null,
+    maxAmount: null,
+    isNextDay: ''
   })
   ElMessage.success('搜索条件已重置')
 }
@@ -707,6 +746,29 @@ watch(() => searchForm.timeType, (newType) => {
 .input-large {
   width: 180px !important;
   box-sizing: border-box;
+}
+
+/* 金额范围容器样式 */
+.amount-range-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.amount-range-container .amount-input {
+  width: 130px !important;
+}
+
+.amount-range-container .amount-input :deep(.el-input-number__decrease),
+.amount-range-container .amount-input :deep(.el-input-number__increase) {
+  border-left: none;
+}
+
+.amount-range-container .amount-separator {
+  padding: 5px 8px;
+  margin: 0 2px;
+  height: 32px;
+  border-radius: 4px;
 }
 
 /* 确保筛选项不重叠 */

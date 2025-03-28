@@ -367,6 +367,9 @@
             v-model="batchConfigForm.selectedProduct" 
             placeholder="请选择支付产品"
             style="width: 100%"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
           >
             <el-option 
               v-for="item in paymentProducts" 
@@ -412,6 +415,23 @@
           
           <el-table :data="batchConfigForm.productRates" style="width: 100%; margin-top: 16px" border>
             <el-table-column prop="productName" label="支付产品名称" min-width="180" />
+            <el-table-column label="商户费率" width="150" align="center">
+              <template #default="scope">
+                <div class="rate-input-group">
+                  <el-input-number 
+                    v-model="scope.row.rate" 
+                    :precision="2" 
+                    :step="0.1" 
+                    :min="0"
+                    :max="20"
+                    controls-position="right"
+                    size="small"
+                    style="width: 100px"
+                  />
+                  <span class="rate-unit">%</span>
+                </div>
+              </template>
+            </el-table-column>
             <el-table-column label="操作" min-width="100" align="center">
               <template #default="scope">
                 <el-button 
@@ -1159,7 +1179,7 @@ const submitProductConfig = () => {
 const batchConfigVisible = ref(false)
 const batchConfigFormRef = ref(null)
 const batchConfigForm = reactive({
-  selectedProduct: '',
+  selectedProduct: [],
   productRates: [],
   rate: 3.00
 })
@@ -1224,7 +1244,7 @@ const handleBatchConfig = () => {
     return
   }
   
-  batchConfigForm.selectedProduct = ''
+  batchConfigForm.selectedProduct = []
   batchConfigForm.productRates = []
   batchConfigForm.rate = 3.00
   
@@ -1232,20 +1252,42 @@ const handleBatchConfig = () => {
 }
 
 // 监听批量配置中的支付产品选择
-watch(() => batchConfigForm.selectedProduct, (newVal) => {
-  if (newVal) {
-    // 选择了支付产品
-    const selectedProduct = paymentProducts.value.find(p => p.id === newVal)
-    if (selectedProduct && !batchConfigForm.productRates.some(item => item.productId === newVal)) {
-      batchConfigForm.productRates.push({
-        productId: newVal,
-        productName: selectedProduct.productName,
-        productCode: selectedProduct.productCode,
-        rate: batchConfigForm.rate
-      })
+watch(() => batchConfigForm.selectedProduct, (newVal, oldVal) => {
+  if (newVal && newVal.length) {
+    // 找出新增的产品ID
+    const addedProductIds = oldVal ? newVal.filter(id => !oldVal.includes(id)) : newVal;
+    
+    // 为新增的产品添加到费率列表
+    addedProductIds.forEach(productId => {
+      const selectedProduct = paymentProducts.value.find(p => p.id === productId);
+      if (selectedProduct && !batchConfigForm.productRates.some(item => item.productId === productId)) {
+        // 生成四位随机数作为产品编码
+        const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+        
+        batchConfigForm.productRates.push({
+          productId: productId,
+          productName: selectedProduct.productName,
+          productCode: randomCode,
+          rate: batchConfigForm.rate
+        });
+      }
+    });
+    
+    // 处理被移除的产品
+    if (oldVal) {
+      const removedProductIds = oldVal.filter(id => !newVal.includes(id));
+      removedProductIds.forEach(productId => {
+        const index = batchConfigForm.productRates.findIndex(item => item.productId === productId);
+        if (index !== -1) {
+          batchConfigForm.productRates.splice(index, 1);
+        }
+      });
     }
+  } else if (newVal && newVal.length === 0) {
+    // 清空所有产品
+    batchConfigForm.productRates = [];
   }
-})
+}, { deep: true })
 
 // 余额操作相关
 const balanceOperationVisible = ref(false)

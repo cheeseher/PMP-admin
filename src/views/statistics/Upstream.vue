@@ -69,7 +69,7 @@
 
       <el-card shadow="hover" class="stat-card">
         <div class="compact-card-content">
-          <div class="stat-header">总上游通道成本</div>
+          <div class="stat-header">总渠道成本</div>
           <div class="stat-body">
             <el-icon :size="22"><Discount /></el-icon>
             <span class="stat-value">{{ formatAmount(totalFee) }}</span>
@@ -79,7 +79,7 @@
 
       <el-card shadow="hover" class="stat-card">
         <div class="compact-card-content">
-          <div class="stat-header">总上游入账金额</div>
+          <div class="stat-header">总渠道入账金额</div>
           <div class="stat-body">
             <el-icon :size="22"><Wallet /></el-icon>
             <span class="stat-value">{{ formatAmount(totalNetAmount) }}</span>
@@ -123,18 +123,18 @@
       >
         <el-table-column type="selection" width="50" align="center" />
         <el-table-column prop="upstreamId" label="供应商ID" width="90" align="center" />
-        <el-table-column prop="channelName" label="上游通道名称" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="channelName" label="渠道名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="successAmount" label="成功金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.successAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="fee" label="上游通道成本" width="150" align="right">
+        <el-table-column prop="fee" label="渠道成本" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.fee) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="netAmount" label="上游入账金额" width="150" align="right">
+        <el-table-column prop="netAmount" label="渠道入账金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.netAmount) }}</span>
           </template>

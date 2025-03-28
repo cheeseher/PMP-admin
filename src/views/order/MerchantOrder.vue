@@ -254,7 +254,7 @@
         <el-table-column type="selection" width="55" fixed="left" />
         <el-table-column prop="merchantId" label="商户ID" width="80" fixed="left" />
         <el-table-column prop="merchantName" label="商户账号" width="120" />
-        <el-table-column prop="upstream" label="上游通道名称" width="120" />
+        <el-table-column prop="upstream" label="渠道名称" width="120" />
         <el-table-column prop="channelCode" label="通道编码" width="100" />
         <el-table-column prop="productName" label="支付产品名称" width="120" />
         <el-table-column prop="productCode" label="支付产品编码" width="100" />
@@ -323,7 +323,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="upstreamOrderNo" label="上游单号" width="120" />
-        <el-table-column prop="upstreamChannelCode" label="上游通道编码" width="120" />
+        <el-table-column prop="upstreamChannelCode" label="渠道编码" width="120" />
         <el-table-column prop="remarkInfo" label="备注" min-width="150" />
         <el-table-column label="操作" width="90" fixed="right">
           <template #default="scope">

@@ -111,7 +111,11 @@
       >
         <el-table-column type="selection" width="50" align="center" />
         <el-table-column prop="channelId" label="供应商通道ID" width="120" align="center" />
-        <el-table-column prop="channelName" label="通道名称" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="channelName" label="通道名称" min-width="120" show-overflow-tooltip>
+          <template #default="{ row }">
+            <span>{{ row.supplier }}|{{ row.channelName }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="payType" label="通道编码" width="100" align="center" />
         <el-table-column prop="successAmount" label="成功金额" width="150" align="right">
           <template #default="{ row }">
@@ -202,50 +206,50 @@ watch(() => searchForm.timeType, (newType) => {
 // 表格数据
 const tableData = ref([
   {
-    date: '2024-03-14',
     channelId: '1',
-    channelName: '支付通道A',
-    payType: 'wechat',
-    orderCount: 1000,
-    orderAmount: 50000.00,
+    supplier: '渠道A',
+    channelName: '通道A',
+    payType: 'channel_a',
     successCount: 980,
+    orderCount: 1000,
     successAmount: 49000.00,
+    orderAmount: 50000.00,
     successRate: 0.98,
     fee: 490.00
   },
   {
-    date: '2024-03-14',
     channelId: '2',
-    channelName: '支付通道B',
-    payType: 'alipay',
-    orderCount: 850,
-    orderAmount: 42500.00,
+    supplier: '渠道B',
+    channelName: '通道B',
+    payType: 'channel_b',
     successCount: 825,
+    orderCount: 850,
     successAmount: 41250.00,
+    orderAmount: 42500.00,
     successRate: 0.97,
     fee: 412.50
   },
   {
-    date: '2024-03-14',
     channelId: '3',
-    channelName: '支付通道C',
-    payType: 'unionpay',
-    orderCount: 500,
-    orderAmount: 75000.00,
+    supplier: '渠道C',
+    channelName: '通道C',
+    payType: 'channel_c',
     successCount: 485,
+    orderCount: 500,
     successAmount: 72750.00,
+    orderAmount: 75000.00,
     successRate: 0.97,
     fee: 727.50
   },
   {
-    date: '2024-03-14',
     channelId: '4',
-    channelName: '支付通道D',
-    payType: 'quick',
-    orderCount: 200,
-    orderAmount: 30000.00,
+    supplier: '渠道D',
+    channelName: '通道D',
+    payType: 'channel_d',
     successCount: 180,
+    orderCount: 200,
     successAmount: 27000.00,
+    orderAmount: 30000.00,
     successRate: 0.90,
     fee: 270.00
   }

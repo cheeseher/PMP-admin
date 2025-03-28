@@ -80,6 +80,23 @@
             <span class="amount-cell">{{ formatAmount(scope.row.balance) }}</span>
           </template>
         </el-table-column>
+        <el-table-column prop="subAccounts" label="子账户" min-width="200">
+          <template #default="scope">
+            <div class="sub-accounts-tags" v-if="scope.row.subAccounts && scope.row.subAccounts.length">
+              <el-tag
+                v-for="accountId in scope.row.subAccounts"
+                :key="accountId"
+                size="small"
+                type="info"
+                effect="plain"
+                class="sub-account-tag"
+              >
+                {{ getSubAccountName(accountId) }}
+              </el-tag>
+            </div>
+            <span v-else class="no-sub-accounts">-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="authIp" label="上次登录IP" width="140" />
         <el-table-column prop="loginCount" label="登录次数" width="100" />
         <el-table-column prop="googleAuth" label="谷歌认证" width="100">
@@ -179,6 +196,26 @@
         <el-form-item label="开启进单">
           <el-switch v-model="productForm.enableDeposit" />
         </el-form-item>
+        <el-form-item label="渠道限制" prop="restrictedChannels">
+          <el-select 
+            v-model="productForm.restrictedChannels" 
+            multiple 
+            collapse-tags
+            collapse-tags-tooltip
+            placeholder="请选择限制渠道，不选则不限制"
+            style="width: 100%"
+          >
+            <el-option 
+              v-for="item in channelOptions" 
+              :key="item.value" 
+              :label="item.label" 
+              :value="item.value" 
+            />
+          </el-select>
+          <div class="form-tip">
+            限制商户仅可以使用选择的渠道产品，不选择则不限制
+          </div>
+        </el-form-item>
         <el-form-item label="开启提现">
           <el-switch v-model="productForm.enableWithdraw" />
         </el-form-item>
@@ -219,6 +256,96 @@
             <el-radio label="Y">开启</el-radio>
             <el-radio label="N">关闭</el-radio>
           </el-radio-group>
+        </el-form-item>
+        <el-form-item label="子账户" prop="subAccounts">
+          <div class="custom-transfer">
+            <div class="transfer-container">
+              <!-- 左侧面板：可选子账户 -->
+              <div class="transfer-panel left-panel">
+                <div class="panel-header">
+                  <span>可选子账户</span>
+                  <div class="search-box">
+                    <el-input 
+                      v-model="merchantSearchText" 
+                      placeholder="请输入商户名称" 
+                      clearable 
+                      size="small"
+                      :prefix-icon="Search"
+                    />
+                  </div>
+                </div>
+                <div class="panel-body">
+                  <el-scrollbar>
+                    <ul class="transfer-list">
+                      <li 
+                        v-for="item in availableMerchants" 
+                        :key="item.id"
+                        class="transfer-item"
+                      >
+                        <el-checkbox 
+                          v-model="tempSelectedMerchants" 
+                          :label="item.id"
+                          @change="updateSelectedMerchants"
+                        >
+                          {{ item.productName }}
+                        </el-checkbox>
+                      </li>
+                      <div v-if="availableMerchants.length === 0" class="empty-text">
+                        <span>无可选商户</span>
+                      </div>
+                    </ul>
+                  </el-scrollbar>
+                </div>
+              </div>
+              
+              <!-- 中间按钮组 -->
+              <div class="transfer-buttons">
+                <el-button 
+                  type="primary" 
+                  plain
+                  @click="moveSelected(true)"
+                >
+                  添加
+                </el-button>
+                <el-button 
+                  type="danger" 
+                  plain
+                  @click="moveSelected(false)"
+                >
+                  移除
+                </el-button>
+              </div>
+              
+              <!-- 右侧面板：已选子账户 -->
+              <div class="transfer-panel right-panel">
+                <div class="panel-header">
+                  <span>已选子账户 ({{ productForm.subAccounts.length }})</span>
+                </div>
+                <div class="panel-body">
+                  <el-scrollbar>
+                    <ul class="transfer-list">
+                      <li 
+                        v-for="id in productForm.subAccounts" 
+                        :key="id"
+                        class="transfer-item"
+                      >
+                        <el-checkbox 
+                          v-model="tempRightSelectedMerchants" 
+                          :label="id"
+                          @change="updateRightSelectedMerchants"
+                        >
+                          {{ getSubAccountName(id) }}
+                        </el-checkbox>
+                      </li>
+                      <div v-if="productForm.subAccounts.length === 0" class="empty-text">
+                        <span>请从左侧选择子账户</span>
+                      </div>
+                    </ul>
+                  </el-scrollbar>
+                </div>
+              </div>
+            </div>
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -525,8 +652,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
-import { Search, Refresh, Plus, Delete, Setting, Edit, ArrowDown, Download } from '@element-plus/icons-vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { Search, Refresh, Plus, Delete, Setting, Edit, ArrowDown, Download, ArrowRight, ArrowLeft, Check } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { productList } from '@/data/productData'
 import { merchantProductList } from '@/data/merchantProductData'
@@ -646,7 +773,11 @@ const productForm = reactive({
   productNo: '',
   productName: '',
   productId: '',
-  verified: 'N'
+  verified: 'N',
+  subAccounts: [],
+  enableDeposit: true,
+  enableWithdraw: true,
+  restrictedChannels: []
 })
 
 const productRules = {
@@ -689,13 +820,15 @@ const resetProductForm = () => {
     freeze: 0,
     enableDeposit: true,
     enableWithdraw: true,
+    restrictedChannels: [],
     depositIpWhitelist: '',
     withdrawIpWhitelist: '',
     adminIpWhitelist: '',
     remark: '',
     role: 'merchant',
     googleAuth: false,
-    verified: 'N'
+    verified: 'N',
+    subAccounts: []
   })
 }
 
@@ -725,7 +858,10 @@ const submitForm = async () => {
         // 编辑
         const index = productList.findIndex(item => item.id === productForm.id)
         if (index !== -1) {
-          Object.assign(productList[index], productForm)
+          Object.assign(productList[index], {
+            ...productForm,
+            subAccounts: productForm.subAccounts
+          })
           ElMessage.success('编辑成功')
         }
       } else {
@@ -736,6 +872,7 @@ const submitForm = async () => {
           authIp: '',
           loginCount: 0,
           freeze: productForm.freeze || 0,
+          subAccounts: productForm.subAccounts,
           registerTime: new Date().toLocaleString('zh-CN', {
             year: 'numeric',
             month: '2-digit',
@@ -1211,6 +1348,18 @@ const paymentProducts = ref([
   { id: 8, productName: '聚合支付', productCode: 'AGG001' }
 ])
 
+// 渠道选项数据
+const channelOptions = ref([
+  { label: '渠道A', value: 'channel_a' },
+  { label: '渠道B', value: 'channel_b' },
+  { label: '渠道C', value: 'channel_c' },
+  { label: '渠道D', value: 'channel_d' },
+  { label: '渠道E', value: 'channel_e' },
+  { label: '渠道F', value: 'channel_f' },
+  { label: '渠道G', value: 'channel_g' },
+  { label: '渠道H', value: 'channel_h' }
+])
+
 // 监听选择产品变化
 watch(() => productConfigForm.selectedProducts, (newVal, oldVal) => {
   if (newVal && oldVal) {
@@ -1225,10 +1374,127 @@ watch(() => batchConfigForm.selectedProducts, (newVal, oldVal) => {
   }
 }, { deep: true })
 
+// 计算穿梭框数据源
+const transferData = computed(() => {
+  return productList
+    .filter(item => item.id !== productForm.id) // 排除当前商户
+    .map(item => ({
+      key: item.id,
+      label: `${item.productName} (${item.productId})`,
+      disabled: false, // 默认都可选
+      productName: item.productName,
+      productId: item.productId
+    }))
+})
+
+// 可选商户数量
+const availableMerchantsCount = computed(() => {
+  return transferData.value.length
+})
+
+// 获取子账户名称
+const getSubAccountName = (accountId) => {
+  const account = productList.find(item => item.id === accountId)
+  return account ? account.productName : ''
+}
+
+// 全选或清空子账户
+const handleCheckAll = (isCheckAll) => {
+  if (isCheckAll) {
+    // 全选所有子账户
+    productForm.subAccounts = transferData.value.map(item => item.key)
+    ElMessage.success('已全选所有可用商户')
+  } else {
+    // 清空所有子账户
+    productForm.subAccounts = []
+    ElMessage.success('已清空所有子账户')
+  }
+}
+
+// 自定义过滤方法，只根据商户名称过滤
+const filterByMerchantName = (query, item) => {
+  return item.productName.toLowerCase().includes(query.toLowerCase());
+}
+
 // 页面加载时获取数据
 onMounted(() => {
   fetchData()
 })
+
+// 商户搜索文本
+const merchantSearchText = ref('')
+
+// 根据搜索过滤后的可用商户列表
+const availableMerchants = computed(() => {
+  // 获取所有可用商户（排除当前编辑的商户和已选择的商户）
+  const selectedIds = productForm.subAccounts
+  const allAvailable = productList
+    .filter(item => item.id !== productForm.id && !selectedIds.includes(item.id))
+    .map(item => ({
+      id: item.id,
+      productName: item.productName,
+      productId: item.productId
+    }))
+  
+  // 如果有搜索文本，按名称过滤
+  if (merchantSearchText.value) {
+    return allAvailable.filter(item => 
+      item.productName.toLowerCase().includes(merchantSearchText.value.toLowerCase())
+    )
+  }
+  
+  return allAvailable
+})
+
+// 新增临时选择变量
+const tempSelectedMerchants = ref([])
+const tempRightSelectedMerchants = ref([])
+
+// 更新左侧选择
+const updateSelectedMerchants = () => {
+  // 不需要做任何事，只是为了处理复选框的变化
+}
+
+// 更新右侧选择
+const updateRightSelectedMerchants = () => {
+  // 不需要做任何事，只是为了处理复选框的变化
+}
+
+// 移动选中项
+const moveSelected = (toRight) => {
+  if (toRight) {
+    // 将选中的项移到右侧
+    if (tempSelectedMerchants.value.length === 0) {
+      ElMessage.warning('请先选择要添加的子账户')
+      return
+    }
+    
+    tempSelectedMerchants.value.forEach(id => {
+      if (!productForm.subAccounts.includes(id)) {
+        productForm.subAccounts.push(id)
+      }
+    })
+    
+    // 清空临时选择
+    tempSelectedMerchants.value = []
+    ElMessage.success('已添加选中的子账户')
+  } else {
+    // 将选中的项移到左侧（即从右侧移除）
+    if (tempRightSelectedMerchants.value.length === 0) {
+      ElMessage.warning('请先选择要移除的子账户')
+      return
+    }
+    
+    // 移除选中的项
+    productForm.subAccounts = productForm.subAccounts.filter(
+      id => !tempRightSelectedMerchants.value.includes(id)
+    )
+    
+    // 清空临时选择
+    tempRightSelectedMerchants.value = []
+    ElMessage.success('已移除选中的子账户')
+  }
+}
 </script>
 
 <style scoped>
@@ -1347,5 +1613,101 @@ onMounted(() => {
 .merchant-tag {
   margin-right: 5px;
   margin-bottom: 5px;
+}
+
+.sub-accounts-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.sub-account-tag {
+  margin: 2px;
+}
+
+.no-sub-accounts {
+  color: var(--el-text-color-secondary);
+}
+
+/* 自定义穿梭框 */
+.custom-transfer {
+  margin-bottom: 15px;
+}
+
+.transfer-container {
+  display: flex;
+  align-items: stretch;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid var(--el-border-color-light);
+}
+
+.transfer-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--el-fill-color-blank);
+  min-height: 320px;
+}
+
+.left-panel {
+  border-right: 1px solid var(--el-border-color-light);
+}
+
+.panel-header {
+  padding: 12px 15px;
+  background-color: var(--el-fill-color-light);
+  border-bottom: 1px solid var(--el-border-color-light);
+  font-weight: bold;
+}
+
+.panel-header .search-box {
+  margin-top: 8px;
+}
+
+.panel-body {
+  flex: 1;
+  overflow: hidden;
+}
+
+.transfer-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.transfer-item {
+  padding: 8px 15px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.transfer-item:hover {
+  background-color: var(--el-fill-color-light);
+}
+
+.transfer-buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 15px;
+  padding: 0 10px;
+  background-color: var(--el-fill-color-light);
+}
+
+.transfer-buttons .el-button {
+  width: 80px;
+  margin: 0;
+}
+
+.empty-text {
+  padding: 15px;
+  color: var(--el-text-color-secondary);
+  text-align: center;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 </style> 

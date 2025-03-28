@@ -51,6 +51,25 @@
         <el-table-column prop="id" label="支付产品ID" width="120" />
         <el-table-column prop="productName" label="支付产品名称" min-width="150" show-overflow-tooltip />
         <el-table-column prop="productCode" label="支付产品编码" min-width="120" show-overflow-tooltip />
+        <el-table-column prop="feeRate" label="商户费率" width="200">
+          <template #default="scope">
+            <div class="fee-rate-container">
+              <div class="current-fee">
+                <span class="fee-label">当前费率：</span>
+                <span class="fee-value">{{ scope.row.feeRate }}%</span>
+              </div>
+              
+              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingFeeRate !== undefined" class="pending-fee">
+                <span class="fee-label">定时费率：</span>
+                <span class="fee-value pending">{{ scope.row.pendingFeeRate }}%</span>
+                <div class="effective-time">
+                  <el-icon><timer /></el-icon>
+                  <span>{{ getRemainingTimeText(scope.row.scheduledFeeTime) }}生效</span>
+                </div>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
             <el-switch
@@ -158,6 +177,37 @@
             <span class="fee-rate-suffix">%</span>
           </div>
         </el-form-item>
+        
+        <!-- 修改：改为费率变更定时生效 -->
+        <el-form-item label="定时生效" prop="scheduledFeeEnabled" v-if="formType === 'edit'">
+          <el-switch
+            v-model="productForm.scheduledFeeEnabled"
+            active-value="YES"
+            inactive-value="NO"
+            active-text="启用"
+            inactive-text="禁用"
+          />
+          <div class="form-tip" v-if="productForm.scheduledFeeEnabled === 'YES'">
+            启用后，费率变更将在指定时间生效而非立即生效
+          </div>
+        </el-form-item>
+        
+        <el-form-item 
+          label="生效时间" 
+          prop="scheduledFeeTime" 
+          v-if="formType === 'edit' && productForm.scheduledFeeEnabled === 'YES'"
+        >
+          <el-date-picker
+            v-model="productForm.scheduledFeeTime"
+            type="datetime"
+            placeholder="选择费率变更生效时间"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            :disabledDate="disabledDate"
+            style="width: 100%"
+          />
+        </el-form-item>
+        
         <el-form-item label="状态" prop="status">
           <el-switch
             v-model="productForm.status"
@@ -182,7 +232,7 @@
             inactive-text="否"
           />
         </el-form-item>
-        <el-form-item label="超级密码" prop="superPassword" v-if="formType === 'add'">
+        <el-form-item label="超级密码" prop="superPassword">
           <el-input 
             v-model="productForm.superPassword" 
             type="password"
@@ -213,8 +263,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed, watch } from 'vue'
-import { Search, Delete, Plus, Edit, Refresh, Check, Close, Remove, Download } from '@element-plus/icons-vue'
+import { ref, reactive, onMounted, computed, watch, onBeforeUnmount } from 'vue'
+import { Search, Delete, Plus, Edit, Refresh, Check, Close, Remove, Download, Timer, Right, InfoFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCleanup } from '@/utils/cleanupUtils'
 
@@ -224,6 +274,13 @@ const searchForm = reactive({
   productCode: ''
 })
 
+// 获取明天的日期字符串
+const getTomorrowDate = () => {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  return `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')} ${String(tomorrow.getHours()).padStart(2, '0')}:${String(tomorrow.getMinutes()).padStart(2, '0')}:${String(tomorrow.getSeconds()).padStart(2, '0')}`;
+}
+
 const tableData = ref([
   {
     id: 1,
@@ -231,6 +288,8 @@ const tableData = ref([
     productCode: '8888',
     payType: 'ALIPAY',
     feeRate: 0,
+    scheduledFeeEnabled: 'NO',
+    scheduledFeeTime: '',
     status: 'ONLINE',
     remark: '这是演示产品的备注说明'
   },
@@ -239,7 +298,10 @@ const tableData = ref([
     productName: '支付产品B',
     productCode: 'WECHAT_PAY',
     payType: 'WECHAT',
-    feeRate: 0,
+    feeRate: 0.5,
+    scheduledFeeEnabled: 'YES',
+    scheduledFeeTime: getTomorrowDate(), // 使用明天的日期
+    pendingFeeRate: 1.0,
     status: 'ONLINE',
     remark: '微信支付通道产品'
   },
@@ -249,6 +311,8 @@ const tableData = ref([
     productCode: 'UNION_PAY',
     payType: 'UNIONPAY',
     feeRate: 0,
+    scheduledFeeEnabled: 'NO',
+    scheduledFeeTime: '',
     status: 'OFFLINE',
     remark: '银联支付通道产品，暂时下线维护'
   }
@@ -269,10 +333,13 @@ const formDialogVisible = ref(false)
 const formType = ref('add')
 const productFormRef = ref(null)
 const productForm = reactive({
+  id: null,
   productName: '',
   productCode: '',
   channelCode: [],
   feeRate: 0,
+  scheduledFeeEnabled: 'NO',
+  scheduledFeeTime: '',
   status: 'ONLINE',
   isPolling: 'POLLING',
   syncFeeToMerchant: 'NO',
@@ -298,6 +365,12 @@ const formRules = {
   ],
   feeRate: [
     { required: true, message: '请输入商户费率', trigger: 'blur' }
+  ],
+  scheduledFeeTime: [
+    { required: true, message: '请选择费率变更生效时间', trigger: 'change' }
+  ],
+  superPassword: [
+    { required: true, message: '请输入超级密码', trigger: 'blur' }
   ]
 }
 
@@ -339,10 +412,13 @@ const handleAdd = () => {
     productFormRef.value.resetFields()
   }
   
+  productForm.id = null;
   productForm.productName = ''
   productForm.productCode = ''
   productForm.channelCode = []
   productForm.feeRate = 0
+  productForm.scheduledFeeEnabled = 'NO'
+  productForm.scheduledFeeTime = ''
   productForm.status = 'ONLINE'
   productForm.isPolling = 'POLLING'
   productForm.syncFeeToMerchant = 'NO'
@@ -356,9 +432,33 @@ const handleAdd = () => {
 
 const handleEdit = (row) => {
   formType.value = 'edit'
+  const rowData = { ...row };
+  
+  // 确保设置ID字段
+  productForm.id = rowData.id;
+  
+  // 为表单赋值
   Object.keys(productForm).forEach(key => {
-    productForm[key] = row[key] || ''
-  })
+    if (key in rowData) {
+      productForm[key] = rowData[key];
+    } else {
+      // 如果是编辑但行数据中没有定时费率相关字段，设置默认值
+      if (key === 'scheduledFeeEnabled') productForm[key] = 'NO';
+      else if (key === 'scheduledFeeTime') productForm[key] = '';
+      else productForm[key] = '';
+    }
+  });
+  
+  // 如果存在待生效的费率，则填充到表单的费率字段中
+  if (rowData.pendingFeeRate !== undefined && rowData.scheduledFeeEnabled === 'YES') {
+    productForm.feeRate = rowData.pendingFeeRate;
+    productForm.scheduledFeeEnabled = 'YES';
+    productForm.scheduledFeeTime = rowData.scheduledFeeTime;
+  } else {
+    // 默认不启用定时生效
+    productForm.scheduledFeeEnabled = 'NO';
+    productForm.scheduledFeeTime = '';
+  }
   
   if (productForm.channelCode && productForm.channelCode.length > 0) {
     handleChannelChange(productForm.channelCode);
@@ -500,13 +600,75 @@ const handleFormSubmit = () => {
   
   productFormRef.value.validate((valid) => {
     if (valid) {
+      // 验证定时费率时间是否合法（如果启用）
+      if (formType.value === 'edit' && productForm.scheduledFeeEnabled === 'YES') {
+        const now = new Date();
+        const scheduledTime = new Date(productForm.scheduledFeeTime);
+        
+        if (scheduledTime <= now) {
+          ElMessage.warning('费率变更生效时间必须晚于当前时间');
+          return false;
+        }
+      }
+      
+      // 验证超级密码
+      if (productForm.superPassword !== 'admin123') { // 实际项目中应该使用后端验证
+        ElMessage.error('超级密码不正确');
+        return false;
+      }
+      
       submitLoading.value = true
-      // TODO: 实现表单提交逻辑
+      
+      // 模拟提交逻辑
       safeTimeout(() => {
+        if (formType.value === 'edit' && productForm.scheduledFeeEnabled === 'YES') {
+          // 创建一个待处理的费率变更记录
+          const updatedRow = tableData.value.find(item => item.id === productForm.id);
+          if (updatedRow) {
+            // 存储原始费率
+            const originalFeeRate = updatedRow.feeRate;
+            // 设置定时生效标志和时间
+            updatedRow.scheduledFeeEnabled = 'YES';
+            updatedRow.scheduledFeeTime = productForm.scheduledFeeTime;
+            // 这里可以添加一个待生效的费率字段，实际项目中可能需要保存到后端
+            updatedRow.pendingFeeRate = productForm.feeRate;
+            // 不立即修改商户费率，保留原来的费率
+            updatedRow.feeRate = originalFeeRate;
+            
+            console.log('设置定时费率', updatedRow); // 添加调试信息
+          } else {
+            console.log('未找到要更新的行', productForm.id); // 添加调试信息
+          }
+        } else {
+          // 正常立即更新（新增或者没有启用定时生效的编辑）
+          if (formType.value === 'edit') {
+            const updatedRow = tableData.value.find(item => item.id === productForm.id);
+            if (updatedRow) {
+              Object.keys(productForm).forEach(key => {
+                if (key in updatedRow) {
+                  updatedRow[key] = productForm[key];
+                }
+              });
+              // 清除定时生效标志
+              updatedRow.scheduledFeeEnabled = 'NO';
+              updatedRow.scheduledFeeTime = '';
+              delete updatedRow.pendingFeeRate; // 确保清除待生效费率
+            }
+          } else {
+            // 新增
+            const newId = Math.max(...tableData.value.map(item => item.id)) + 1;
+            tableData.value.push({
+              id: newId,
+              ...productForm,
+              scheduledFeeEnabled: 'NO',
+              scheduledFeeTime: ''
+            });
+          }
+        }
+        
         submitLoading.value = false
         ElMessage.success(formType.value === 'add' ? '添加成功' : '修改成功')
         formDialogVisible.value = false
-        fetchData()
       }, 800)
     } else {
       return false
@@ -625,11 +787,19 @@ const { safeTimeout } = useCleanup()
 // 初始化获取数据
 onMounted(() => {
   fetchData()
+  
+  // 设置定时检查
+  feeRateTimer = setInterval(() => {
+    checkScheduledFeeRates();
+  }, 60000); // 每分钟检查一次
 })
 
 // 获取数据
 const fetchData = () => {
   loading.value = true
+  // 检查并应用定时费率变更
+  checkScheduledFeeRates();
+  
   safeTimeout(() => {
     loading.value = false
   }, 500)
@@ -637,8 +807,107 @@ const fetchData = () => {
 
 // 导出数据
 const handleExport = () => {
-  ElMessage.success('数据导出成功')
+  // 准备导出数据，添加定时费率变更信息
+  const exportData = tableData.value.map(item => {
+    const exportItem = { ...item };
+    if (item.scheduledFeeEnabled === 'YES' && item.pendingFeeRate !== undefined) {
+      exportItem.scheduledFeeInfo = `将于${formatScheduledTime(item.scheduledFeeTime)}更新为${item.pendingFeeRate}%`;
+    }
+    return exportItem;
+  });
+  
+  // 实际项目中这里可能需要调用API进行导出
+  console.log('导出数据:', exportData);
+  ElMessage.success('数据导出成功');
 }
+
+// 新增：禁用过去的日期
+const disabledDate = (time) => {
+  return time.getTime() < Date.now() - 8.64e7 // 禁用今天之前的日期
+}
+
+// 格式化定时时间显示
+const formatScheduledTime = (timeStr) => {
+  if (!timeStr) return '-';
+  
+  try {
+    // 如果是真实数据，可以使用日期格式化库来处理
+    // 这里只做简单处理，实际项目中建议使用dayjs或date-fns等库
+    const date = new Date(timeStr);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  } catch (e) {
+    return timeStr;
+  }
+}
+
+// 计算剩余时间文本
+const getRemainingTimeText = (scheduledTime) => {
+  if (!scheduledTime) return '时间未设置';
+  
+  const targetTime = new Date(scheduledTime).getTime();
+  const now = Date.now();
+  
+  // 如果已经过了生效时间
+  if (now >= targetTime) {
+    return '已生效';
+  }
+  
+  // 计算剩余时间
+  const diffMs = targetTime - now;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (diffDays > 0) {
+    return `${diffDays}天${diffHours}小时后`;
+  } else if (diffHours > 0) {
+    return `${diffHours}小时${diffMinutes}分钟后`;
+  } else if (diffMinutes > 0) {
+    return `${diffMinutes}分钟后`;
+  } else {
+    return `即将`;
+  }
+}
+
+// 检查是否有定时费率需要生效
+const checkScheduledFeeRates = () => {
+  const now = new Date();
+  let hasUpdates = false;
+  
+  tableData.value.forEach(item => {
+    if (item.scheduledFeeEnabled === 'YES' && item.scheduledFeeTime && item.pendingFeeRate !== undefined) {
+      const scheduledTime = new Date(item.scheduledFeeTime);
+      
+      // 如果已到达或超过设定时间，应用新费率
+      if (now >= scheduledTime) {
+        // 更新费率
+        item.feeRate = item.pendingFeeRate;
+        // 禁用定时费率设置（避免重复应用）
+        item.scheduledFeeEnabled = 'NO';
+        item.scheduledFeeTime = '';
+        // 清除待生效费率
+        delete item.pendingFeeRate;
+        hasUpdates = true;
+      }
+    }
+  });
+  
+  // 如果有更新，提示用户
+  if (hasUpdates) {
+    ElMessage.success('系统已自动应用定时费率变更');
+  }
+}
+
+// 设置定时器，每分钟检查一次是否有定时费率需要生效
+let feeRateTimer = null;
+
+// 组件销毁前清除定时器
+onBeforeUnmount(() => {
+  if (feeRateTimer) {
+    clearInterval(feeRateTimer);
+    feeRateTimer = null;
+  }
+})
 </script>
 
 <style scoped>
@@ -726,5 +995,89 @@ const handleExport = () => {
 .channel-table-container {
   margin-left: -140px; /* 与 label-width 对应，使表格左侧与表单项文字对齐 */
   width: calc(100% + 140px); /* 确保表格宽度仍然是100% */
+}
+
+.fee-rate-change {
+  display: inline-flex;
+  align-items: center;
+}
+
+.timer-icon {
+  margin-right: 4px;
+}
+
+.arrow-icon {
+  margin: 0 4px;
+}
+
+.pending-rate {
+  color: #E6A23C;
+  font-weight: bold;
+}
+
+.fee-rate-tag {
+  margin-top: 4px;
+  margin-right: 4px;
+}
+
+.time-tag {
+  margin-top: 4px;
+}
+
+.current-fee-rate {
+  font-weight: 500;
+}
+
+.scheduled-time {
+  font-size: 12px;
+  color: #E6A23C;
+  display: block;
+  margin-top: 3px;
+}
+
+.fee-rate-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.current-fee, .pending-fee {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  line-height: 1.5;
+}
+
+.pending-fee {
+  margin-top: 4px;
+}
+
+.fee-label {
+  color: #909399;
+  margin-right: 4px;
+  font-size: 13px;
+}
+
+.fee-value {
+  font-weight: 500;
+  color: #303133;
+}
+
+.fee-value.pending {
+  color: #E6A23C;
+  font-weight: bold;
+}
+
+.effective-time {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  color: #909399;
+  margin-top: 2px;
+  margin-left: 4px;
+}
+
+.effective-time .el-icon {
+  margin-right: 4px;
+  font-size: 12px;
 }
 </style> 

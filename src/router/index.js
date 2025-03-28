@@ -217,101 +217,77 @@ const router = createRouter({
       component: MerchantLayout,
       redirect: '/merchant/dashboard',
       children: [
+        // 工作台
         {
           path: 'dashboard',
           name: 'MerchantDashboard',
           component: () => import('@/views/organized/dashboard/Overview.vue'),
-          meta: { title: '商户仪表盘' }
+          meta: { title: '工作台' }
         },
-        // 商户中心
+        
+        // 数据看板
         {
-          path: 'account/security',
-          name: 'MerchantAccountSecurity',
-          component: () => import('@/views/organized/setting/Security.vue'),
-          meta: { title: '账户安全' }
+          path: 'statistics/channel',
+          name: 'MerchantStatisticsChannel',
+          component: () => import('@/views/organized/statistics/Channel.vue'),
+          meta: { title: '支付通道简报' }
         },
+        
+        // 财务数据
         {
-          path: 'account/api',
-          name: 'MerchantAccountApi',
-          component: () => import('@/views/organized/setting/ApiConfig.vue'),
-          meta: { title: '商户对接信息' }
+          path: 'finance/prepaid',
+          name: 'MerchantFinancePrepaid',
+          component: () => import('@/views/organized/finance/Prepaid.vue'),
+          meta: { title: '预付记录' }
         },
+        
+        // 通道管理
         {
-          path: 'account/products',
-          name: 'MerchantAccountProducts',
-          component: () => import('@/views/organized/account/Products.vue'),
-          meta: { title: '商户产品列表' }
+          path: 'channel/payment',
+          name: 'MerchantChannelPayment',
+          component: () => import('@/views/organized/trade/PaymentChannel.vue'),
+          meta: { title: '支付通道' }
         },
-        {
-          path: 'account/batch-withdraw',
-          name: 'MerchantAccountBatchWithdraw',
-          component: () => import('@/views/organized/account/BatchWithdraw.vue'),
-          meta: { title: '批量导入出款订单' }
-        },
-        {
-          path: 'account/profile',
-          name: 'MerchantUserProfile',
-          component: () => import('@/views/organized/setting/UserProfile.vue'),
-          meta: { title: '修改资料' }
-        },
-        // 交易管理
+        
+        // 订单管理
         {
           path: 'trade/payment',
           name: 'MerchantTradePayment',
-          component: () => import('@/views/organized/trade/Payment.vue'),
-          meta: { title: '收款订单' }
+          component: () => import('@/views/organized/trade/OrderList.vue'),
+          meta: { title: '支付订单' }
+        },
+        
+        // 流水审计
+        {
+          path: 'audit/merchant',
+          name: 'MerchantAuditRecord',
+          component: () => import('@/views/organized/finance/MerchantAudit.vue'),
+          meta: { title: '商户流水' }
+        },
+        
+        // 商户管理
+        {
+          path: 'account/info',
+          name: 'MerchantAccountInfo',
+          component: () => import('@/views/organized/account/Info.vue'),
+          meta: { title: '账户信息' }
         },
         {
-          path: 'trade/withdraw',
-          name: 'MerchantTradeWithdraw',
-          component: () => import('@/views/organized/trade/Withdraw.vue'),
-          meta: { title: '出款订单' }
+          path: 'account/login-record',
+          name: 'MerchantAccountLoginRecord',
+          component: () => import('@/views/organized/account/LoginRecord.vue'),
+          meta: { title: '登录记录' }
         },
-        // 财务管理
+        
+        // 文档中心
         {
-          path: 'finance/assets',
-          name: 'MerchantFinanceAssets',
-          component: () => import('@/views/organized/finance/Assets.vue'),
-          meta: { title: '我的资产' }
+          path: 'help',
+          name: 'MerchantHelp',
+          component: () => import('@/views/organized/help/Index.vue'),
+          meta: { title: '文档中心' }
         },
-        {
-          path: 'finance/adjust',
-          name: 'MerchantFinanceAdjust',
-          component: () => import('@/views/organized/finance/Adjust.vue'),
-          meta: { title: '充减订单' }
-        },
-        {
-          path: 'finance/account-change',
-          name: 'MerchantFinanceAccountChange',
-          component: () => import('@/views/organized/finance/AccountChange.vue'),
-          meta: { title: '账变详情' }
-        },
-        {
-          path: 'finance/withdraw',
-          name: 'MerchantFinanceWithdraw',
-          component: () => import('@/views/organized/finance/Withdraw.vue'),
-          meta: { title: '提现列表' }
-        },
-        // 数据统计
-        {
-          path: 'statistics/withdraw',
-          name: 'MerchantStatisticsWithdraw',
-          component: () => import('@/views/organized/statistics/Withdraw.vue'),
-          meta: { title: '出款统计' }
-        },
-        {
-          path: 'statistics/payment',
-          name: 'MerchantStatisticsPayment',
-          component: () => import('@/views/organized/statistics/Payment.vue'),
-          meta: { title: '收款统计' }
-        },
-        // 原有设置路由保留，以确保兼容性
-        {
-          path: 'setting/basic',
-          name: 'MerchantBasicInfo',
-          component: () => import('@/views/organized/setting/BasicInfo.vue'),
-          meta: { title: '基本信息' }
-        },
+        
+        // 保留原有设置路由，以确保兼容性
         {
           path: 'setting/profile',
           name: 'MerchantSettingProfile',
@@ -323,24 +299,6 @@ const router = createRouter({
           name: 'MerchantSecurity',
           component: () => import('@/views/organized/setting/Security.vue'),
           meta: { title: '安全设置' }
-        },
-        {
-          path: 'setting/api',
-          name: 'MerchantApiConfig',
-          component: () => import('@/views/organized/setting/ApiConfig.vue'),
-          meta: { title: 'API配置' }
-        },
-        {
-          path: 'setting/ip-whitelist',
-          name: 'MerchantIpWhitelist',
-          component: () => import('@/views/organized/setting/IpWhitelist.vue'),
-          meta: { title: 'IP白名单' }
-        },
-        {
-          path: 'help',
-          name: 'MerchantHelp',
-          component: () => import('@/views/organized/help/Index.vue'),
-          meta: { title: '帮助中心' }
         }
       ]
     }

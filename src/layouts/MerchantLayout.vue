@@ -19,50 +19,72 @@
           text-color="#bfcbd9"
           active-text-color="#409EFF"
         >
+          <!-- 工作台 -->
           <el-menu-item index="/merchant/dashboard">
             <el-icon><DataLine /></el-icon>
-            <span>仪表板</span>
+            <span>工作台</span>
           </el-menu-item>
           
-          <el-sub-menu index="/merchant/account">
-            <template #title>
-              <el-icon><User /></el-icon>
-              <span>商户中心</span>
-            </template>
-            <el-menu-item index="/merchant/account/security">账户安全</el-menu-item>
-            <el-menu-item index="/merchant/account/api">商户对接信息</el-menu-item>
-            <el-menu-item index="/merchant/account/products">商户产品列表</el-menu-item>
-            <el-menu-item index="/merchant/account/batch-withdraw">批量导入出款订单</el-menu-item>
-          </el-sub-menu>
-          
-          <el-sub-menu index="/merchant/trade">
-            <template #title>
-              <el-icon><Document /></el-icon>
-              <span>交易管理</span>
-            </template>
-            <el-menu-item index="/merchant/trade/payment">收款订单</el-menu-item>
-            <el-menu-item index="/merchant/trade/withdraw">出款订单</el-menu-item>
-          </el-sub-menu>
-          
-          <el-sub-menu index="/merchant/finance">
-            <template #title>
-              <el-icon><Money /></el-icon>
-              <span>财务管理</span>
-            </template>
-            <el-menu-item index="/merchant/finance/assets">我的资产</el-menu-item>
-            <el-menu-item index="/merchant/finance/adjust">充减订单</el-menu-item>
-            <el-menu-item index="/merchant/finance/account-change">账变详情</el-menu-item>
-            <el-menu-item index="/merchant/finance/withdraw">提现列表</el-menu-item>
-          </el-sub-menu>
-          
+          <!-- 数据看板 -->
           <el-sub-menu index="/merchant/statistics">
             <template #title>
               <el-icon><TrendCharts /></el-icon>
-              <span>数据统计</span>
+              <span>数据看板</span>
             </template>
-            <el-menu-item index="/merchant/statistics/withdraw">出款统计</el-menu-item>
-            <el-menu-item index="/merchant/statistics/payment">收款统计</el-menu-item>
+            <el-menu-item index="/merchant/statistics/channel">支付通道简报</el-menu-item>
           </el-sub-menu>
+          
+          <!-- 财务数据 -->
+          <el-sub-menu index="/merchant/finance">
+            <template #title>
+              <el-icon><Money /></el-icon>
+              <span>财务数据</span>
+            </template>
+            <el-menu-item index="/merchant/finance/prepaid">预付记录</el-menu-item>
+          </el-sub-menu>
+          
+          <!-- 通道管理 -->
+          <el-sub-menu index="/merchant/channel">
+            <template #title>
+              <el-icon><Connection /></el-icon>
+              <span>通道管理</span>
+            </template>
+            <el-menu-item index="/merchant/channel/payment">支付通道</el-menu-item>
+          </el-sub-menu>
+          
+          <!-- 订单管理 -->
+          <el-sub-menu index="/merchant/trade">
+            <template #title>
+              <el-icon><Document /></el-icon>
+              <span>订单管理</span>
+            </template>
+            <el-menu-item index="/merchant/trade/payment">支付订单</el-menu-item>
+          </el-sub-menu>
+          
+          <!-- 流水审计 -->
+          <el-sub-menu index="/merchant/audit">
+            <template #title>
+              <el-icon><Files /></el-icon>
+              <span>流水审计</span>
+            </template>
+            <el-menu-item index="/merchant/audit/merchant">商户流水</el-menu-item>
+          </el-sub-menu>
+          
+          <!-- 商户管理 -->
+          <el-sub-menu index="/merchant/account">
+            <template #title>
+              <el-icon><User /></el-icon>
+              <span>商户管理</span>
+            </template>
+            <el-menu-item index="/merchant/account/info">账户信息</el-menu-item>
+            <el-menu-item index="/merchant/account/login-record">登录记录</el-menu-item>
+          </el-sub-menu>
+          
+          <!-- 文档中心 -->
+          <el-menu-item index="/merchant/help">
+            <el-icon><QuestionFilled /></el-icon>
+            <span>文档中心</span>
+          </el-menu-item>
         </el-menu>
       </el-scrollbar>
     </el-aside>
@@ -127,7 +149,9 @@ import {
   User,
   Expand,
   Fold,
-  TrendCharts
+  TrendCharts,
+  Connection,
+  Files
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

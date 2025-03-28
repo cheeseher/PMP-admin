@@ -1,4 +1,3 @@
-<!-- 原型设计中占位模板 -->
 <template>
   <div class="prototype-container">
     <el-empty description="原型设计中" />
@@ -6,7 +5,7 @@
 </template>
 
 <script setup>
-// 文档中心页面
+// 账户信息页面
 </script>
 
 <style scoped>

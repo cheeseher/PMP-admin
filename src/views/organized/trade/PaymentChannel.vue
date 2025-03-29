@@ -40,11 +40,6 @@
           </template>
         </el-table-column>
         <el-table-column 
-          prop="feeRate" 
-          label="费率" 
-          width="100" 
-          align="center" />
-        <el-table-column 
           prop="limitRange" 
           label="单笔限额" 
           min-width="180" 
@@ -94,7 +89,6 @@
           </el-form-item>
 
           <div class="fee-info">
-            通道费率：{{ selectedChannel.feeRate }}
             <span class="limit-range">[{{ selectedChannel.limitRange }}]</span>
           </div>
 
@@ -180,70 +174,60 @@ const channelList = ref([
     id: '1119',
     name: '口令红包',
     status: '禁用',
-    feeRate: '3.30%',
     limitRange: '¥300.00 ~ ¥2000.00'
   },
   {
     id: '119',
     name: '零花钱',
     status: '启用',
-    feeRate: '5.80%',
     limitRange: '¥50.00 ~ ¥1000.00'
   },
   {
     id: '1111',
     name: '数字人民币',
     status: '启用',
-    feeRate: '0.60%',
     limitRange: '¥100.00 ~ ¥5000.00'
   },
   {
     id: '1112',
     name: 'uid小额',
     status: '启用',
-    feeRate: '5.30%',
     limitRange: '¥200.00 ~ ¥3000.00'
   },
   {
     id: '1115',
     name: 'uid超大',
     status: '启用',
-    feeRate: '3.00%',
     limitRange: '¥2000.00 ~ ¥20000.00'
   },
   {
     id: '1114',
     name: 'uid大额',
     status: '启用',
-    feeRate: '3.20%',
     limitRange: '¥800.00 ~ ¥20000.00'
   },
   {
     id: '1128',
     name: '云闪付',
     status: '启用',
-    feeRate: '4.00%',
     limitRange: '¥100.00 ~ ¥2000.00'
   },
   {
     id: '1117',
     name: '支付宝小额包',
     status: '启用',
-    feeRate: '1.30%',
     limitRange: '¥300.00 ~ ¥20000.00'
   },
   {
     id: '116',
     name: '支付宝包uid大额',
     status: '禁用',
-    feeRate: '4.70%',
     limitRange: '¥800.00 ~ ¥20000.00'
   },
   {
     id: '1113',
     name: 'uid中额',
     status: '启用',
-    feeRate: '3.80%',
     limitRange: '¥500.00 ~ ¥20000.00'
   }
 ])

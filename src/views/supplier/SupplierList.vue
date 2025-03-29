@@ -139,6 +139,16 @@
         <el-form-item label="渠道商户号" prop="merchantNo">
           <el-input v-model="supplierForm.merchantNo" placeholder="请输入渠道商户号" />
         </el-form-item>
+        <el-form-item label="提醒阈值" prop="alertThreshold">
+          <el-input-number 
+            v-model="supplierForm.alertThreshold" 
+            :precision="2" 
+            :min="0"
+            :max="999999999"
+            style="width: 100%"
+            placeholder="请输入提醒阈值"
+          />
+        </el-form-item>
         <el-form-item label="API密钥">
           <el-input v-model="supplierForm.apiKey" placeholder="请输入API密钥" />
         </el-form-item>
@@ -332,7 +342,8 @@ const rules = {
   code: [{ required: true, message: '请输入渠道编码', trigger: 'blur' }],
   merchantNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }],
   gatewayUrl: [{ required: true, message: '请输入网关地址', trigger: 'blur' }],
-  notifyUrl: [{ required: true, message: '请输入异步通知网址', trigger: 'blur' }]
+  notifyUrl: [{ required: true, message: '请输入异步通知网址', trigger: 'blur' }],
+  alertThreshold: [{ required: true, message: '请输入提醒阈值', trigger: 'blur' }]
 }
 
 // 详情抽屉相关

@@ -59,8 +59,6 @@
             <span class="rate-cell">{{ scope.row.rate.toFixed(2) }}%</span>
           </template>
         </el-table-column>
-        <el-table-column prop="weight" label="权重" width="80" />
-        <el-table-column prop="remark" label="备注" min-width="150" show-overflow-tooltip />
       </el-table>
 
       <!-- 分页 -->

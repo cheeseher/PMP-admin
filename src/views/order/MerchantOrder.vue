@@ -179,9 +179,9 @@
         <div class="stat-value">0</div>
       </div>
 
-      <!-- 总折扣金额 -->
+      <!-- 总入账金额（原总折扣金额） -->
       <div class="mini-stat-card">
-        <div class="stat-header">总折扣金额</div>
+        <div class="stat-header">总入账金额</div>
         <div class="stat-value">{{ formatAmount(0) }}</div>
       </div>
 
@@ -215,9 +215,9 @@
         <div class="stat-value">0</div>
       </div>
 
-      <!-- 商户折扣 -->
+      <!-- 总手续费（原商户折扣） -->
       <div class="mini-stat-card">
-        <div class="stat-header">商户折扣</div>
+        <div class="stat-header">总手续费</div>
         <div class="stat-value">{{ formatAmount(0) }}</div>
       </div>
 

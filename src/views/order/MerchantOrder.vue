@@ -141,12 +141,11 @@
               <el-option label="订单创建" value="created" />
               <el-option label="交易成功" value="success" />
               <el-option label="待付款" value="pending" />
-              <el-option label="交易中" value="processing" />
               <el-option label="交易失败" value="failed" />
-              <el-option label="申诉中" value="appealing" />
               <el-option label="拉单失败" value="pull_failed" />
               <el-option label="交易撤销" value="canceled" />
               <el-option label="补单成功" value="reorder_success" />
+              <el-option label="交易关闭" value="closed" />
             </el-select>
           </el-form-item>
         </div>
@@ -500,13 +499,12 @@ const getStatusType = (status) => {
   const map = {
     created: 'info',
     pending: 'warning',
-    processing: 'info',
     success: 'success',
     failed: 'danger',
-    appealing: 'warning',
     pull_failed: 'danger',
     canceled: 'info',
-    reorder_success: 'success'
+    reorder_success: 'success',
+    closed: 'info'
   }
   return map[status] || 'info'
 }
@@ -515,13 +513,12 @@ const getStatusText = (status) => {
   const map = {
     created: '订单创建',
     pending: '待付款',
-    processing: '交易中',
     success: '交易成功',
     failed: '交易失败',
-    appealing: '申诉中',
     pull_failed: '拉单失败',
     canceled: '交易撤销',
-    reorder_success: '补单成功'
+    reorder_success: '补单成功',
+    closed: '交易关闭'
   }
   return map[status] || '未知状态'
 }

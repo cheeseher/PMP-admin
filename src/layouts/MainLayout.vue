@@ -35,6 +35,18 @@
             <el-menu-item index="/statistics/merchant-balance">商户余额快照</el-menu-item>
           </el-sub-menu>
 
+          <!-- 流水审计 -->
+          <el-sub-menu index="/audit">
+            <template #title>
+              <el-icon><Histogram /></el-icon>
+              <span>流水审计</span>
+            </template>
+            <el-menu-item index="/audit/merchant-fund">商户资金流水</el-menu-item>
+            <el-menu-item index="/audit/merchant-prepaid">商户预付记录</el-menu-item>
+            <el-menu-item index="/audit/supplier-fund">供应商资金流水</el-menu-item>
+            <el-menu-item index="/audit/supplier-prepaid">供应商预付记录</el-menu-item>
+          </el-sub-menu>
+
           <!-- 订单管理 -->
           <el-sub-menu index="/order">
             <template #title>
@@ -85,6 +97,7 @@
             <el-menu-item index="/system/role">角色管理</el-menu-item>
             <el-menu-item index="/system/permission">权限管理</el-menu-item>
             <el-menu-item index="/system/menu">菜单管理</el-menu-item>
+            <el-menu-item index="/system/super-password">超级密码设置</el-menu-item>
             <el-menu-item index="/system/operation-log">管理员操作日志</el-menu-item>
             <el-menu-item index="/system/business-log">管理员业务日志</el-menu-item>
           </el-sub-menu>
@@ -204,7 +217,8 @@ import {
   Fold,
   ShoppingCart,
   Setting,
-  DataLine
+  DataLine,
+  Histogram
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

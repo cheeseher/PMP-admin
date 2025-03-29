@@ -163,6 +163,40 @@ const router = createRouter({
             }
           ]
         },
+        
+        // 流水审计
+        {
+          path: '/audit',
+          name: 'Audit',
+          redirect: '/audit/merchant-fund',
+          meta: { title: '流水审计' },
+          children: [
+            {
+              path: 'merchant-fund',
+              name: 'MerchantFund',
+              component: () => import('@/views/audit/merchant-fund/index.vue'),
+              meta: { title: '商户资金流水' }
+            },
+            {
+              path: 'merchant-prepaid',
+              name: 'MerchantPrepaid',
+              component: () => import('@/views/audit/merchant-prepaid/index.vue'),
+              meta: { title: '商户预付记录' }
+            },
+            {
+              path: 'supplier-fund',
+              name: 'SupplierFund',
+              component: () => import('@/views/audit/supplier-fund/index.vue'),
+              meta: { title: '供应商资金流水' }
+            },
+            {
+              path: 'supplier-prepaid',
+              name: 'SupplierPrepaid',
+              component: () => import('@/views/audit/supplier-prepaid/index.vue'),
+              meta: { title: '供应商预付记录' }
+            }
+          ]
+        },
 
         // 系统管理
         {
@@ -194,6 +228,12 @@ const router = createRouter({
               name: 'MenuList',
               component: () => import('@/views/system/MenuList.vue'),
               meta: { title: '菜单管理' }
+            },
+            {
+              path: 'super-password',
+              name: 'SuperPassword',
+              component: () => import('@/views/system/SuperPassword.vue'),
+              meta: { title: '超级密码设置' }
             },
             {
               path: 'operation-log',
@@ -291,7 +331,7 @@ const router = createRouter({
         {
           path: 'setting/profile',
           name: 'MerchantSettingProfile',
-          component: () => import('@/views/organized/setting/UserProfile.vue'),
+          component: () => import('@/views/organized/account/Info.vue'),
           meta: { title: '修改资料' }
         }
       ]

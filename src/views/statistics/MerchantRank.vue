@@ -132,7 +132,7 @@
         <el-table-column prop="merchantNo" label="商户号" width="120" align="center" />
         <el-table-column prop="merchantAccount" label="商户账号" width="120" align="center" />
         <el-table-column prop="merchantName" label="商户名称" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="successAmount" label="收款金额" width="150" align="right">
+        <el-table-column prop="successAmount" label="成功收款金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.successAmount) }}</span>
           </template>

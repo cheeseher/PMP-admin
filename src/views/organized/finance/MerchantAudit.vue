@@ -131,10 +131,10 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="120" />
-        <el-table-column prop="auditId" label="审计订单号" min-width="200" />
-        <el-table-column prop="systemOrderId" label="系统订单号" min-width="200" />
+        <el-table-column prop="auditId" label="流水订单号" min-width="200" />
+        <el-table-column prop="systemOrderId" label="平台订单号" min-width="200" />
         <el-table-column prop="merchantOrderId" label="商户订单号" min-width="200" />
-        <el-table-column prop="createTime" label="审计时间" width="180" />
+        <el-table-column prop="createTime" label="订单完成时间" width="180" />
       </el-table>
       
       <!-- 分页 -->

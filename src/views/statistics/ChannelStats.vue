@@ -47,7 +47,7 @@
     <div class="stat-cards">
       <el-card shadow="hover" class="stat-card">
         <div class="compact-card-content">
-          <div class="stat-header">总成功金额</div>
+          <div class="stat-header">总成功收款金额</div>
           <div class="stat-body">
             <el-icon :size="22"><Money /></el-icon>
             <span class="stat-value">{{ formatAmount(totalSuccessAmount) }}</span>
@@ -117,7 +117,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="payType" label="通道编码" width="100" align="center" />
-        <el-table-column prop="successAmount" label="成功金额" width="150" align="right">
+        <el-table-column prop="successAmount" label="成功收款金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.successAmount) }}</span>
           </template>

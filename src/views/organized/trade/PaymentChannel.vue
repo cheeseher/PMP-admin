@@ -29,6 +29,15 @@
           label="通道名称" 
           min-width="150" />
         <el-table-column 
+          prop="merchantFee" 
+          label="商户费率" 
+          width="120"
+          align="center">
+          <template #default="scope">
+            <span>{{ scope.row.merchantFee }}%</span>
+          </template>
+        </el-table-column>
+        <el-table-column 
           prop="status" 
           label="状态" 
           width="100" 
@@ -55,7 +64,7 @@
               size="small" 
               plain 
               @click="handlePayment(scope.row)">
-              发起支付
+              拉单测试
             </el-button>
           </template>
         </el-table-column>
@@ -65,7 +74,7 @@
     <!-- 发起支付弹窗 -->
     <el-dialog
       v-model="paymentDialogVisible"
-      :title="'发起支付：' + selectedChannel.name + ' - ' + selectedChannel.id"
+      :title="'拉单测试：' + selectedChannel.name + ' - ' + selectedChannel.id"
       width="500px"
       :close-on-click-modal="false"
       @close="resetPaymentForm"
@@ -91,48 +100,7 @@
           <div class="fee-info">
             <span class="limit-range">[{{ selectedChannel.limitRange }}]</span>
           </div>
-
-          <!-- 更多参数折叠面板 -->
-          <div class="more-params">
-            <div class="more-params-header" @click="toggleMoreParams">
-              <span>更多参数</span>
-              <el-icon class="arrow-icon" :class="{ 'is-active': showMoreParams }">
-                <ArrowDown />
-              </el-icon>
-            </div>
-            
-            <div class="more-params-content" v-show="showMoreParams">
-              <el-form-item label="姓" prop="lastName">
-                <el-input v-model="paymentForm.lastName" placeholder="请输入姓" />
-              </el-form-item>
-
-              <el-form-item label="名" prop="name">
-                <el-input v-model="paymentForm.name" placeholder="请输入名" />
-              </el-form-item>
-
-              <el-form-item label="用户ID" prop="userId">
-                <el-input v-model="paymentForm.userId" placeholder="请输入用户ID" />
-              </el-form-item>
-
-              <el-form-item label="手机号" prop="phone">
-                <el-input v-model="paymentForm.phone" placeholder="请输入手机号" />
-              </el-form-item>
-
-              <el-form-item label="邮箱" prop="email">
-                <el-input v-model="paymentForm.email" placeholder="请输入邮箱" />
-              </el-form-item>
-
-              <el-form-item label="备注" prop="remark">
-                <el-input
-                  v-model="paymentForm.remark"
-                  type="textarea"
-                  placeholder="请输入备注"
-                  rows="3"
-                />
-              </el-form-item>
-            </div>
-          </div>
-
+          
           <div class="result-section">
             <div class="result-title">下单结果：</div>
             <el-input
@@ -156,7 +124,7 @@
         </el-form>
 
         <div class="action-buttons">
-          <el-button type="primary" @click="submitPayment" :loading="submitting">发起支付</el-button>
+          <el-button type="primary" @click="submitPayment" :loading="submitting">拉单测试</el-button>
         </div>
       </div>
     </el-dialog>
@@ -174,61 +142,71 @@ const channelList = ref([
     id: '1119',
     name: '口令红包',
     status: '禁用',
-    limitRange: '¥300.00 ~ ¥2000.00'
+    limitRange: '¥300.00 ~ ¥2000.00',
+    merchantFee: '0.38'
   },
   {
     id: '119',
     name: '零花钱',
     status: '启用',
-    limitRange: '¥50.00 ~ ¥1000.00'
+    limitRange: '¥50.00 ~ ¥1000.00',
+    merchantFee: '0.45'
   },
   {
     id: '1111',
     name: '数字人民币',
     status: '启用',
-    limitRange: '¥100.00 ~ ¥5000.00'
+    limitRange: '¥100.00 ~ ¥5000.00',
+    merchantFee: '0.42'
   },
   {
     id: '1112',
     name: 'uid小额',
     status: '启用',
-    limitRange: '¥200.00 ~ ¥3000.00'
+    limitRange: '¥200.00 ~ ¥3000.00',
+    merchantFee: '0.55'
   },
   {
     id: '1115',
     name: 'uid超大',
     status: '启用',
-    limitRange: '¥2000.00 ~ ¥20000.00'
+    limitRange: '¥2000.00 ~ ¥20000.00',
+    merchantFee: '0.65'
   },
   {
     id: '1114',
     name: 'uid大额',
     status: '启用',
-    limitRange: '¥800.00 ~ ¥20000.00'
+    limitRange: '¥800.00 ~ ¥20000.00',
+    merchantFee: '0.58'
   },
   {
     id: '1128',
     name: '云闪付',
     status: '启用',
-    limitRange: '¥100.00 ~ ¥2000.00'
+    limitRange: '¥100.00 ~ ¥2000.00',
+    merchantFee: '0.39'
   },
   {
     id: '1117',
     name: '支付宝小额包',
     status: '启用',
-    limitRange: '¥300.00 ~ ¥20000.00'
+    limitRange: '¥300.00 ~ ¥20000.00',
+    merchantFee: '0.53'
   },
   {
     id: '116',
     name: '支付宝包uid大额',
     status: '禁用',
-    limitRange: '¥800.00 ~ ¥20000.00'
+    limitRange: '¥800.00 ~ ¥20000.00',
+    merchantFee: '0.60'
   },
   {
     id: '1113',
     name: 'uid中额',
     status: '启用',
-    limitRange: '¥500.00 ~ ¥20000.00'
+    limitRange: '¥500.00 ~ ¥20000.00',
+    merchantFee: '0.50'
   }
 ])
 
@@ -240,14 +218,7 @@ const selectedChannel = ref({})
 
 // 支付表单数据
 const paymentForm = reactive({
-  amount: '',
-  firstName: '',
-  lastName: '',
-  name: '',
-  userId: '',
-  phone: '',
-  email: '',
-  remark: ''
+  amount: ''
 })
 
 // 表单验证规则
@@ -255,23 +226,12 @@ const paymentRules = {
   amount: [
     { required: true, message: '请输入支付金额', trigger: 'blur' },
     { pattern: /^\d+(\.\d{0,2})?$/, message: '请输入正确的金额格式', trigger: 'blur' }
-  ],
-  userId: [
-    { required: true, message: '请输入用户ID', trigger: 'blur' }
   ]
 }
 
 // 请求参数和返回结果
 const requestParams = ref('')
 const responseResult = ref('')
-
-// 更多参数显示状态
-const showMoreParams = ref(false)
-
-// 切换更多参数显示状态
-const toggleMoreParams = () => {
-  showMoreParams.value = !showMoreParams.value
-}
 
 // 处理支付
 const handlePayment = (channel) => {
@@ -299,14 +259,7 @@ const submitPayment = () => {
       const params = {
         channelId: selectedChannel.value.id,
         channelName: selectedChannel.value.name,
-        amount: paymentForm.amount,
-        firstName: paymentForm.firstName,
-        lastName: paymentForm.lastName,
-        name: paymentForm.name,
-        userId: paymentForm.userId,
-        phone: paymentForm.phone,
-        email: paymentForm.email,
-        remark: paymentForm.remark
+        amount: paymentForm.amount
       }
       
       // 显示请求参数

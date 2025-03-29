@@ -183,7 +183,7 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="systemOrderNo" label="系统订单号" min-width="180">
+        <el-table-column prop="systemOrderNo" label="平台订单号" min-width="180">
           <template #default="scope">
             <div class="copy-cell">
               <span>{{ scope.row.systemOrderNo }}</span>
@@ -205,7 +205,7 @@
         
         <el-table-column prop="orderAmount" label="订单金额" min-width="120" align="right">
           <template #default="scope">
-            <span :class="{ 'highlight-amount': scope.row.orderStatus === '支付成功' }">
+            <span :class="{ 'highlight-amount': scope.row.orderStatus === 'success' }">
               {{ formatAmount(scope.row.orderAmount) }}
             </span>
           </template>
@@ -214,7 +214,7 @@
         <el-table-column prop="orderStatus" label="订单状态" min-width="120" align="center">
           <template #default="scope">
             <el-tag :type="getStatusType(scope.row.orderStatus)" size="small">
-              {{ scope.row.orderStatus }}
+              {{ statusOptions.find(item => item.value === scope.row.orderStatus)?.label || scope.row.orderStatus }}
             </el-tag>
           </template>
         </el-table-column>
@@ -227,7 +227,7 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="feeRate" label="费率" min-width="100" align="center" />
+        <el-table-column prop="feeRate" label="商户费率" min-width="100" align="center" />
         
         <el-table-column prop="fee" label="手续费" min-width="100" align="right">
           <template #default="scope">
@@ -283,13 +283,14 @@ const channelOptions = ref([
 
 // 订单状态选项
 const statusOptions = ref([
-  { value: 'waiting', label: '等待支付' },
-  { value: 'no_code', label: '未出码' },
-  { value: 'success', label: '支付成功' },
-  { value: 'failed', label: '支付失败' },
-  { value: 'timeout', label: '超时关闭' },
-  { value: 'manual_close', label: '手动关闭' },
-  { value: 'test_reverse', label: '测试冲正' }
+  { value: 'created', label: '订单创建' },
+  { value: 'success', label: '交易成功' },
+  { value: 'pending', label: '待付款' },
+  { value: 'failed', label: '交易失败' },
+  { value: 'pull_failed', label: '拉单失败' },
+  { value: 'canceled', label: '交易撤销' },
+  { value: 'reorder_success', label: '补单成功' },
+  { value: 'closed', label: '交易关闭' }
 ])
 
 // 通知状态选项
@@ -398,7 +399,7 @@ const tableData = ref([
     paymentChannelCode: '[1112]',
     paymentChannel: 'uid小额',
     orderAmount: 200.00,
-    orderStatus: '等待支付',
+    orderStatus: 'pending',
     merchantNotify: '未通知',
     feeRate: '5.30%',
     fee: 10.60,
@@ -414,7 +415,7 @@ const tableData = ref([
     paymentChannelCode: '[1112]',
     paymentChannel: 'uid小额',
     orderAmount: 200.00,
-    orderStatus: '超时关闭',
+    orderStatus: 'closed',
     merchantNotify: '未通知',
     feeRate: '5.30%',
     fee: 10.60,
@@ -430,7 +431,7 @@ const tableData = ref([
     paymentChannelCode: '[1112]',
     paymentChannel: 'uid小额',
     orderAmount: 300.00,
-    orderStatus: '支付成功',
+    orderStatus: 'success',
     merchantNotify: '回调成功',
     feeRate: '5.30%',
     fee: 15.90,
@@ -446,7 +447,7 @@ const tableData = ref([
     paymentChannelCode: '[1112]',
     paymentChannel: 'uid小额',
     orderAmount: 300.00,
-    orderStatus: '超时关闭',
+    orderStatus: 'closed',
     merchantNotify: '未通知',
     feeRate: '5.30%',
     fee: 15.90,
@@ -462,7 +463,7 @@ const tableData = ref([
     paymentChannelCode: '[1112]',
     paymentChannel: 'uid小额',
     orderAmount: 200.00,
-    orderStatus: '超时关闭',
+    orderStatus: 'closed',
     merchantNotify: '未通知',
     feeRate: '5.30%',
     fee: 10.60,
@@ -478,7 +479,7 @@ const tableData = ref([
     paymentChannelCode: '[1114]',
     paymentChannel: 'uid大额',
     orderAmount: 800.00,
-    orderStatus: '未出账',
+    orderStatus: 'created',
     merchantNotify: '未通知',
     feeRate: '3.20%',
     fee: 25.60,
@@ -494,7 +495,7 @@ const tableData = ref([
     paymentChannelCode: '[1112]',
     paymentChannel: 'uid小额',
     orderAmount: 200.00,
-    orderStatus: '支付成功',
+    orderStatus: 'success',
     merchantNotify: '回调成功',
     feeRate: '5.30%',
     fee: 10.60,
@@ -549,13 +550,14 @@ const getNotifyStatusType = (status) => {
 // 获取状态类型
 const getStatusType = (status) => {
   const typeMap = {
-    '等待支付': 'warning',
-    '未出码': 'danger',
-    '支付成功': 'success',
-    '支付失败': 'danger',
-    '超时关闭': 'info',
-    '手动关闭': 'info',
-    '测试冲正': 'warning'
+    'created': 'info',
+    'success': 'success',
+    'pending': 'warning',
+    'failed': 'danger',
+    'pull_failed': 'danger',
+    'canceled': 'info',
+    'reorder_success': 'success',
+    'closed': 'info'
   }
   return typeMap[status] || 'info'
 }

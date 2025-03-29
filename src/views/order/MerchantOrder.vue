@@ -127,10 +127,6 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="通道编码：">
-            <el-input v-model="searchForm.upstreamChannelCode" placeholder="请输入编码" class="input-normal" clearable />
-          </el-form-item>
-
           <el-form-item label="隔日补单：">
             <el-select v-model="searchForm.isNextDay" placeholder="请选择" class="input-normal" clearable>
               <el-option label="全部" value="" />
@@ -223,7 +219,7 @@
 
       <!-- 上游通道成本 -->
       <div class="mini-stat-card">
-        <div class="stat-header">上游通道成本</div>
+        <div class="stat-header">通道成本</div>
         <div class="stat-value">{{ formatAmount(0) }}</div>
       </div>
     </div>
@@ -255,12 +251,31 @@
         <el-table-column prop="merchantId" label="商户ID" width="80" fixed="left" />
         <el-table-column prop="merchantName" label="商户账号" width="120" />
         <el-table-column prop="upstream" label="渠道名称" width="120" />
+        <el-table-column prop="upstreamChannelCode" label="渠道编码" width="120" />
+        <el-table-column prop="upstreamOrderNo" label="上游单号" width="120" />
+        <el-table-column prop="orderNo" label="平台单号" width="120" />
+        <el-table-column prop="merchantOrderNo" label="商户单号" width="120" />
         <el-table-column prop="channelCode" label="通道编码" width="100" />
         <el-table-column prop="productName" label="支付产品名称" width="120" />
         <el-table-column prop="productCode" label="支付产品编码" width="100" />
         <el-table-column prop="orderAmount" label="订单金额" width="100" align="right">
           <template #default="scope">
             <span class="amount-cell">{{ formatAmount(scope.row.orderAmount) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="fee" label="手续费" width="100" align="right">
+          <template #default="scope">
+            <span class="amount-cell outcome">{{ formatAmount(scope.row.fee || 0) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="receiveAmount" label="入账金额" width="100" align="right">
+          <template #default="scope">
+            <span class="amount-cell income">{{ formatAmount(scope.row.receiveAmount || scope.row.orderAmount) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="channelCost" label="通道成本" width="100" align="right">
+          <template #default="scope">
+            <span class="amount-cell outcome">{{ formatAmount(scope.row.channelCost || 0) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="orderStatus" label="订单状态" width="100" align="center">
@@ -273,30 +288,24 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="订单创建时间" width="150" />
-        <el-table-column prop="completeTime" label="订单完成时间" width="150" />
         <el-table-column prop="pushStatus" label="推送状态" width="90" align="center">
           <template #default="scope">
             <el-tag 
-              :type="scope.row.pushStatus ? 'success' : 'info'" 
+              :type="scope.row.pushResult === 'success' ? 'success' : 'danger'" 
               size="small"
+              v-if="scope.row.pushResult === 'success' || scope.row.pushResult === 'failed'"
             >
-              {{ scope.row.pushStatus ? '已推送' : '未推送' }}
+              {{ scope.row.pushResult === 'success' ? '成功' : '失败' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="pushResult" label="推送结果" width="90" align="center">
+        
+        <el-table-column prop="pushResultContent" label="推送结果" width="120">
           <template #default="scope">
-            <el-tag 
-              :type="scope.row.pushResult === 'success' ? 'success' : scope.row.pushResult === 'failed' ? 'danger' : 'info'" 
-              size="small"
-            >
-              {{ '' }}
-            </el-tag>
+            <span v-if="scope.row.pushResult === 'success' || scope.row.pushResult === 'failed'">商户回调内容</span>
           </template>
         </el-table-column>
-        <el-table-column prop="orderNo" label="平台单号" width="120" />
-        <el-table-column prop="merchantOrderNo" label="商户单号" width="120" />
+        
         <el-table-column prop="isNextDay" label="隔日补单" width="90" align="center">
           <template #default="scope">
             <el-tag 
@@ -307,23 +316,8 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="receiveAmount" label="入账金额" width="100" align="right">
-          <template #default="scope">
-            <span class="amount-cell income">{{ formatAmount(scope.row.receiveAmount || scope.row.orderAmount) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="fee" label="手续费" width="100" align="right">
-          <template #default="scope">
-            <span class="amount-cell outcome">{{ formatAmount(scope.row.fee || 0) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="channelCost" label="通道成本" width="100" align="right">
-          <template #default="scope">
-            <span class="amount-cell outcome">{{ formatAmount(scope.row.channelCost || 0) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="upstreamOrderNo" label="上游单号" width="120" />
-        <el-table-column prop="upstreamChannelCode" label="渠道编码" width="120" />
+        <el-table-column prop="createTime" label="订单创建时间" width="150" />
+        <el-table-column prop="completeTime" label="订单完成时间" width="150" />
         <el-table-column prop="remarkInfo" label="备注" min-width="150" />
         <el-table-column label="操作" width="90" fixed="right">
           <template #default="scope">

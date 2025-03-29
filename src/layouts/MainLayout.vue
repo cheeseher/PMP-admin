@@ -32,7 +32,6 @@
             <el-menu-item index="/statistics/merchant-rank">商户支付排行</el-menu-item>
             <el-menu-item index="/statistics/platform-profit">平台分润统计</el-menu-item>
             <el-menu-item index="/statistics/merchant-income">商户收款统计</el-menu-item>
-            <el-menu-item index="/statistics/merchant-outcome">商户出款统计</el-menu-item>
             <el-menu-item index="/statistics/merchant-balance">商户余额快照</el-menu-item>
           </el-sub-menu>
 

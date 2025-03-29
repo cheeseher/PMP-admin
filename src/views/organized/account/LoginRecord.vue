@@ -44,7 +44,7 @@
         <el-table-column type="index" label="序号" width="80" />
         <el-table-column prop="merchantId" label="商户ID" min-width="100" />
         <el-table-column prop="merchantName" label="商户名称" min-width="120" />
-        <el-table-column prop="loginAccount" label="登录账号" min-width="120" />
+        <el-table-column prop="loginAccount" label="商户账号" min-width="120" />
         <el-table-column prop="verifyCode" label="谷歌验证码" width="120" />
         <el-table-column prop="loginTime" label="登录时间" min-width="180" />
         <el-table-column prop="loginIp" label="登录IP" min-width="140" />

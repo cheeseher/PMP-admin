@@ -96,7 +96,7 @@
 
       <el-card shadow="hover" class="stat-card">
         <div class="compact-card-content">
-          <div class="stat-header">总税后金额</div>
+          <div class="stat-header">总入账金额</div>
           <div class="stat-body">
             <el-icon :size="22"><Wallet /></el-icon>
             <span class="stat-value">{{ formatAmount(totalAfterTaxAmount) }}</span>
@@ -163,7 +163,7 @@
             <span class="amount-cell">{{ formatAmount(row.fee) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="afterTaxAmount" label="税后金额" width="150" align="right">
+        <el-table-column prop="afterTaxAmount" label="入账金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.afterTaxAmount) }}</span>
           </template>

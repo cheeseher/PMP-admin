@@ -87,13 +87,6 @@
             <el-tag :type="getTypeTagType(scope.row.type)">{{ scope.row.type }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="count" label="数量" min-width="100" align="center" />
-        <el-table-column prop="rate" label="汇率" min-width="100" align="center" />
-        <el-table-column prop="verified" label="凭证" min-width="100" align="center">
-          <template #default="scope">
-            <el-tag :type="scope.row.verified ? 'success' : 'info'">{{ scope.row.verified ? '已验证' : '待验证' }}</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="200" />
         <el-table-column prop="operateTime" label="操作时间" min-width="150" />
       </el-table>
@@ -169,10 +162,7 @@ const tableData = ref([
     prePaidAmount: 5000.00,
     changeAmount: -1000.00,
     afterPaidAmount: 4000.00,
-    type: '调整',
-    count: 1,
-    rate: 1.0,
-    verified: true,
+    type: '扣减',
     remark: '系统预付金额调整',
     operateTime: '2025-03-25 14:15:30'
   },
@@ -182,10 +172,7 @@ const tableData = ref([
     prePaidAmount: 3000.00,
     changeAmount: 2000.00,
     afterPaidAmount: 5000.00,
-    type: '充值',
-    count: 1,
-    rate: 1.0,
-    verified: true,
+    type: '增加',
     remark: '商户预付金额充值',
     operateTime: '2025-03-26 09:22:15'
   },
@@ -196,9 +183,6 @@ const tableData = ref([
     changeAmount: -3000.00,
     afterPaidAmount: 7000.00,
     type: '扣减',
-    count: 1,
-    rate: 1.0,
-    verified: false,
     remark: '系统预付金额扣减',
     operateTime: '2025-03-27 16:35:42'
   }
@@ -238,9 +222,8 @@ const getAmountClass = (amount) => {
 // 获取类型标签的类型
 const getTypeTagType = (type) => {
   const typeMap = {
-    '充值': 'success',
-    '扣减': 'danger',
-    '调整': 'warning'
+    '增加': 'success',
+    '扣减': 'danger'
   }
   return typeMap[type] || 'info'
 }

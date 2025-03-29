@@ -20,12 +20,12 @@
             <el-col :span="8">
               <div class="fund-item">
                 <div class="fund-label">人民币预付</div>
-                <div class="fund-amount negative">¥{{ accountData.prepaid.toFixed(2) }}</div>
+                <div class="fund-amount positive">¥{{ accountData.prepaid.toFixed(2) }}</div>
               </div>
             </el-col>
             <el-col :span="8">
               <div class="fund-item">
-                <div class="fund-label">人民币净付</div>
+                <div class="fund-label">人民币净预付</div>
                 <div class="fund-amount negative">¥{{ accountData.netPaid.toFixed(2) }}</div>
               </div>
             </el-col>
@@ -45,10 +45,6 @@
                 <div class="legend-item">
                   <span class="legend-dot prepaid"></span>
                   <span class="legend-label">预付: ¥{{ accountData.prepaid.toFixed(2) }}</span>
-                </div>
-                <div class="legend-item">
-                  <span class="legend-dot activity-balance"></span>
-                  <span class="legend-label">活动余额: ¥{{ accountData.activityBalance.toFixed(2) }}</span>
                 </div>
               </div>
             </el-col>
@@ -115,9 +111,8 @@ import { ElMessage } from 'element-plus'
 // 数据
 const accountData = ref({
   balance: 5280.50,
-  prepaid: -1420.75,
-  netPaid: -3860.25,
-  activityBalance: 0.00
+  prepaid: 1420.75,
+  netPaid: -3860.25
 })
 
 // 商户信息
@@ -155,8 +150,7 @@ const initChart = () => {
   // 数据准备
   const data = [
     { name: '账户余额', value: Math.abs(accountData.value.balance), itemStyle: { color: '#4B9DFF' } },
-    { name: '预付', value: Math.abs(accountData.value.prepaid), itemStyle: { color: '#36D1BC' } },
-    { name: '活动余额', value: Math.abs(accountData.value.activityBalance), itemStyle: { color: '#36D1BC' } }
+    { name: '预付', value: Math.abs(accountData.value.prepaid), itemStyle: { color: '#36D1BC' } }
   ]
   
   // 图表配置项
@@ -286,10 +280,6 @@ const onBeforeUnmount = () => {
 }
 
 .prepaid {
-  background-color: #36D1BC;
-}
-
-.activity-balance {
   background-color: #36D1BC;
 }
 

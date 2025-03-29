@@ -5,17 +5,12 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="交易单号：">
-            <el-input v-model="searchForm.transactionNo" placeholder="交易单号" style="width: 220px" clearable />
+          <el-form-item label="平台单号：">
+            <el-input v-model="searchForm.transactionNo" placeholder="平台单号" style="width: 220px" clearable />
           </el-form-item>
           <el-form-item label="交易类型：">
             <el-select v-model="searchForm.transactionType" placeholder="请选择" style="width: 168px" clearable>
               <el-option v-for="item in transactionTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="上游名称：">
-            <el-select v-model="searchForm.upstreamId" placeholder="请选择" style="width: 168px" clearable>
-              <el-option v-for="item in upstreamOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
           <el-form-item label="状态：">
@@ -67,13 +62,11 @@
         style="width: 100%"
       >
         <el-table-column type="selection" width="50" fixed="left" />
-        <el-table-column prop="upstreamName" label="上游" min-width="100" />
-        <el-table-column prop="transactionNo" label="交易单号" min-width="180" />
+        <el-table-column prop="upstreamName" label="商户名称" min-width="100" />
+        <el-table-column prop="transactionNo" label="平台单号" min-width="180" />
         <el-table-column label="交易前" min-width="180">
           <template #default="scope">
-            <div>总额: {{ formatAmount(scope.row.beforeTotal) }}</div>
-            <div>可用: {{ formatAmount(scope.row.beforeAvailable) }}</div>
-            <div>冻结: {{ formatAmount(scope.row.beforeFrozen) }}</div>
+            <div>余额: {{ formatAmount(scope.row.beforeTotal) }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="transactionAmount" label="交易金额" min-width="100">
@@ -87,16 +80,9 @@
             {{ formatAmount(scope.row.fee) }}
           </template>
         </el-table-column>
-        <el-table-column prop="freezeAmount" label="冻结金额" min-width="100">
-          <template #default="scope">
-            {{ formatAmount(scope.row.freezeAmount) }}
-          </template>
-        </el-table-column>
         <el-table-column label="交易后" min-width="180">
           <template #default="scope">
-            <div>总额: {{ formatAmount(scope.row.afterTotal) }}</div>
-            <div>可用: {{ formatAmount(scope.row.afterAvailable) }}</div>
-            <div>冻结: {{ formatAmount(scope.row.afterFrozen) }}</div>
+            <div>余额: {{ formatAmount(scope.row.afterTotal) }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" min-width="80">
@@ -134,10 +120,10 @@ import { Search, Refresh, Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 // 交易类型选项
-const transactionTypeOptions = [
-  { label: '收数手续费', value: 'collectFee' },
-  { label: '收款', value: 'receive' }
-]
+const transactionTypeOptions = ref([
+  { label: '扣减', value: '扣减' },
+  { label: '增加', value: '增加' }
+])
 
 // 上游选项
 const upstreamOptions = [
@@ -186,7 +172,6 @@ const dateShortcuts = [
 const searchForm = reactive({
   transactionNo: '',
   transactionType: '',
-  upstreamId: '',
   status: '',
   dateRange: []
 })
@@ -200,7 +185,7 @@ const tableData = ref([
     beforeAvailable: 658968.10, 
     beforeFrozen: 0.00,
     transactionAmount: 0.00,
-    transactionType: '收数手续费',
+    transactionType: '扣减',
     fee: 30.00,
     freezeAmount: 0.00,
     afterTotal: 658938.10,
@@ -217,7 +202,7 @@ const tableData = ref([
     beforeAvailable: 658468.10,
     beforeFrozen: 0.00,
     transactionAmount: 500.00,
-    transactionType: '收款',
+    transactionType: '增加',
     fee: 0.00,
     freezeAmount: 0.00,
     afterTotal: 658968.10,
@@ -234,7 +219,7 @@ const tableData = ref([
     beforeAvailable: 101.00,
     beforeFrozen: 0.00,
     transactionAmount: 0.00,
-    transactionType: '收数手续费',
+    transactionType: '扣减',
     fee: 30.30,
     freezeAmount: 0.00,
     afterTotal: 70.70,
@@ -251,7 +236,7 @@ const tableData = ref([
     beforeAvailable: 0.00,
     beforeFrozen: 0.00,
     transactionAmount: 101.00,
-    transactionType: '收款',
+    transactionType: '增加',
     fee: 0.00,
     freezeAmount: 0.00,
     afterTotal: 101.00,

@@ -4,8 +4,8 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="交易单号：">
-            <el-input v-model="searchForm.transactionNo" placeholder="请输入交易单号" style="width: 220px" clearable />
+          <el-form-item label="平台单号：">
+            <el-input v-model="searchForm.transactionNo" placeholder="请输入平台单号" style="width: 220px" clearable />
           </el-form-item>
           
           <el-form-item label="交易类型：">
@@ -19,8 +19,8 @@
             </el-select>
           </el-form-item>
           
-          <el-form-item label="上游名称：">
-            <el-select v-model="searchForm.upstreamName" placeholder="请选择上游名称" style="width: 168px" clearable>
+          <el-form-item label="渠道名称：">
+            <el-select v-model="searchForm.upstreamName" placeholder="请选择渠道名称" style="width: 168px" clearable>
               <el-option 
                 v-for="item in upstreamOptions" 
                 :key="item.value" 
@@ -82,14 +82,12 @@
         style="width: 100%"
       >
         <el-table-column type="selection" width="55" fixed="left" />
-        <el-table-column prop="upstream" label="上游" min-width="100" />
-        <el-table-column prop="transactionNo" label="交易单号" min-width="180" />
+        <el-table-column prop="upstream" label="渠道名称" min-width="100" />
+        <el-table-column prop="transactionNo" label="平台单号" min-width="180" />
         <el-table-column prop="flowNo" label="流水单号" min-width="180" />
         <el-table-column label="交易前" min-width="180">
           <template #default="scope">
-            <div>总额: {{ formatAmount(scope.row.beforeTotal) }}</div>
-            <div>可用: {{ formatAmount(scope.row.beforeAvailable) }}</div>
-            <div>冻结: {{ formatAmount(scope.row.beforeFrozen) }}</div>
+            <div>余额: {{ formatAmount(scope.row.beforeTotal) }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="transactionAmount" label="交易金额" min-width="100">
@@ -103,16 +101,9 @@
             {{ formatAmount(scope.row.fee) }}
           </template>
         </el-table-column>
-        <el-table-column prop="freezeAmount" label="冻结金额" min-width="100">
-          <template #default="scope">
-            {{ formatAmount(scope.row.freezeAmount) }}
-          </template>
-        </el-table-column>
         <el-table-column label="交易后" min-width="180">
           <template #default="scope">
-            <div>总额: {{ formatAmount(scope.row.afterTotal) }}</div>
-            <div>可用: {{ formatAmount(scope.row.afterAvailable) }}</div>
-            <div>冻结: {{ formatAmount(scope.row.afterFrozen) }}</div>
+            <div>余额: {{ formatAmount(scope.row.afterTotal) }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" min-width="80">
@@ -166,7 +157,7 @@ const transactionTypeOptions = [
   { label: '交易撤销', value: 'reversal' }
 ]
 
-// 上游选项
+// 渠道选项
 const upstreamOptions = [
   { label: '新闪电', value: 'xsd' },
   { label: 'test', value: 'test' }

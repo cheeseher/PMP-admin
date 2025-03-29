@@ -67,14 +67,12 @@
         style="width: 100%"
       >
         <el-table-column type="selection" width="50" fixed="left" />
-        <el-table-column prop="merchantName" label="商户" min-width="100" />
+        <el-table-column prop="merchantName" label="商户名称" min-width="100" />
         <el-table-column prop="transactionNo" label="平台单号" min-width="180" />
         <el-table-column prop="flowNo" label="流水单号" min-width="180" />
         <el-table-column label="交易前" min-width="180">
           <template #default="scope">
-            <div>总额: {{ formatAmount(scope.row.beforeTotal) }}</div>
-            <div>可用: {{ formatAmount(scope.row.beforeAvailable) }}</div>
-            <div>冻结: {{ formatAmount(scope.row.beforeFrozen) }}</div>
+            <div>余额: {{ formatAmount(scope.row.beforeTotal) }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="transactionAmount" label="交易金额" min-width="100">
@@ -88,16 +86,9 @@
             {{ formatAmount(scope.row.fee) }}
           </template>
         </el-table-column>
-        <el-table-column prop="freezeAmount" label="冻结金额" min-width="100">
-          <template #default="scope">
-            {{ formatAmount(scope.row.freezeAmount) }}
-          </template>
-        </el-table-column>
         <el-table-column label="交易后" min-width="180">
           <template #default="scope">
-            <div>总额: {{ formatAmount(scope.row.afterTotal) }}</div>
-            <div>可用: {{ formatAmount(scope.row.afterAvailable) }}</div>
-            <div>冻结: {{ formatAmount(scope.row.afterFrozen) }}</div>
+            <div>余额: {{ formatAmount(scope.row.afterTotal) }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" min-width="80">

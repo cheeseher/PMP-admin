@@ -19,8 +19,8 @@
             </el-select>
           </el-form-item>
           
-          <el-form-item label="上游名称：">
-            <el-select v-model="searchForm.upstreamName" placeholder="请选择上游名称" style="width: 168px" clearable>
+          <el-form-item label="渠道名称：">
+            <el-select v-model="searchForm.upstreamName" placeholder="请选择渠道名称" style="width: 168px" clearable>
               <el-option 
                 v-for="item in upstreamOptions" 
                 :key="item.value" 
@@ -82,13 +82,11 @@
         style="width: 100%"
       >
         <el-table-column type="selection" width="55" fixed="left" />
-        <el-table-column prop="upstream" label="上游" min-width="100" />
+        <el-table-column prop="upstream" label="渠道名称" min-width="100" />
         <el-table-column prop="transactionNo" label="交易单号" min-width="180" />
         <el-table-column label="交易前" min-width="180">
           <template #default="scope">
-            <div>总额: {{ formatAmount(scope.row.beforeTotal) }}</div>
-            <div>可用: {{ formatAmount(scope.row.beforeAvailable) }}</div>
-            <div>冻结: {{ formatAmount(scope.row.beforeFrozen) }}</div>
+            <div>余额: {{ formatAmount(scope.row.beforeTotal) }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="transactionAmount" label="交易金额" min-width="100">
@@ -102,16 +100,9 @@
             {{ formatAmount(scope.row.fee) }}
           </template>
         </el-table-column>
-        <el-table-column prop="freezeAmount" label="冻结金额" min-width="100">
-          <template #default="scope">
-            {{ formatAmount(scope.row.freezeAmount) }}
-          </template>
-        </el-table-column>
         <el-table-column label="交易后" min-width="180">
           <template #default="scope">
-            <div>总额: {{ formatAmount(scope.row.afterTotal) }}</div>
-            <div>可用: {{ formatAmount(scope.row.afterAvailable) }}</div>
-            <div>冻结: {{ formatAmount(scope.row.afterFrozen) }}</div>
+            <div>余额: {{ formatAmount(scope.row.afterTotal) }}</div>
           </template>
         </el-table-column>
         <el-table-column prop="status" label="状态" min-width="80">
@@ -159,11 +150,11 @@ const searchForm = reactive({
 
 // 交易类型选项
 const transactionTypeOptions = [
-  { label: '增加余额', value: 'addBalance' },
-  { label: '减少余额', value: 'reduceBalance' }
+  { label: '增加', value: 'add' },
+  { label: '扣减', value: 'reduce' }
 ]
 
-// 上游选项
+// 渠道选项
 const upstreamOptions = [
   { label: '新闪电', value: 'xsd' },
   { label: 'test', value: 'test' }
@@ -216,7 +207,7 @@ const tableData = ref([
     beforeAvailable: 656496.88,
     beforeFrozen: 0.00,
     transactionAmount: 100.00,
-    transactionType: '增加余额',
+    transactionType: '增加',
     fee: 0.00,
     freezeAmount: 0.00,
     afterTotal: 656596.88,

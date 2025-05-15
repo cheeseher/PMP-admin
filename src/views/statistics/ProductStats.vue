@@ -119,7 +119,6 @@
         <el-table-column type="selection" width="50" align="center" />
         <el-table-column prop="productId" label="支付产品ID" width="90" align="center" />
         <el-table-column prop="productName" label="支付产品名称" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="merchantName" label="商户名称" min-width="120" show-overflow-tooltip />
         <el-table-column prop="successAmount" label="成功收款金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.successAmount) }}</span>

@@ -13,7 +13,7 @@ export const merchantBalanceData = [
     availableAmount: 105000.00,
     todayIncome: 50000.00,
     todayOutcome: 30000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户B',
@@ -23,7 +23,7 @@ export const merchantBalanceData = [
     availableAmount: 70800.50,
     todayIncome: 12500.00,
     todayOutcome: 8000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户C',
@@ -33,7 +33,7 @@ export const merchantBalanceData = [
     availableAmount: 200000.00,
     todayIncome: 85000.00,
     todayOutcome: 45000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户D',
@@ -43,7 +43,7 @@ export const merchantBalanceData = [
     availableAmount: 50000.00,
     todayIncome: 25000.00,
     todayOutcome: 0.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户E',
@@ -53,7 +53,7 @@ export const merchantBalanceData = [
     availableAmount: 150000.00,
     todayIncome: 60000.00,
     todayOutcome: 35000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户F',
@@ -63,7 +63,7 @@ export const merchantBalanceData = [
     availableAmount: 400000.00,
     todayIncome: 150000.00,
     todayOutcome: 85000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户G',
@@ -73,7 +73,7 @@ export const merchantBalanceData = [
     availableAmount: 900000.00,
     todayIncome: 500000.00,
     todayOutcome: 200000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户H',
@@ -83,7 +83,7 @@ export const merchantBalanceData = [
     availableAmount: 90000.00,
     todayIncome: 35000.00,
     todayOutcome: 12000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户I',
@@ -93,7 +93,7 @@ export const merchantBalanceData = [
     availableAmount: 180000.00,
     todayIncome: 45000.00,
     todayOutcome: 15000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户J',
@@ -103,7 +103,7 @@ export const merchantBalanceData = [
     availableAmount: 60000.00,
     todayIncome: 20000.00,
     todayOutcome: 10000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户K',
@@ -113,7 +113,7 @@ export const merchantBalanceData = [
     availableAmount: 400000.00,
     todayIncome: 120000.00,
     todayOutcome: 70000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户L',
@@ -123,7 +123,7 @@ export const merchantBalanceData = [
     availableAmount: 300000.00,
     todayIncome: 80000.00,
     todayOutcome: 30000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户M',
@@ -133,7 +133,7 @@ export const merchantBalanceData = [
     availableAmount: 600000.00,
     todayIncome: 250000.00,
     todayOutcome: 100000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户N',
@@ -143,7 +143,7 @@ export const merchantBalanceData = [
     availableAmount: 70000.00,
     todayIncome: 30000.00,
     todayOutcome: 15000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户O',
@@ -153,7 +153,7 @@ export const merchantBalanceData = [
     availableAmount: 1500000.00,
     todayIncome: 600000.00,
     todayOutcome: 200000.00,
-    snapshotTime: '2024-03-14 15:30:00'
+    snapshotTime: '2024-03-14 00:00:00'
   }
 ];
 
@@ -168,7 +168,7 @@ export const merchantIncomeData = [
     monthIncome: 1250000.00,
     successRate: 0.985,
     orderCount: 1250,
-    updateTime: '2024-03-14 15:30:00'
+    updateTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户B',
@@ -179,7 +179,7 @@ export const merchantIncomeData = [
     monthIncome: 375000.00,
     successRate: 0.965,
     orderCount: 850,
-    updateTime: '2024-03-14 15:30:00'
+    updateTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户C',
@@ -190,7 +190,7 @@ export const merchantIncomeData = [
     monthIncome: 2350000.00,
     successRate: 0.995,
     orderCount: 2450,
-    updateTime: '2024-03-14 15:30:00'
+    updateTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户D',
@@ -201,7 +201,7 @@ export const merchantIncomeData = [
     monthIncome: 500000.00,
     successRate: 1.0,
     orderCount: 520,
-    updateTime: '2024-03-14 15:30:00'
+    updateTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户E',
@@ -212,7 +212,7 @@ export const merchantIncomeData = [
     monthIncome: 1800000.00,
     successRate: 0.975,
     orderCount: 1850,
-    updateTime: '2024-03-14 15:30:00'
+    updateTime: '2024-03-14 00:00:00'
   }
 ];
 
@@ -227,7 +227,7 @@ export const merchantOutcomeData = [
     monthOutcome: 750000.00,
     successRate: 0.975,
     withdrawCount: 85,
-    updateTime: '2024-03-14 15:30:00'
+    updateTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户B',
@@ -238,7 +238,7 @@ export const merchantOutcomeData = [
     monthOutcome: 225000.00,
     successRate: 0.955,
     withdrawCount: 45,
-    updateTime: '2024-03-14 15:30:00'
+    updateTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户C',
@@ -248,8 +248,8 @@ export const merchantOutcomeData = [
     weekOutcome: 315000.00,
     monthOutcome: 1450000.00,
     successRate: 0.985,
-    withdrawCount: 120,
-    updateTime: '2024-03-14 15:30:00'
+    withdrawCount: 125,
+    updateTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户D',
@@ -260,7 +260,7 @@ export const merchantOutcomeData = [
     monthOutcome: 250000.00,
     successRate: 1.0,
     withdrawCount: 25,
-    updateTime: '2024-03-14 15:30:00'
+    updateTime: '2024-03-14 00:00:00'
   },
   {
     merchantName: '商户E',
@@ -271,7 +271,7 @@ export const merchantOutcomeData = [
     monthOutcome: 1050000.00,
     successRate: 0.965,
     withdrawCount: 105,
-    updateTime: '2024-03-14 15:30:00'
+    updateTime: '2024-03-14 00:00:00'
   }
 ];
 

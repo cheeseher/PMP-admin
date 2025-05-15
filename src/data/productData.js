@@ -23,6 +23,7 @@ export const productList = [
     flow: 0.00,
     agentBalance: 0.00,
     agentFlow: 0.00,
+    subAccounts: [5, 6, 7],
     authIp: '',
     loginCount: 0,
     verified: 'N',

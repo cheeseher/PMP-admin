@@ -75,7 +75,7 @@
         <el-table-column prop="productId" label="商户账号" min-width="120" />
         <el-table-column prop="productName" label="商户名称" min-width="150" />
         <el-table-column prop="productNo" label="商户号" min-width="120" />
-        <el-table-column prop="balance" label="余额" width="130" align="right">
+        <el-table-column prop="balance" label="余额" width="160" align="right">
           <template #default="scope">
             <span class="amount-cell">{{ formatAmount(scope.row.balance) }}</span>
           </template>
@@ -1096,7 +1096,7 @@ const removeProductRate = (productId) => {
 // 获取子账户名称
 const getSubAccountName = (id) => {
   const account = productList.find(item => item.id === id)
-  return account ? account.productName : `未知账户(${id})`
+  return account ? `${account.productName} (${account.id})` : `未知账户(${id})`
 }
 
 // 更新通道权重映射

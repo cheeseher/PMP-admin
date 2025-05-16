@@ -54,7 +54,7 @@
               <span>订单管理</span>
             </template>
             <el-menu-item index="/order/merchant" @click="router.push('/order/merchant')">商户订单管理</el-menu-item>
-            <el-menu-item index="/order/withdraw" @click="router.push('/order/withdraw')">商户提现审核</el-menu-item>
+            <el-menu-item v-if="!isMenuItemHidden('/order/withdraw')" index="/order/withdraw" @click="router.push('/order/withdraw')">商户提现审核</el-menu-item>
           </el-sub-menu>
 
           <!-- 供应商管理 -->
@@ -205,7 +205,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
@@ -224,6 +224,12 @@ import {
 const route = useRoute()
 const router = useRouter()
 const isCollapse = ref(false)
+
+// Helper function to check if a menu item should be hidden
+const isMenuItemHidden = (path) => {
+  const matchedRoute = router.getRoutes().find(r => r.path === path);
+  return matchedRoute && matchedRoute.meta && matchedRoute.meta.hidden;
+};
 
 // 切换侧边栏
 const toggleSidebar = () => {

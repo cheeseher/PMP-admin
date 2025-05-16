@@ -125,16 +125,12 @@
         </el-form-item>
         <el-form-item label="供应商通道" prop="channelCode">
           <el-select v-model="productForm.channelCode" multiple placeholder="请选择供应商通道" style="width: 100%" @change="handleChannelChange">
-            <el-option-group label="未分组">
-              <el-option label="通道A" value="ALIPAY" />
-              <el-option label="通道B" value="WECHAT" />
-              <el-option label="通道C" value="UNIONPAY" />
-            </el-option-group>
-            <el-option-group label="分组">
-              <el-option label="分组A" value="GROUP_1" />
-              <el-option label="分组B" value="GROUP_2" />
-              <el-option label="分组C" value="GROUP_3" />
-            </el-option-group>
+            <el-option
+              v-for="item in supplierChannelOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
           </el-select>
         </el-form-item>
         
@@ -267,6 +263,7 @@ import { ref, reactive, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import { Search, Delete, Plus, Edit, Refresh, Check, Close, Remove, Download, Timer, Right, InfoFilled } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCleanup } from '@/utils/cleanupUtils'
+import { channelList } from '@/data/channelData.js'
 
 const searchForm = reactive({
   id: '',
@@ -350,6 +347,14 @@ const productForm = reactive({
 const submitLoading = ref(false)
 
 const channelTableData = ref([])
+
+// 新增计算属性，用于格式化供应商通道下拉菜单的选项
+const supplierChannelOptions = computed(() => {
+  return channelList.map(channel => ({
+    value: channel.id, // 使用 channel.id 作为 el-option 的 value
+    label: `${channel.supplier} | ${channel.channelName} | ${channel.rate}%` // 修改label格式
+  }));
+});
 
 const formRules = {
   productName: [
@@ -716,69 +721,25 @@ const handleCurrentChange = (val) => {
   fetchData()
 }
 
-const handleChannelChange = (selectedChannels) => {
-  // 保留已存在的通道及其设置
-  const existingChannels = channelTableData.value.reduce((acc, curr) => {
-    acc[curr.channelCode] = curr;
-    return acc;
-  }, {});
-  
-  // 定义分组内容
-  const groups = {
-    GROUP_1: [
-      { code: 'ALIPAY_GROUP1', name: '通道A-1' },
-      { code: 'WECHAT_GROUP1', name: '通道B-1' }
-    ],
-    GROUP_2: [
-      { code: 'ALIPAY_GROUP2', name: '通道A-2' },
-      { code: 'WECHAT_GROUP2', name: '通道B-2' },
-      { code: 'JD_GROUP2', name: '通道D' }
-    ],
-    GROUP_3: [
-      { code: 'UNIONPAY_GROUP3', name: '通道C-1' },
-      { code: 'BAIDU_GROUP3', name: '通道E' }
-    ]
-  };
-  
-  // 处理选择的通道，包括分组
-  let processedChannels = [];
-  
-  selectedChannels.forEach(channel => {
-    // 如果是分组，添加该分组下所有通道
-    if (channel.startsWith('GROUP_') && groups[channel]) {
-      processedChannels = [...processedChannels, ...groups[channel].map(item => ({
-        channelCode: item.code,
-        channelName: item.name,
-        channelFeeRate: 0,
-        weight: 1,
-        groupCode: channel // 记录所属分组
-      }))];
-    } else if (!channel.startsWith('GROUP_')) {
-      // 如果是单独的通道，直接添加
-      let channelName = '';
-      if (channel === 'ALIPAY') channelName = '通道A';
-      else if (channel === 'WECHAT') channelName = '通道B';
-      else if (channel === 'UNIONPAY') channelName = '通道C';
-      
-      processedChannels.push({
-        channelCode: channel,
-        channelName,
-        channelFeeRate: 0,
-        weight: 1
-      });
-    }
-  });
-  
-  // 更新表格数据，保留已存在的设置
-  channelTableData.value = processedChannels.map(channel => {
-    if (existingChannels[channel.channelCode]) {
-      return {
-        ...existingChannels[channel.channelCode],
-        groupCode: channel.groupCode
-      };
-    }
-    return channel;
-  });
+const handleChannelChange = (selectedChannelIds) => {
+  const newChannelTableData = [];
+  if (selectedChannelIds && selectedChannelIds.length > 0) {
+    selectedChannelIds.forEach(id => {
+      const channelFromList = channelList.find(c => c.id === id);
+      if (channelFromList) {
+        // 尝试从旧的 channelTableData 中查找是否已存在该通道，以保留权重
+        const existingChannelInTable = channelTableData.value.find(tc => tc.id === id);
+        newChannelTableData.push({
+          id: channelFromList.id, // 添加id到表格行数据中
+          channelName: channelFromList.channelName,
+          channelCode: channelFromList.channelCode,
+          channelFeeRate: channelFromList.rate, // 使用真实的费率
+          weight: existingChannelInTable ? existingChannelInTable.weight : 1 // 保留权重或默认1
+        });
+      }
+    });
+  }
+  channelTableData.value = newChannelTableData;
 }
 
 // 获取安全定时器

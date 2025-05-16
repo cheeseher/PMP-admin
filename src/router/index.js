@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import MerchantLayout from '@/layouts/MerchantLayout.vue'
+import MultiMerchantLayout from '@/layouts/MultiMerchantLayout.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -35,7 +36,7 @@ const router = createRouter({
               path: 'withdraw',
               name: 'WithdrawList',
               component: () => import('@/views/order/Withdraw.vue'),
-              meta: { title: '商户提现审核' }
+              meta: { title: '商户提现审核', hidden: true }
             }
           ]
         },
@@ -251,61 +252,48 @@ const router = createRouter({
         }
       ]
     },
-    // 商户后台路由
+    // 单商户后台路由 (复用 MerchantLayout)
     {
       path: '/merchant',
       component: MerchantLayout,
       redirect: '/merchant/dashboard',
       children: [
-        // 工作台
         {
           path: 'dashboard',
           name: 'MerchantDashboard',
-          component: () => import('@/views/organized/dashboard/Overview.vue'),
-          meta: { title: '工作台' }
+          component: () => import('@/views/merchant/MerchantDashboard.vue'),
+          meta: { title: '商户工作台' }
         },
-        
-        // 数据看板
         {
           path: 'statistics/channel',
           name: 'MerchantStatisticsChannel',
           component: () => import('@/views/organized/statistics/Channel.vue'),
           meta: { title: '支付通道简报' }
         },
-        
-        // 财务数据
         {
           path: 'finance/prepaid',
           name: 'MerchantFinancePrepaid',
           component: () => import('@/views/organized/finance/Prepaid.vue'),
           meta: { title: '预付记录' }
         },
-        
-        // 通道管理
         {
           path: 'channel/payment',
           name: 'MerchantChannelPayment',
           component: () => import('@/views/organized/trade/PaymentChannel.vue'),
           meta: { title: '支付通道' }
         },
-        
-        // 订单管理
         {
           path: 'trade/payment',
           name: 'MerchantTradePayment',
           component: () => import('@/views/organized/trade/OrderList.vue'),
           meta: { title: '支付订单' }
         },
-        
-        // 流水审计
         {
           path: 'audit/merchant',
           name: 'MerchantAuditRecord',
           component: () => import('@/views/organized/finance/MerchantAudit.vue'),
           meta: { title: '商户流水' }
         },
-        
-        // 商户管理
         {
           path: 'account/info',
           name: 'MerchantAccountInfo',
@@ -318,16 +306,12 @@ const router = createRouter({
           component: () => import('@/views/organized/account/LoginRecord.vue'),
           meta: { title: '登录记录' }
         },
-        
-        // 文档中心
         {
           path: 'help',
           name: 'MerchantHelp',
           component: () => import('@/views/organized/help/Index.vue'),
           meta: { title: '文档中心' }
         },
-        
-        // 保留原有设置路由，以确保兼容性
         {
           path: 'setting/profile',
           name: 'MerchantSettingProfile',
@@ -335,8 +319,28 @@ const router = createRouter({
           meta: { title: '修改资料' }
         }
       ]
+    },
+    // 新增：多商户后台路由
+    {
+      path: '/multi-merchant/:mainMerchantId',
+      component: MultiMerchantLayout,
+      redirect: to => {
+        return { name: 'MultiMerchantDashboard', params: { mainMerchantId: to.params.mainMerchantId } };
+      },
+      children: [
+        {
+          path: 'dashboard',
+          name: 'MultiMerchantDashboard',
+          component: () => import('@/views/merchant/MultiMerchantDashboard.vue'),
+          meta: { title: '多商户管理后台' }
+        }
+      ]
     }
   ]
 })
+
+router.beforeEach((to, from, next) => {
+  next();
+});
 
 export default router 

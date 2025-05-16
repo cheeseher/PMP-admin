@@ -3,8 +3,7 @@
     <!-- 侧边栏 -->
     <el-aside :width="isCollapse ? '64px' : '220px'" class="aside">
       <div class="logo">
-        <img src="@/assets/logo.svg" alt="logo" />
-        <h1 v-if="!isCollapse">支付管理系统</h1>
+        <h1 v-if="!isCollapse">PMP系统</h1>
       </div>
       
       <el-scrollbar class="menu-scrollbar">
@@ -346,12 +345,6 @@ const handleCommand = (command) => {
       align-items: center;
       padding: 0 20px;
       color: #fff;
-      
-      img {
-        width: 32px;
-        height: 32px;
-        margin-right: 12px;
-      }
       
       h1 {
         margin: 0;

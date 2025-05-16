@@ -281,6 +281,7 @@
           <template #default="scope">
             <el-tag 
               :type="getStatusType(scope.row.orderStatus)" 
+              :style="getStatusStyle(scope.row.orderStatus)"
               size="small"
             >
               {{ getStatusText(scope.row.orderStatus) }}
@@ -318,17 +319,30 @@
         <el-table-column prop="createTime" label="订单创建时间" width="150" />
         <el-table-column prop="completeTime" label="订单完成时间" width="150" />
         <el-table-column prop="remarkInfo" label="备注" min-width="150" />
-        <el-table-column label="操作" width="90" fixed="right">
-          <template #default="scope">
+        <el-table-column label="操作" width="170" fixed="right">
+          <template #default="{ row }">
             <el-dropdown @command="handleCommand">
               <el-button link type="primary">
                 操作<el-icon class="el-icon--right"><arrow-down /></el-icon>
               </el-button>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item :command="{type: 'resend', row: scope.row}">重新推送</el-dropdown-item>
-                  <el-dropdown-item :command="{type: 'reorder', row: scope.row}">手动补单</el-dropdown-item>
-                  <el-dropdown-item :command="{type: 'editAmount', row: scope.row}">修改金额</el-dropdown-item>
+                  <!-- 补单成功和交易成功状态显示重新推送、双向撤销和修改金额 -->
+                  <template v-if="row.orderStatus === 'success' || row.orderStatus === 'reorder_success'">
+                    <el-dropdown-item :command="{type: 'resend', row: row}">重新推送</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'cancel', row: row}">双向撤销</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
+                  </template>
+                  <!-- 交易撤销状态显示手动回调和修改金额，但会提示不支持操作 -->
+                  <template v-else-if="row.orderStatus === 'canceled'">
+                    <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
+                  </template>
+                  <!-- 其他状态显示手动回调和修改金额 -->
+                  <template v-else>
+                    <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
+                  </template>
                 </el-dropdown-menu>
               </template>
             </el-dropdown>
@@ -457,7 +471,7 @@ const tableData = ref([
     pushStatus: true,
     pushResult: 'failed',
     isNextDay: true,
-    orderStatus: 'success',
+    orderStatus: 'reorder_success',
     createTime: '2024-02-28 10:25:16',
     completeTime: '2024-02-28 10:30:45',
     remarkInfo: '补单'
@@ -484,6 +498,121 @@ const tableData = ref([
     createTime: '2024-03-31 14:22:10',
     completeTime: '',
     remarkInfo: '待处理'
+  },
+  {
+    merchantId: '4',
+    merchantName: '商户账号D',
+    upstream: '上游通道A',
+    channelCode: 'wx_qr',
+    orderNo: '105',
+    merchantOrderNo: 'MO20240405001',
+    productCode: '6666',
+    productName: '支付产品D',
+    orderAmount: '500.00',
+    receiveAmount: '490.00',
+    fee: '10.00',
+    channelCost: '5.50',
+    upstreamOrderNo: 'UP20240405001',
+    upstreamChannelCode: 'wxpay_002',
+    pushStatus: true,
+    pushResult: 'success',
+    isNextDay: false,
+    orderStatus: 'canceled',
+    createTime: '2024-04-05 09:15:30',
+    completeTime: '2024-04-05 09:25:45',
+    remarkInfo: '交易撤销状态订单不支持手动回调及修改金额，点击提示：交易撤销状态订单不支持该操作'
+  },
+  {
+    merchantId: '5',
+    merchantName: '商户账号E',
+    upstream: '上游通道B',
+    channelCode: 'alipay_app',
+    orderNo: '106',
+    merchantOrderNo: 'MO20240410001',
+    productCode: '5555',
+    productName: '支付产品E',
+    orderAmount: '800.00',
+    receiveAmount: '',
+    fee: '',
+    channelCost: '',
+    upstreamOrderNo: '',
+    upstreamChannelCode: 'alipay_003',
+    pushStatus: false,
+    pushResult: '',
+    isNextDay: false,
+    orderStatus: 'created',
+    createTime: '2024-04-10 14:05:10',
+    completeTime: '',
+    remarkInfo: '订单刚创建，尚未处理'
+  },
+  {
+    merchantId: '6',
+    merchantName: '商户账号F',
+    upstream: '上游通道C',
+    channelCode: 'union_web',
+    orderNo: '107',
+    merchantOrderNo: 'MO20240408001',
+    productCode: '4444',
+    productName: '支付产品F',
+    orderAmount: '1200.00',
+    receiveAmount: '0.00',
+    fee: '0.00',
+    channelCost: '0.00',
+    upstreamOrderNo: 'UP20240408001',
+    upstreamChannelCode: 'union_003',
+    pushStatus: true,
+    pushResult: 'failed',
+    isNextDay: false,
+    orderStatus: 'failed',
+    createTime: '2024-04-08 16:20:45',
+    completeTime: '2024-04-08 16:25:30',
+    remarkInfo: '用户支付失败，交易未完成'
+  },
+  {
+    merchantId: '7',
+    merchantName: '商户账号G',
+    upstream: '上游通道D',
+    channelCode: 'wx_mini',
+    orderNo: '108',
+    merchantOrderNo: 'MO20240409001',
+    productCode: '3333',
+    productName: '支付产品G',
+    orderAmount: '350.00',
+    receiveAmount: '0.00',
+    fee: '0.00',
+    channelCost: '0.00',
+    upstreamOrderNo: '',
+    upstreamChannelCode: 'wxpay_003',
+    pushStatus: false,
+    pushResult: '',
+    isNextDay: false,
+    orderStatus: 'pull_failed',
+    createTime: '2024-04-09 11:40:20',
+    completeTime: '2024-04-09 11:41:05',
+    remarkInfo: '上游渠道拉单失败，请检查通道配置'
+  },
+  {
+    merchantId: '8',
+    merchantName: '商户账号H',
+    upstream: '上游通道B',
+    channelCode: 'alipay_h5',
+    orderNo: '109',
+    merchantOrderNo: 'MO20240407001',
+    productCode: '2222',
+    productName: '支付产品H',
+    orderAmount: '680.00',
+    receiveAmount: '0.00',
+    fee: '0.00',
+    channelCost: '0.00',
+    upstreamOrderNo: 'UP20240407001',
+    upstreamChannelCode: 'alipay_004',
+    pushStatus: false,
+    pushResult: '',
+    isNextDay: false,
+    orderStatus: 'closed',
+    createTime: '2024-04-07 19:15:40',
+    completeTime: '2024-04-07 19:45:40',
+    remarkInfo: '超时未支付，系统自动关闭'
   }
 ])
 
@@ -507,6 +636,15 @@ const getStatusType = (status) => {
     closed: 'info'
   }
   return map[status] || 'info'
+}
+
+// 用于交易成功状态显示更深颜色
+const getStatusStyle = (status) => {
+  if (status === 'success') {
+    // 只微调成功状态的颜色深度，不改变其他样式
+    return 'filter: brightness(0.95);'
+  }
+  return ''
 }
 
 const getStatusText = (status) => {
@@ -608,6 +746,12 @@ const refreshData = () => {
 const handleCommand = (command) => {
   const { type, row } = command
   
+  // 交易撤销状态的订单特殊处理
+  if (row.orderStatus === 'canceled' && (type === 'manualCallback' || type === 'editAmount')) {
+    ElMessage.error('交易撤销状态订单不支持该操作')
+    return
+  }
+  
   switch (type) {
     case 'resend':
       ElMessageBox.confirm(`确定要重新推送订单 ${row.orderNo} 吗？`, '提示', {
@@ -628,6 +772,30 @@ const handleCommand = (command) => {
         type: 'warning'
       }).then(() => {
         ElMessage.success(`订单 ${row.orderNo} 手动补单成功`)
+      }).catch(() => {
+        ElMessage.info('已取消操作')
+      })
+      break
+      
+    case 'cancel':
+      ElMessageBox.confirm(`确定要双向撤销订单 ${row.orderNo} 吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        ElMessage.success(`订单 ${row.orderNo} 双向撤销成功`)
+      }).catch(() => {
+        ElMessage.info('已取消操作')
+      })
+      break
+      
+    case 'manualCallback':
+      ElMessageBox.confirm(`确定要为订单 ${row.orderNo} 执行手动回调吗？`, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        ElMessage.success(`订单 ${row.orderNo} 手动回调成功`)
       }).catch(() => {
         ElMessage.info('已取消操作')
       })

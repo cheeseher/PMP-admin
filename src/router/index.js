@@ -267,7 +267,7 @@ const router = createRouter({
         {
           path: 'dashboard',
           name: 'MerchantDashboard',
-          component: () => import('@/views/merchant/MerchantDashboard.vue'),
+          component: () => import('@/views/organized/dashboard/Overview.vue'),
           meta: { title: '商户工作台' }
         },
         {
@@ -326,21 +326,13 @@ const router = createRouter({
         }
       ]
     },
-    // 新增：多商户后台路由
+    // 多商户后台路由 - 重定向到普通商户后台
     {
       path: '/multi-merchant/:mainMerchantId',
-      component: MultiMerchantLayout,
       redirect: to => {
-        return { name: 'MultiMerchantDashboard', params: { mainMerchantId: to.params.mainMerchantId } };
-      },
-      children: [
-        {
-          path: 'dashboard',
-          name: 'MultiMerchantDashboard',
-          component: () => import('@/views/merchant/MultiMerchantDashboard.vue'),
-          meta: { title: '多商户管理后台' }
-        }
-      ]
+        // 将多商户重定向到普通商户后台
+        return { path: '/merchant/dashboard', query: { merchant: to.params.mainMerchantId } };
+      }
     }
   ]
 })

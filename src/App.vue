@@ -1,6 +1,11 @@
 <template>
   <router-view />
+  <PageDocumentation />
 </template>
+
+<script setup>
+import PageDocumentation from '@/components/PageDocumentation.vue';
+</script>
 
 <style>
 html, body {

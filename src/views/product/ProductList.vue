@@ -1447,48 +1447,30 @@ const handleQuickLogin = async (row) => {
   console.log('尝试快速登录:', row)
   const merchantId = row.id
 
-  // 特定商户ID（例如2）并且有子账户，则跳转到多商户后台
-  if (merchantId === 2 && row.subAccounts && row.subAccounts.length > 0) {
-    console.log(`商户ID ${merchantId} 存在子账户，准备跳转到多商户后台...`)
-    try {
-      // 可选：如果多商户后台也需要某种形式的父商户token
-      // const token = await getMerchantLoginToken(merchantId);
-      // router.push({ name: 'MultiMerchantDashboard', params: { mainMerchantId: merchantId }, query: { token } });
-      router.push({ name: 'MultiMerchantDashboard', params: { mainMerchantId: String(merchantId) } })
-      ElMessage.info(`正在为商户 ${row.productName} (ID: ${merchantId}) 打开多商户后台...`)
-    } catch (error) {
-      console.error('跳转到多商户后台失败:', error)
-      ElMessage.error('无法跳转到多商户后台，请稍后重试。')
+  // 不再区分多商户和单商户，统一使用单商户登录逻辑
+  console.log(`商户ID ${merchantId} 执行登录逻辑...`)
+  try {
+    const token = await getMerchantLoginToken(merchantId)
+    if (token) {
+      // 统一使用单商户后台入口
+      const loginUrl = router.resolve({
+        path: '/merchant/dashboard', 
+        query: { merchant: String(merchantId), token: token, ts: Date.now() } // 添加时间戳防止缓存
+      }).href
+      
+      console.log('商户登录URL:', loginUrl)
+      // 为了方便本地开发和HMR，使用当前页跳转
+      router.push({ 
+        path: '/merchant/dashboard', 
+        query: { merchant: String(merchantId), token: token, ts: Date.now() }
+      });
+      ElMessage.success(`正在为商户 ${row.productName} (ID: ${merchantId}) 打开商户后台...`)
+    } else {
+      ElMessage.error('获取登录凭证失败，无法登录。')
     }
-  } else {
-    // 原有的单商户登录逻辑
-    console.log(`商户ID ${merchantId} 无子账户或非特定商户，执行单商户登录逻辑...`)
-    try {
-      const token = await getMerchantLoginToken(merchantId)
-      if (token) {
-        // 假设单商户后台的入口是 /merchant/dashboard，并且需要 merchantId 和 token 作为 query 参数
-        // 请根据实际的单商户后台路由和参数进行调整
-        const loginUrl = router.resolve({
-          path: '/merchant/dashboard', // 单商户后台的固定路径
-          query: { merchant: String(merchantId), token: token, ts: Date.now() } // 添加时间戳防止缓存
-        }).href
-        
-        console.log('单商户登录URL:', loginUrl)
-        // window.open(loginUrl, '_blank'); // 在新标签页打开
-        // 为了方便本地开发和HMR，暂时使用当前页跳转
-         router.push({ 
-          path: '/merchant/dashboard', 
-          query: { merchant: String(merchantId), token: token, ts: Date.now() }
-        });
-        ElMessage.success(`正在为商户 ${row.productName} (ID: ${merchantId}) 打开单商户后台...`)
-
-      } else {
-        ElMessage.error('获取登录凭证失败，无法登录。')
-      }
-    } catch (error) {
-      console.error('单商户登录过程中发生错误:', error)
-      ElMessage.error('登录失败，请稍后重试。')
-    }
+  } catch (error) {
+    console.error('商户登录过程中发生错误:', error)
+    ElMessage.error('登录失败，请稍后重试。')
   }
 }
 

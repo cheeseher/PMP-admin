@@ -238,93 +238,24 @@
           </el-radio-group>
         </el-form-item>
         <el-form-item label="子账户" prop="subAccounts">
-          <div class="custom-transfer">
-            <div class="transfer-container">
-              <!-- 左侧面板：可选子账户 -->
-              <div class="transfer-panel left-panel">
-                <div class="panel-header">
-                  <span>可选子账户</span>
-                  <div class="search-box">
-                    <el-input 
-                      v-model="merchantSearchText" 
-                      placeholder="请输入商户名称" 
-                      clearable 
-                      size="small"
-                      :prefix-icon="Search"
-                    />
-                  </div>
-                </div>
-                <div class="panel-body">
-                  <el-scrollbar>
-                    <ul class="transfer-list">
-                      <li 
-                        v-for="item in availableMerchants" 
-                        :key="item.id"
-                        class="transfer-item"
-                      >
-                        <el-checkbox 
-                          v-model="tempSelectedMerchants" 
-                          :label="item.id"
-                          @change="updateSelectedMerchants"
-                        >
-                          {{ item.productName }}
-                        </el-checkbox>
-                      </li>
-                      <div v-if="availableMerchants.length === 0" class="empty-text">
-                        <span>无可选商户</span>
-                      </div>
-                    </ul>
-                  </el-scrollbar>
-                </div>
-              </div>
-              
-              <!-- 中间按钮组 -->
-              <div class="transfer-buttons">
-                <el-button 
-                  type="primary" 
-                  plain
-                  @click="moveSelected(true)"
-                >
-                  添加
-                </el-button>
-                <el-button 
-                  type="danger" 
-                  plain
-                  @click="moveSelected(false)"
-                >
-                  移除
-                </el-button>
-              </div>
-              
-              <!-- 右侧面板：已选子账户 -->
-              <div class="transfer-panel right-panel">
-                <div class="panel-header">
-                  <span>已选子账户 ({{ productForm.subAccounts.length }})</span>
-                </div>
-                <div class="panel-body">
-                  <el-scrollbar>
-                    <ul class="transfer-list">
-                      <li 
-                        v-for="id in productForm.subAccounts" 
-                        :key="id"
-                        class="transfer-item"
-                      >
-                        <el-checkbox 
-                          v-model="tempRightSelectedMerchants" 
-                          :label="id"
-                          @change="updateRightSelectedMerchants"
-                        >
-                          {{ getSubAccountName(id) }}
-                        </el-checkbox>
-                      </li>
-                      <div v-if="productForm.subAccounts.length === 0" class="empty-text">
-                        <span>请从左侧选择子账户</span>
-                      </div>
-                    </ul>
-                  </el-scrollbar>
-                </div>
-              </div>
-            </div>
+          <el-select
+            v-model="productForm.subAccounts"
+            multiple
+            filterable
+            collapse-tags
+            collapse-tags-tooltip
+            :placeholder="availableSubAccounts.length > 0 ? '请选择子账户' : '无可选子账户'"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in availableSubAccounts"
+              :key="item.id"
+              :label="`${item.productName} (${item.id})`"
+              :value="item.id"
+            />
+          </el-select>
+          <div class="form-tip" v-if="productForm.subAccounts.length > 0">
+            已选择 {{ productForm.subAccounts.length }} 个子账户
           </div>
         </el-form-item>
       </el-form>
@@ -1561,75 +1492,11 @@ const handleQuickLogin = async (row) => {
   }
 }
 
-// 商户选择相关
-const merchantSearchText = ref('')
-const tempSelectedMerchants = ref([])
-const tempRightSelectedMerchants = ref([])
-
-// 可选商户列表
-const availableMerchants = computed(() => {
-  // 过滤出未被选为子账户的商户
-  let merchants = productList.filter(item => 
-    !productForm.subAccounts.includes(item.id) && 
-    item.id !== productForm.id
-  )
-  
-  // 如果有搜索文本，再进一步过滤
-  if (merchantSearchText.value) {
-    const searchText = merchantSearchText.value.toLowerCase()
-    merchants = merchants.filter(item => 
-      item.productName.toLowerCase().includes(searchText) ||
-      item.productId.toLowerCase().includes(searchText)
-    )
-  }
-  
-  return merchants
-})
-
-// 更新选中的商户
-const updateSelectedMerchants = () => {
-  // 这个函数空实现即可，仅用于触发checkbox的变化
-}
-
-// 更新右侧选中的商户
-const updateRightSelectedMerchants = () => {
-  // 这个函数空实现即可，仅用于触发checkbox的变化
-}
-
-// 移动选中的商户
-const moveSelected = (isToRight) => {
-  if (isToRight) {
-    // 添加到子账户
-    if (tempSelectedMerchants.value.length === 0) {
-      ElMessage.warning('请选择要添加的商户')
-      return
-    }
-    
-    // 将选中的商户添加到子账户列表
-    tempSelectedMerchants.value.forEach(id => {
-      if (!productForm.subAccounts.includes(id)) {
-        productForm.subAccounts.push(id)
-      }
-    })
-    
-    // 清空选择
-    tempSelectedMerchants.value = []
-  } else {
-    // 从子账户移除
-    if (tempRightSelectedMerchants.value.length === 0) {
-      ElMessage.warning('请选择要移除的商户')
-      return
-    }
-    
-    // 从子账户列表移除选中的商户
-    productForm.subAccounts = productForm.subAccounts.filter(id => 
-      !tempRightSelectedMerchants.value.includes(id)
-    )
-    
-    // 清空选择
-    tempRightSelectedMerchants.value = []
-  }
-}
+// 获取可选的子账户列表
+const availableSubAccounts = computed(() => {
+  // 过滤出可选的子账户（不包括当前商户自己）
+  return productList.filter(item => item.id !== productForm.id);
+});
 
 // 获取已选产品名称
 const getSelectedProductName = () => {
@@ -1749,85 +1616,6 @@ onMounted(() => {
   display: inline-block;
   min-width: 120px;
   text-align: right;
-}
-
-/* 自定义Transfer组件样式 */
-.custom-transfer {
-  width: 100%;
-  min-height: 200px;
-}
-
-.transfer-container {
-  display: flex;
-  align-items: stretch;
-  height: 300px;
-  border: 1px solid #EBEEF5;
-  border-radius: 4px;
-}
-
-.transfer-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid #EBEEF5;
-}
-
-.transfer-panel:last-child {
-  border-right: none;
-}
-
-.panel-header {
-  height: 40px;
-  padding: 0 12px;
-  border-bottom: 1px solid #EBEEF5;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #F5F7FA;
-}
-
-.search-box {
-  width: 180px;
-}
-
-.panel-body {
-  flex: 1;
-  overflow: hidden;
-}
-
-.transfer-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  height: 100%;
-}
-
-.transfer-item {
-  padding: 8px 12px;
-  transition: background-color 0.2s;
-}
-
-.transfer-item:hover {
-  background-color: #F5F7FA;
-}
-
-.transfer-buttons {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 0 10px;
-}
-
-.transfer-buttons .el-button {
-  margin: 5px 0;
-}
-
-.empty-text {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #909399;
 }
 
 /* 商户标签样式 */

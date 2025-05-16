@@ -347,10 +347,15 @@ const handleLogout = () => {
       type: 'warning'
     }
   ).then(() => {
-    window.close() // 关闭标签页
+    ElMessage.success('已退出登录');
+    console.log('Attempting to navigate to /login from MerchantLayout');
+    router.push('/login').catch(err => {
+      console.error('Failed to navigate to /login from MerchantLayout:', err);
+      ElMessage.error('跳转到登录页面失败，请查看控制台获取更多信息。');
+    });
   }).catch(() => {
-    // 取消退出
-  })
+    console.log('Logout cancelled in MerchantLayout');
+  });
 }
 
 onMounted(() => {

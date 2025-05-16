@@ -7,6 +7,12 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: '/login',
+      name: 'Login',
+      component: () => import('@/views/login/Login.vue'),
+      meta: { title: '登录', noLayout: true }
+    },
+    {
       path: '/',
       component: MainLayout,
       redirect: '/dashboard',
@@ -201,7 +207,7 @@ const router = createRouter({
 
         // 系统管理
         {
-          path: '/system',
+          path: 'system',
           name: 'System',
           redirect: '/system/admin',
           meta: { title: '系统管理' },

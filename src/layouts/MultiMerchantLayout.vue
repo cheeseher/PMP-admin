@@ -123,9 +123,13 @@ const handleUserCommand = (command) => {
     }).then(() => {
       // 清理登录状态 (token, store等)
       ElMessage.success('已退出登录');
-      router.push('/login'); // 跳转到登录页
+      console.log('Attempting to navigate to /login from MultiMerchantLayout');
+      router.push('/login').catch(err => {
+        console.error('Failed to navigate to /login from MultiMerchantLayout:', err);
+        ElMessage.error('跳转到登录页面失败，请查看控制台获取更多信息。');
+      });
     }).catch(() => {
-      // 用户取消
+      console.log('Logout cancelled in MultiMerchantLayout');
     });
   }
 };

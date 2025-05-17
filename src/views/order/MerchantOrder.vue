@@ -397,7 +397,8 @@
                   
                   <!-- 下单失败 -->
                   <template v-else-if="row.orderStatus === 'failed'">
-                    <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
+                    <el-dropdown-item disabled>手动回调</el-dropdown-item>
+                    <el-dropdown-item disabled>修改金额</el-dropdown-item>
                   </template>
                   
                   <!-- 交易关闭 -->

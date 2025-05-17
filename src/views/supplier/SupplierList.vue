@@ -65,7 +65,7 @@
             <span class="amount-cell">{{ formatAmount(scope.row.amount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="提醒阈值" prop="alertThreshold" width="120" align="right">
+        <el-table-column label="授信额度" prop="alertThreshold" width="120" align="right">
           <template #default="scope">
             <span class="amount-cell">{{ formatAmount(scope.row.alertThreshold || 0) }}</span>
           </template>
@@ -139,14 +139,14 @@
         <el-form-item label="渠道商户号" prop="merchantNo">
           <el-input v-model="supplierForm.merchantNo" placeholder="请输入渠道商户号" />
         </el-form-item>
-        <el-form-item label="提醒阈值" prop="alertThreshold">
+        <el-form-item label="授信额度" prop="alertThreshold">
           <el-input-number 
             v-model="supplierForm.alertThreshold" 
             :precision="2" 
-            :min="0"
+            :min="-999999999"
             :max="999999999"
             style="width: 100%"
-            placeholder="请输入提醒阈值"
+            placeholder="请输入授信额度"
           />
         </el-form-item>
         <el-form-item label="API密钥">
@@ -207,7 +207,7 @@
         <el-descriptions-item label="渠道编码">{{ currentSupplier.code }}</el-descriptions-item>
         <el-descriptions-item label="渠道商户号">{{ currentSupplier.merchantNo }}</el-descriptions-item>
         <el-descriptions-item label="余额">{{ formatAmount(currentSupplier.amount) }}</el-descriptions-item>
-        <el-descriptions-item label="提醒阈值">{{ formatAmount(currentSupplier.alertThreshold || 5000) }}</el-descriptions-item>
+        <el-descriptions-item label="授信额度">{{ formatAmount(currentSupplier.alertThreshold || 5000) }}</el-descriptions-item>
         <el-descriptions-item label="API密钥">{{ currentSupplier.apiKey || '-' }}</el-descriptions-item>
         <el-descriptions-item label="应用APPID">{{ currentSupplier.appId || '-' }}</el-descriptions-item>
         <el-descriptions-item label="网关地址">{{ currentSupplier.gatewayUrl || '-' }}</el-descriptions-item>
@@ -258,7 +258,7 @@
           <el-input-number 
             v-model="balanceForm.amount" 
             :precision="2" 
-            :min="0"
+            :min="-999999999"
             :max="999999999"
             controls-position="right"
             style="width: 100%"
@@ -343,7 +343,7 @@ const rules = {
   merchantNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }],
   gatewayUrl: [{ required: true, message: '请输入网关地址', trigger: 'blur' }],
   notifyUrl: [{ required: true, message: '请输入异步通知网址', trigger: 'blur' }],
-  alertThreshold: [{ required: true, message: '请输入提醒阈值', trigger: 'blur' }]
+  alertThreshold: [{ required: true, message: '请输入授信额度', trigger: 'blur' }]
 }
 
 // 详情抽屉相关
@@ -608,10 +608,6 @@ const submitBalanceOperation = () => {
           ElMessage.success(`余额增加成功，当前余额: ${formatAmount(tableData.value[index].amount)}`)
         } else {
           // 减少余额
-          if (tableData.value[index].amount < balanceForm.amount) {
-            ElMessage.warning('余额不足，无法扣减')
-            return
-          }
           tableData.value[index].amount -= parseFloat(balanceForm.amount)
           ElMessage.success(`余额减少成功，当前余额: ${formatAmount(tableData.value[index].amount)}`)
         }

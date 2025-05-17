@@ -281,10 +281,30 @@
         <el-table-column type="selection" width="55" fixed="left" />
         <el-table-column prop="merchantId" label="商户ID" width="80" fixed="left" />
         <el-table-column prop="merchantName" label="商户账号" width="120" />
-        <el-table-column prop="upstream" label="渠道名称" width="120" />
-        <el-table-column prop="upstreamChannelCode" label="渠道编码" width="120" />
-        <el-table-column prop="upstreamOrderNo" label="上游单号" width="120" />
-        <el-table-column prop="orderNo" label="平台单号" width="120" />
+        <el-table-column prop="upstream" label="渠道名称" width="120">
+          <template #default="scope">
+            <span v-if="scope.row.orderStatus === 'created'">-</span>
+            <span v-else>{{ scope.row.upstream }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="upstreamChannelCode" label="渠道编码" width="120">
+          <template #default="scope">
+            <span v-if="scope.row.orderStatus === 'created'">-</span>
+            <span v-else>{{ scope.row.upstreamChannelCode }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="upstreamOrderNo" label="上游单号" width="120">
+          <template #default="scope">
+            <span v-if="scope.row.orderStatus === 'created'">-</span>
+            <span v-else>{{ scope.row.upstreamOrderNo }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="orderNo" label="平台单号" width="120">
+          <template #default="scope">
+            <span v-if="scope.row.orderStatus === 'created'">-</span>
+            <span v-else>{{ scope.row.orderNo }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="merchantOrderNo" label="商户单号" width="120" />
         <el-table-column prop="channelCode" label="通道编码" width="100" />
         <el-table-column prop="productName" label="支付产品名称" width="120" />

@@ -401,8 +401,8 @@
         :model="productConfigForm"
         label-width="100px"
       >
-        <el-form-item label="商户账号">
-          <el-input v-model="productConfigForm.productId" disabled />
+        <el-form-item label="商户号">
+          <el-input v-model="productConfigForm.productNo" disabled />
         </el-form-item>
         <el-form-item label="商户名称">
           <el-input v-model="productConfigForm.productName" disabled />
@@ -858,6 +858,7 @@ const productConfigFormRef = ref(null)
 const productConfigForm = reactive({
   merchantId: '',
   productId: '',
+  productNo: '',
   productName: '',
   selectedProduct: '',
   productCode: '',
@@ -1125,6 +1126,7 @@ const handleCommand = (command, row) => {
 const handleConfig = (row) => {
   productConfigForm.merchantId = row.id
   productConfigForm.productId = row.productId
+  productConfigForm.productNo = row.productNo
   productConfigForm.productName = row.productName
   
   // 清空产品配置相关的数据

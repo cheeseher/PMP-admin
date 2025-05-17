@@ -8,7 +8,13 @@ export const merchantProductList = [
     productCode: '8888',
     rate: 10.00,
     weight: 1,
-    remark: ''
+    remark: '',
+    customOption: true,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 },
+      { name: '渠道C', rate: 6 }
+    ]
   },
   {
     id: 2,
@@ -18,7 +24,12 @@ export const merchantProductList = [
     productCode: 'WX001',
     rate: 3.50,
     weight: 10,
-    remark: '产品B优先'
+    remark: '产品B优先',
+    customOption: true,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 }
+    ]
   },
   {
     id: 3,
@@ -28,7 +39,14 @@ export const merchantProductList = [
     productCode: 'ZFB001',
     rate: 3.00,
     weight: 8,
-    remark: '产品C次优先'
+    remark: '产品C次优先',
+    customOption: true,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 },
+      { name: '渠道C', rate: 6 },
+      { name: '渠道D', rate: 6 }
+    ]
   },
   {
     id: 4,
@@ -38,7 +56,13 @@ export const merchantProductList = [
     productCode: 'YL001',
     rate: 2.80,
     weight: 5,
-    remark: '标准费率'
+    remark: '标准费率',
+    customOption: true,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 },
+      { name: '渠道C', rate: 6 }
+    ]
   },
   {
     id: 5,
@@ -48,7 +72,12 @@ export const merchantProductList = [
     productCode: 'YSF001',
     rate: 2.50,
     weight: 7,
-    remark: '优惠费率'
+    remark: '优惠费率',
+    customOption: true,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 }
+    ]
   },
   {
     id: 6,
@@ -58,7 +87,12 @@ export const merchantProductList = [
     productCode: 'WX001',
     rate: 3.20,
     weight: 9,
-    remark: '特约商户'
+    remark: '特约商户',
+    customOption: false,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 }
+    ]
   },
   {
     id: 7,
@@ -68,7 +102,13 @@ export const merchantProductList = [
     productCode: 'ICC001',
     rate: 4.50,
     weight: 3,
-    remark: '高费率'
+    remark: '高费率',
+    customOption: false,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 },
+      { name: '渠道C', rate: 6 }
+    ]
   },
   {
     id: 8,
@@ -78,7 +118,14 @@ export const merchantProductList = [
     productCode: 'QP001',
     rate: 2.60,
     weight: 6,
-    remark: '标准费率'
+    remark: '标准费率',
+    customOption: false,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 },
+      { name: '渠道C', rate: 6 },
+      { name: '渠道D', rate: 6 }
+    ]
   },
   {
     id: 9,
@@ -88,7 +135,12 @@ export const merchantProductList = [
     productCode: 'AGG001',
     rate: 3.80,
     weight: 4,
-    remark: '综合费率'
+    remark: '综合费率',
+    customOption: false,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 }
+    ]
   },
   {
     id: 10,
@@ -98,6 +150,12 @@ export const merchantProductList = [
     productCode: 'SCAN001',
     rate: 2.20,
     weight: 8,
-    remark: '优惠费率'
+    remark: '优惠费率',
+    customOption: false,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 },
+      { name: '渠道C', rate: 6 }
+    ]
   }
 ]; 

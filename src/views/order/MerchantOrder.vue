@@ -327,21 +327,23 @@
               </el-button>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <!-- 补单成功和交易成功状态显示重新推送、双向撤销和修改金额 -->
+                  <!-- 交易成功/补单成功 -->
                   <template v-if="row.orderStatus === 'success' || row.orderStatus === 'reorder_success'">
                     <el-dropdown-item :command="{type: 'resend', row: row}">重新推送</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'cancel', row: row}">双向撤销</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
                   </template>
-                  <!-- 交易撤销状态显示手动回调和修改金额，但会提示不支持操作 -->
+                  <!-- 交易撤销 -->
                   <template v-else-if="row.orderStatus === 'canceled'">
-                    <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
-                    <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'manualCallback', row: row}" disabled>手动回调</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'editAmount', row: row}" disabled>修改金额</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'reorder', row: row}" disabled>手动补单</el-dropdown-item>
                   </template>
-                  <!-- 其他状态显示手动回调和修改金额 -->
+                  <!-- 其他状态 -->
                   <template v-else>
                     <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'reorder', row: row}">手动补单</el-dropdown-item>
                   </template>
                 </el-dropdown-menu>
               </template>

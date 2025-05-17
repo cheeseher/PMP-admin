@@ -17,6 +17,13 @@
           <el-form-item label="支付产品名称：">
             <el-input v-model="searchForm.product" placeholder="请输入支付产品名称" style="width: 220px" clearable />
           </el-form-item>
+          <el-form-item label="自定义通道：">
+            <el-select v-model="searchForm.customOption" placeholder="请选择" style="width: 120px" clearable>
+              <el-option label="全部" :value="''" />
+              <el-option label="是" :value="'true'" />
+              <el-option label="否" :value="'false'" />
+            </el-select>
+          </el-form-item>
         </div>
         <div class="filter-buttons">
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -59,6 +66,25 @@
             <span class="rate-cell">{{ scope.row.rate.toFixed(2) }}%</span>
           </template>
         </el-table-column>
+        <el-table-column label="自定义通道" width="100">
+          <template #default="scope">
+            <el-tag :type="scope.row.customOption ? 'success' : 'info'" size="small">
+              {{ scope.row.customOption ? '是' : '否' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="供应商通道" min-width="180">
+          <template #default="scope">
+            <template v-if="scope.row.selectedChannels && scope.row.selectedChannels.length">
+              <span v-for="(channel, idx) in scope.row.selectedChannels.slice(0,2)" :key="channel.name" class="supplier-channel-item">
+                {{ channel.name }} | {{ channel.channelName ? channel.channelName : channel.name }} | {{ channel.rate }}%
+                <span v-if="idx < Math.min(scope.row.selectedChannels.length,2) - 1">，</span>
+              </span>
+              <el-button v-if="scope.row.selectedChannels.length > 2" type="text" size="small" @click.stop="showAllChannels(scope.row)">全部</el-button>
+            </template>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
       </el-table>
 
       <!-- 分页 -->
@@ -74,11 +100,31 @@
         />
       </div>
     </el-card>
+
+    <el-dialog v-model="allChannelsDialog.visible" title="全部供应商通道" width="400px" :close-on-click-modal="true">
+      <el-table :data="paginatedChannels" border size="small">
+        <el-table-column label="通道名称" min-width="120">
+          <template #default="scope">
+            {{ scope.row.name }} | {{ scope.row.channelName ? scope.row.channelName : scope.row.name }} | {{ scope.row.rate }}%
+          </template>
+        </el-table-column>
+      </el-table>
+      <div class="dialog-pagination-container">
+        <el-pagination
+          v-model:current-page="allChannelsDialog.currentPage"
+          v-model:page-size="allChannelsDialog.pageSize"
+          :page-sizes="[5, 10, 20]"
+          :total="allChannelsDialog.channels.length"
+          layout="total, sizes, prev, pager, next"
+          small
+        />
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { Search, Refresh, Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { merchantProductList } from '@/data/merchantProductData'
@@ -88,7 +134,8 @@ const searchForm = reactive({
   id: '',
   merchantNo: '',
   merchantName: '',
-  product: ''
+  product: '',
+  customOption: ''
 })
 
 // 表格数据
@@ -101,6 +148,14 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 const jumpPage = ref('')
+
+const allChannelsDialog = ref({ visible: false, channels: [], currentPage: 1, pageSize: 5 })
+
+const paginatedChannels = computed(() => {
+  const start = (allChannelsDialog.value.currentPage - 1) * allChannelsDialog.value.pageSize
+  const end = start + allChannelsDialog.value.pageSize
+  return allChannelsDialog.value.channels.slice(start, end)
+})
 
 // 获取数据
 const fetchData = () => {
@@ -129,6 +184,10 @@ const fetchData = () => {
       filteredData = filteredData.filter(item => 
         item.productName.toLowerCase().includes(searchForm.product.toLowerCase()) ||
         item.productCode.toLowerCase().includes(searchForm.product.toLowerCase()))
+    }
+    
+    if (searchForm.customOption !== '') {
+      filteredData = filteredData.filter(item => String(item.customOption) === searchForm.customOption)
     }
     
     total.value = filteredData.length
@@ -176,6 +235,12 @@ const handleSizeChange = (val) => {
 const handleCurrentChange = (val) => {
   currentPage.value = val
   fetchData()
+}
+
+function showAllChannels(row) {
+  allChannelsDialog.value.channels = row.selectedChannels || []
+  allChannelsDialog.value.visible = true
+  allChannelsDialog.value.currentPage = 1
 }
 
 // 页面加载时获取数据
@@ -249,5 +314,17 @@ onMounted(() => {
 .rate-cell {
   font-family: 'Roboto Mono', monospace;
   font-weight: 500;
+}
+
+.supplier-channel-item {
+  display: inline-block;
+  margin-right: 4px;
+  color: #606266;
+}
+
+.dialog-pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
 }
 </style> 

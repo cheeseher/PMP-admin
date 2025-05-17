@@ -88,6 +88,16 @@
             </div>
           </template>
         </el-table-column>
+
+        <el-table-column label="交易金额区间" width="180" align="right">
+          <template #default="scope">
+            <div class="amount-range">
+              <span>{{ scope.row.minAmount ? formatAmount(scope.row.minAmount) : '0.00' }} - </span>
+              <span>{{ scope.row.maxAmount ? formatAmount(scope.row.maxAmount) : '不限' }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        
         <el-table-column label="渠道名称" prop="supplier" min-width="120" />
         <el-table-column label="支付类型" prop="payType" width="100" align="center" />
         <el-table-column label="分组" prop="category" width="100" align="center" />
@@ -290,31 +300,40 @@
     <el-dialog
       title="拉单测试"
       v-model="pullOrderDialogVisible"
-      width="450px"
-      destroy-on-close
+      width="500px"
       :close-on-click-modal="false"
+      destroy-on-close
     >
       <el-form
         ref="pullOrderFormRef"
         :model="pullOrderForm"
         :rules="pullOrderRules"
-        label-width="120px"
+        label-width="100px"
       >
-        <el-form-item label="下单金额" prop="amount">
-          <el-input-number 
-            v-model="pullOrderForm.amount" 
-            :precision="2" 
-            :step="100" 
-            :min="0"
+        <el-form-item label="拉单金额" prop="amount">
+          <el-input-number
+            v-model="pullOrderForm.amount"
+            :precision="2"
+            :step="100"
+            :min="currentChannel?.minAmount || 0"
+            :max="currentChannel?.maxAmount || 50000"
             style="width: 100%"
           />
         </el-form-item>
+        
+        <div v-if="pullOrderResult" class="pull-order-result">
+          <div v-if="pullOrderLoading" class="loading-text">
+            <el-icon class="is-loading"><Loading /></el-icon>
+            <span>正在获取支付链接...</span>
+          </div>
+          <div v-else class="result-link">{{ pullOrderResult }}</div>
+        </div>
       </el-form>
       <template #footer>
-        <div class="dialog-footer">
+        <span class="dialog-footer">
           <el-button @click="pullOrderDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmitPullOrder">确认</el-button>
-        </div>
+          <el-button type="primary" @click="handleSubmitPullOrder" :loading="pullOrderLoading">确认</el-button>
+        </span>
       </template>
     </el-dialog>
   </div>
@@ -322,10 +341,19 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed, watch, onBeforeUnmount } from 'vue'
-import { Search, Refresh, Plus, Check, Close, EditPen, DocumentCopy, SetUp, Delete, Download, Timer } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, Check, Close, EditPen, DocumentCopy, SetUp, Delete, Download, Timer, Loading } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { channelList, payTypeOptions, categoryOptions } from '@/data/channelData'
 import { supplierList } from '@/data/supplierData'
+
+// 格式化金额显示
+const formatAmount = (amount) => {
+  if (!amount && amount !== 0) return '-'
+  return amount.toLocaleString('zh-CN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
 
 // 搜索表单
 const searchForm = reactive({
@@ -378,11 +406,18 @@ const batchCategoryForm = reactive({
 const pullOrderDialogVisible = ref(false)
 const pullOrderFormRef = ref(null)
 const currentChannel = ref(null)
+const pullOrderLoading = ref(false)
+const pullOrderResult = ref('')
+
 const pullOrderForm = reactive({
   amount: 100.00
 })
+
 const pullOrderRules = {
-  amount: [{ required: true, message: '请输入下单金额', trigger: 'blur' }]
+  amount: [
+    { required: true, message: '请输入拉单金额', trigger: 'blur' },
+    { type: 'number', message: '金额必须为数字', trigger: 'blur' }
+  ]
 }
 
 // 表单验证规则
@@ -562,6 +597,7 @@ const handleStatusChange = (row, newValue) => {
 const handlePullOrder = (row) => {
   currentChannel.value = row
   pullOrderForm.amount = row.minAmount > 0 ? row.minAmount : 100.00
+  pullOrderResult.value = '' // 重置结果
   pullOrderDialogVisible.value = true
 }
 
@@ -581,9 +617,15 @@ const handleSubmitPullOrder = () => {
           type: 'warning',
         }
       ).then(() => {
+        // 开始加载
+        pullOrderLoading.value = true
+        pullOrderResult.value = ''
+        
         // 模拟API调用
-        ElMessage.success(`已开始拉单，请稍后查看结果`)
-        pullOrderDialogVisible.value = false
+        setTimeout(() => {
+          pullOrderLoading.value = false
+          pullOrderResult.value = 'https://pay.example.com/order/123456789?amount=100.00&channel=test'
+        }, 1500)
       }).catch(() => {
         ElMessage.info('已取消操作')
       })
@@ -950,5 +992,31 @@ let feeRateTimer = null;
   font-size: 12px;
   color: #909399;
   margin-top: 4px;
+}
+
+.pull-order-result {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.loading-text {
+  display: flex;
+  align-items: center;
+  color: #909399;
+  font-size: 14px;
+}
+
+.loading-text .el-icon {
+  margin-right: 8px;
+}
+
+.result-link {
+  word-break: break-all;
+  color: #409EFF;
+  font-size: 14px;
+  line-height: 1.4;
+  font-family: monospace;
 }
 </style> 

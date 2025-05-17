@@ -9,7 +9,9 @@ export const channelList = [
     supplierCode: 'NewSdPay',
     payType: '类型A',
     category: '分组A',
-    enabled: true
+    enabled: true,
+    minAmount: 100.00,
+    maxAmount: 50000.00
   },
   {
     id: 2,
@@ -20,7 +22,9 @@ export const channelList = [
     supplierCode: 'NewSdPay',
     payType: '类型B',
     category: '分组B',
-    enabled: true
+    enabled: true,
+    minAmount: 500.00,
+    maxAmount: 100000.00
   },
   {
     id: 3,
@@ -31,7 +35,9 @@ export const channelList = [
     supplierCode: 'RTpay',
     payType: '类型A',
     category: '分组A',
-    enabled: true
+    enabled: true,
+    minAmount: 1000.00,
+    maxAmount: 200000.00
   },
   {
     id: 4,
@@ -42,7 +48,9 @@ export const channelList = [
     supplierCode: 'RTpay',
     payType: '类型B',
     category: '分组B',
-    enabled: false
+    enabled: false,
+    minAmount: 200.00,
+    maxAmount: 80000.00
   },
   {
     id: 5,
@@ -53,7 +61,9 @@ export const channelList = [
     supplierCode: 'YeePay',
     payType: '类型A',
     category: '分组A',
-    enabled: true
+    enabled: true,
+    minAmount: 300.00,
+    maxAmount: 150000.00
   },
   {
     id: 6,
@@ -64,7 +74,9 @@ export const channelList = [
     supplierCode: 'YeePay',
     payType: '类型B',
     category: '分组B',
-    enabled: false
+    enabled: false,
+    minAmount: 1000.00,
+    maxAmount: 300000.00
   },
   {
     id: 7,
@@ -75,7 +87,9 @@ export const channelList = [
     supplierCode: 'QuickPay',
     payType: '类型A',
     category: '分组A',
-    enabled: true
+    enabled: true,
+    minAmount: 100.00,
+    maxAmount: 50000.00
   },
   {
     id: 8,
@@ -86,7 +100,9 @@ export const channelList = [
     supplierCode: 'QuickPay',
     payType: '类型B',
     category: '分组B',
-    enabled: true
+    enabled: true,
+    minAmount: 500.00,
+    maxAmount: 100000.00
   },
   {
     id: 9,
@@ -97,7 +113,9 @@ export const channelList = [
     supplierCode: 'QFPay',
     payType: '类型A',
     category: '分组A',
-    enabled: true
+    enabled: true,
+    minAmount: 1000.00,
+    maxAmount: 200000.00
   },
   {
     id: 10,
@@ -108,7 +126,9 @@ export const channelList = [
     supplierCode: 'QFPay',
     payType: '类型B',
     category: '分组B',
-    enabled: false
+    enabled: false,
+    minAmount: 2000.00,
+    maxAmount: 500000.00
   }
 ];
 

@@ -64,73 +64,29 @@ const loadDocumentation = async () => {
     let docContent = null;
     
     console.log('当前路径:', route.path);
-    console.log('扁平路径:', flatPath);
-    console.log('结构化路径:', structuredPath);
     
-    // 尝试几种可能的文件位置 
-    const possiblePaths = [
-      // 优先尝试从public/docs加载
-      `/docs/${flatPath}.md`,
-      `/docs/${structuredPath}.md`,
-      `/docs/${structuredPath}/index.md`,
-      // 然后尝试从src/components/docs加载
-      `@/components/docs/${flatPath}.md`,
-      `@/components/docs/${structuredPath}.md`, 
-      `@/components/docs/${structuredPath}/index.md`,
-      // 最后尝试从原始路径加载
-      `./docs/${flatPath}.md`,
-      `./docs/${structuredPath}.md`,
-      `./docs/${structuredPath}/index.md`,
-    ];
-    
-    // 对于根路径特殊处理
-    if (flatPath === 'index') {
-      possiblePaths.unshift('/docs/index.md');
+    // 根据路由路径确定文档路径
+    let docPath;
+    if (route.path.startsWith('/payment/product')) {
+      docPath = '/docs/payment/product.md';
+    } else if (route.path.startsWith('/order/merchant')) {
+      docPath = '/docs/order/merchant.md';
+    } else {
+      docPath = `/docs/${structuredPath}.md`;
     }
     
-    // 特殊处理：对于order/merchant页面，直接尝试加载对应文档
-    if (structuredPath === 'order/merchant') {
-      possiblePaths.unshift('/docs/order/merchant.md');
-    }
-    
-    console.log('尝试加载以下文档路径:', possiblePaths);
-    
-    // 首先尝试直接通过fetch获取文档
     try {
-      const fetchPaths = possiblePaths.filter(p => p.startsWith('/docs/'));
-      for (const fetchPath of fetchPaths) {
-        console.log('尝试通过fetch加载文档:', fetchPath);
-        const response = await fetch(fetchPath);
-        if (response.ok) {
-          docContent = await response.text();
-          console.log('成功通过fetch加载文档:', fetchPath);
-          break;
-        }
+      // 使用 fetch 从 public/docs 目录加载文档
+      console.log('尝试加载文档:', docPath);
+      const response = await fetch(docPath);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      docContent = await response.text();
     } catch (err) {
-      console.error('通过fetch加载文档失败:', err);
-    }
-    
-    // 如果fetch失败，尝试通过import加载
-    if (!docContent) {
-      for (const path of possiblePaths) {
-        if (path.startsWith('/docs/')) continue; // 已经通过fetch尝试过
-
-        try {
-          // 使用动态导入加载Markdown文件
-          console.log('尝试通过import加载文档:', path);
-          const content = await import(/* @vite-ignore */ path + '?raw');
-          if (content.default) {
-            console.log('成功通过import加载文档:', path);
-            docContent = content.default;
-            break;
-          }
-        } catch (err) {
-          // 忽略文件不存在的错误，继续尝试下一个路径
-          console.log('文档加载失败:', path, err.message);
-          continue;
-        }
-      }
+      console.error('文档加载失败:', err);
+      documentationContent.value = '';
+      return;
     }
     
     if (docContent) {

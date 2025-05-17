@@ -286,8 +286,7 @@ const statusOptions = ref([
   { value: 'created', label: '订单创建' },
   { value: 'success', label: '交易成功' },
   { value: 'pending', label: '待付款' },
-  { value: 'failed', label: '交易失败' },
-  { value: 'pull_failed', label: '拉单失败' },
+  { value: 'failed', label: '下单失败' },
   { value: 'canceled', label: '交易撤销' },
   { value: 'reorder_success', label: '补单成功' },
   { value: 'closed', label: '交易关闭' }
@@ -554,7 +553,6 @@ const getStatusType = (status) => {
     'success': 'success',
     'pending': 'warning',
     'failed': 'danger',
-    'pull_failed': 'danger',
     'canceled': 'info',
     'reorder_success': 'success',
     'closed': 'info'

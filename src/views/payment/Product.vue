@@ -219,7 +219,7 @@
             <el-option label="权重" value="WEIGHT" />
           </el-select>
         </el-form-item>
-        <el-form-item label="同步费率到商户" prop="syncFeeToMerchant">
+        <el-form-item label="同步配置到商户" prop="syncFeeToMerchant">
           <el-switch
             v-model="productForm.syncFeeToMerchant"
             active-value="YES"
@@ -228,7 +228,7 @@
             inactive-text="否"
           />
         </el-form-item>
-        <el-form-item label="超级密码" prop="superPassword">
+        <el-form-item label="超级密码" prop="superPassword" v-if="productForm.syncFeeToMerchant === 'YES'">
           <el-input 
             v-model="productForm.superPassword" 
             type="password"
@@ -375,7 +375,13 @@ const formRules = {
     { required: true, message: '请选择费率变更生效时间', trigger: 'change' }
   ],
   superPassword: [
-    { required: true, message: '请输入超级密码', trigger: 'blur' }
+    { required: true, message: '请输入超级密码', trigger: 'blur', validator: (rule, value, callback) => {
+      if (productForm.syncFeeToMerchant === 'YES' && !value) {
+        callback(new Error('请输入超级密码'))
+      } else {
+        callback()
+      }
+    }}
   ]
 }
 

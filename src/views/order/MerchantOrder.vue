@@ -98,22 +98,66 @@
           </el-form-item>
 
           <el-form-item label="支付产品：">
-            <el-input v-model="searchForm.productName" placeholder="请输入支付产品名称" class="input-large" clearable />
+            <el-select
+              v-model="searchForm.productName"
+              placeholder="请选择支付产品"
+              filterable
+              clearable
+              class="input-large"
+            >
+              <el-option
+                v-for="item in productOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
           </el-form-item>
 
           <el-form-item label="支付产品编码：">
-            <el-input v-model="searchForm.productCode" placeholder="请输入编码" class="input-normal" clearable />
+            <el-input
+              v-model="searchForm.productCode"
+              placeholder="请输入产品编码"
+              clearable
+              class="input-normal"
+            />
           </el-form-item>
 
           <el-form-item label="供应商：">
-            <el-input v-model="searchForm.supplier" placeholder="请输入供应商名称" class="input-normal" clearable />
+            <el-select
+              v-model="searchForm.supplier"
+              placeholder="请选择供应商"
+              filterable
+              clearable
+              class="input-normal"
+            >
+              <el-option
+                v-for="item in supplierOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
           </el-form-item>
         </div>
 
         <!-- 第四行筛选项 -->
         <div class="filter-line">
           <el-form-item label="供应商通道：">
-            <el-input v-model="searchForm.supplierChannel" placeholder="请输入供应商通道名称" class="input-large" clearable />
+            <el-select
+              v-model="searchForm.supplierChannel"
+              placeholder="请选择供应商通道"
+              filterable
+              clearable
+              class="input-large"
+            >
+              <el-option
+                v-for="item in channelOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
           </el-form-item>
 
           <el-form-item label="隔日补单：">
@@ -130,8 +174,7 @@
               <el-option label="订单创建" value="created" />
               <el-option label="交易成功" value="success" />
               <el-option label="待付款" value="pending" />
-              <el-option label="交易失败" value="failed" />
-              <el-option label="拉单失败" value="pull_failed" />
+              <el-option label="下单失败" value="failed" />
               <el-option label="交易撤销" value="canceled" />
               <el-option label="补单成功" value="reorder_success" />
               <el-option label="交易关闭" value="closed" />
@@ -330,24 +373,40 @@
                     <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
                   </template>
-                  <!-- 待付款 -->
+                  
+                  <!-- 付款中 -->
                   <template v-else-if="row.orderStatus === 'pending'">
-                    <el-dropdown-item :command="{type: 'reorder', row: row}">手动补单</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'reorder', row: row}">手动补单</el-dropdown-item>
                   </template>
-                  <!-- 交易成功/补单成功 -->
-                  <template v-else-if="row.orderStatus === 'success' || row.orderStatus === 'reorder_success'">
+                  
+                  <!-- 交易成功 -->
+                  <template v-else-if="row.orderStatus === 'success'">
                     <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'resend', row: row}">重新推送</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'cancel', row: row}">双向撤销</el-dropdown-item>
                   </template>
-                  <!-- 交易失败/拉单失败/交易关闭 -->
-                  <template v-else-if="row.orderStatus === 'failed' || row.orderStatus === 'pull_failed' || row.orderStatus === 'closed'">
-                    <el-dropdown-item :command="{type: 'reorder', row: row}">手动补单</el-dropdown-item>
+                  
+                  <!-- 补单成功 -->
+                  <template v-else-if="row.orderStatus === 'reorder_success'">
+                    <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'resend', row: row}">重新推送</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'cancel', row: row}">双向撤销</el-dropdown-item>
+                  </template>
+                  
+                  <!-- 下单失败 -->
+                  <template v-else-if="row.orderStatus === 'failed'">
+                    <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
+                  </template>
+                  
+                  <!-- 交易关闭 -->
+                  <template v-else-if="row.orderStatus === 'closed'">
                     <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'reorder', row: row}">手动补单</el-dropdown-item>
                   </template>
+                  
                   <!-- 交易撤销 -->
                   <template v-else-if="row.orderStatus === 'canceled'">
                     <el-dropdown-item disabled>手动回调</el-dropdown-item>
@@ -377,7 +436,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { 
   Search, 
   Refresh, 
@@ -395,6 +454,8 @@ import {
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
+import { channelList } from '@/data/channelData'
+import { supplierList } from '@/data/supplierData'
 
 // 加载状态
 const loading = ref(false)
@@ -415,6 +476,30 @@ const getDateRangeByType = (type) => {
       return []
   }
 }
+
+// 支付产品选项
+const productOptions = ref([
+  { value: 'ALIPAY', label: '支付宝支付' },
+  { value: 'WECHAT', label: '微信支付' },
+  { value: 'UNIONPAY', label: '银联支付' },
+  { value: 'QUICKPAY', label: '快捷支付' }
+])
+
+// 供应商选项
+const supplierOptions = computed(() => {
+  return supplierList.map(item => ({
+    value: item.code,
+    label: item.supplier
+  }))
+})
+
+// 供应商通道选项
+const channelOptions = computed(() => {
+  return channelList.map(item => ({
+    value: item.channelCode,
+    label: `${item.supplier} | ${item.channelName} | ${item.rate}%`
+  }))
+})
 
 // 搜索表单数据
 const searchForm = reactive({
@@ -579,29 +664,7 @@ const tableData = ref([
     completeTime: '2024-04-08 16:25:30',
     remarkInfo: '请查看右下角悬浮文档图标'
   },
-  {
-    merchantId: '7',
-    merchantName: '商户账号G',
-    upstream: '上游通道D',
-    channelCode: 'wx_mini',
-    orderNo: '108',
-    merchantOrderNo: 'MO20240409001',
-    productCode: '3333',
-    productName: '支付产品G',
-    orderAmount: '350.00',
-    receiveAmount: '0.00',
-    fee: '0.00',
-    channelCost: '0.00',
-    upstreamOrderNo: '',
-    upstreamChannelCode: 'wxpay_003',
-    pushStatus: false,
-    pushResult: '',
-    isNextDay: false,
-    orderStatus: 'pull_failed',
-    createTime: '2024-04-09 11:40:20',
-    completeTime: '2024-04-09 11:41:05',
-    remarkInfo: '请查看右下角悬浮文档图标'
-  },
+
   {
     merchantId: '8',
     merchantName: '商户账号H',
@@ -641,7 +704,6 @@ const getStatusType = (status) => {
     pending: 'warning',
     success: 'success',
     failed: 'danger',
-    pull_failed: 'danger',
     canceled: 'info',
     reorder_success: 'success',
     closed: 'info'
@@ -663,8 +725,7 @@ const getStatusText = (status) => {
     created: '订单创建',
     pending: '待付款',
     success: '交易成功',
-    failed: '交易失败',
-    pull_failed: '拉单失败',
+    failed: '下单失败',
     canceled: '交易撤销',
     reorder_success: '补单成功',
     closed: '交易关闭'
@@ -869,7 +930,6 @@ function getOrderStatusTagClass(status) {
     case 'success': return 'tag-status-success';
     case 'reorder_success': return 'tag-status-reorder-success';
     case 'failed': return 'tag-status-failed';
-    case 'pull_failed': return 'tag-status-pull-failed';
     case 'closed': return 'tag-status-closed';
     case 'canceled': return 'tag-status-canceled';
     default: return '';
@@ -1190,11 +1250,6 @@ function getOrderStatusTagClass(status) {
   border: 1px solid #E06666 !important;
   background: #FBECEC !important;
   color: #B73232 !important;
-}
-.tag-status-pull-failed {
-  border: 1px solid #F36C6C !important;
-  background: #FDECEC !important;
-  color: #C84040 !important;
 }
 .tag-status-closed {
   border: 1px solid #A0A0A0 !important;

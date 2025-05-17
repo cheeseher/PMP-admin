@@ -2,7 +2,7 @@
 export const OrderStatus = {
   PROCESSING: '订单处理中',
   SUCCESS: '交易成功',
-  FAILED: '交易失败',
+  FAILED: '下单失败',
   REFUND: '已退款',
   CANCELLED: '已取消'
 }

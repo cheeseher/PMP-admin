@@ -393,7 +393,7 @@
     <el-dialog
       title="产品配置"
       v-model="productConfigVisible"
-      width="650px"
+      width="750px"
       destroy-on-close
     >
       <el-form
@@ -408,69 +408,86 @@
           <el-input v-model="productConfigForm.productName" disabled />
         </el-form-item>
         
-        <!-- 非自定义模式下的支付产品选择 -->
-        <el-form-item label="选择支付产品" v-if="!productConfigForm.customOption">
-          <el-select 
-            v-model="productConfigForm.selectedProduct" 
-            placeholder="请选择支付产品"
-            style="width: 100%"
-          >
-            <el-option 
-              v-for="item in paymentProducts" 
-              :key="item.id" 
-              :label="item.productName" 
-              :value="item.id" 
-              :default-first-option="true"
-            />
-          </el-select>
-        </el-form-item>
-        
-        <!-- 自定义模式下的支付产品显示 -->
-        <el-form-item label="支付产品" v-if="productConfigForm.customOption">
-          <el-input 
-            :value="getSelectedProductName()"
-            placeholder="无已选支付产品"
-            disabled
-            style="width: 100%"
-          />
-        </el-form-item>
-        
-        <el-form-item label="支付产品编码" prop="productCode">
-          <el-input 
-            v-model="productConfigForm.productCode" 
-            placeholder="请输入支付产品编码"
-            style="width: 100%"
-            disabled
-          />
-        </el-form-item>
-        
-        <el-form-item label="商户费率" prop="merchantRate">
-          <div class="rate-input-group">
-            <el-input-number 
-              v-model="productConfigForm.merchantRate" 
-              :precision="2" 
-              :step="0.1" 
-              :min="0" 
-              :max="20"
-              controls-position="right"
-              style="width: 120px"
-            />
-            <span class="rate-unit">%</span>
+        <!-- 已配置的支付产品表格 -->
+        <el-form-item label="已配置产品">
+          <div class="table-toolbar" style="margin-bottom: 10px;">
+            <div>
+              <el-button type="primary" size="small" :icon="Plus" @click="showAddProductDialog">新增产品</el-button>
+            </div>
           </div>
+          
+          <el-table :data="productConfigForm.productRates" style="width: 100%" border>
+            <el-table-column prop="productName" label="支付产品名称" min-width="180" />
+            <el-table-column prop="productCode" label="支付产品编码" width="80" />
+            <el-table-column label="商户费率" width="120">
+              <template #default="scope">
+                <div class="rate-input-group">
+                  <el-input-number 
+                    v-model="scope.row.rate" 
+                    :precision="2" 
+                    :step="0.1" 
+                    :min="0"
+                    :max="20"
+                    controls-position="right"
+                    size="small"
+                    style="width: 100px"
+                  />
+                  <span class="rate-unit">%</span>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column label="自定义通道" width="100">
+              <template #default="scope">
+                <el-tag v-if="scope.row.customOption" type="success" size="small">已开启</el-tag>
+                <el-tag v-else type="info" size="small">未开启</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="200">
+              <template #default="scope">
+                <el-button type="primary" link size="small" @click="handleCustomChannel(scope.row)">
+                  自定义通道
+                </el-button>
+                <el-button type="danger" link size="small" @click="removeConfiguredProduct(scope.$index)">
+                  移除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          
+          <!-- 空数据提示 -->
+          <el-empty v-if="productConfigForm.productRates.length === 0" description="暂无配置产品" />
         </el-form-item>
-        
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="productConfigVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitProductConfig">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 自定义通道配置弹窗 -->
+    <el-drawer
+      :title="'自定义通道配置 - ' + currentEditingProduct.productName"
+      v-model="showCustomSection"
+      direction="rtl"
+      size="650px"
+      destroy-on-close
+      :close-on-click-modal="false"
+    >
+      <el-form label-width="100px" style="padding: 20px;">
         <el-form-item label="自定义通道">
           <el-switch 
-            v-model="productConfigForm.customOption" 
+            v-model="currentEditingProduct.customOption" 
             active-text="启用"
             inactive-text="禁用"
           />
           <div class="form-tip">启用后可以自定义选择供应商通道</div>
         </el-form-item>
         
-        <el-form-item label="供应商通道" v-if="productConfigForm.customOption">
+        <el-form-item label="供应商通道" v-if="currentEditingProduct.customOption">
           <el-select 
-            v-model="productConfigForm.selectedChannels" 
+            v-model="currentEditingProduct.selectedChannels" 
             multiple
             collapse-tags
             collapse-tags-tooltip
@@ -480,7 +497,7 @@
             <el-option 
               v-for="item in supplierChannels" 
               :key="item.id" 
-              :label="'渠道' + item.channelCode + ' | ' + item.channelName" 
+              :label="'渠道' + item.channelCode + ' | ' + item.channelName + ' | ' + item.rate + '%'" 
               :value="item.id" 
             />
           </el-select>
@@ -488,10 +505,10 @@
         </el-form-item>
         
         <!-- 已选择的通道表格 -->
-        <el-form-item v-if="productConfigForm.customOption && productConfigForm.selectedChannels.length > 0" label="已选择的通道">
+        <el-form-item v-if="currentEditingProduct.customOption && currentEditingProduct.selectedChannels.length > 0" label="已选择的通道">
           <!-- 轮询方式选择 -->
           <div class="polling-option" style="margin-bottom: 12px;">
-            <el-radio-group v-model="productConfigForm.routingMode" size="small">
+            <el-radio-group v-model="currentEditingProduct.routingMode" size="small">
               <el-radio label="polling">轮询</el-radio>
               <el-radio label="weight">权重</el-radio>
             </el-radio-group>
@@ -500,23 +517,23 @@
             </div>
           </div>
           
-          <el-table :data="getSelectedChannelsData()" border style="width: 100%;">
+          <el-table :data="getSelectedChannelsDataForProduct(currentEditingProduct)" border style="width: 100%;">
             <el-table-column prop="channelName" label="通道名称" min-width="160">
               <template #default="scope">
                 <span>渠道{{ scope.row.channelCode }} | {{ scope.row.channelName }}</span>
               </template>
             </el-table-column>
-            <el-table-column prop="channelCode" label="通道编码" min-width="120" />
+            <el-table-column prop="channelCode" label="通道编码" width="80" />
             <el-table-column prop="rate" label="通道成本" width="100">
               <template #default="scope">
                 <span>{{ scope.row.rate }}%</span>
               </template>
             </el-table-column>
-            <el-table-column label="权重" width="120">
+            <el-table-column label="权重" width="150">
               <template #default="scope">
                 <el-input-number 
                   v-model="scope.row.weight" 
-                  :disabled="productConfigForm.routingMode === 'polling'"
+                  :disabled="currentEditingProduct.routingMode === 'polling'"
                   :precision="0" 
                   :step="1" 
                   :min="1" 
@@ -524,7 +541,7 @@
                   size="small"
                   controls-position="right"
                   style="width: 100px"
-                  @change="(val) => updateChannelWeight(scope.row.id, val)"
+                  @change="(val) => updateChannelWeightForProduct(currentEditingProduct, scope.row.id, val)"
                 />
               </template>
             </el-table-column>
@@ -534,7 +551,7 @@
                   type="danger" 
                   link 
                   size="small" 
-                  @click="removeSelectedChannel(scope.row.id)"
+                  @click="removeSelectedChannelForProduct(currentEditingProduct, scope.row.id)"
                 >
                   移除
                 </el-button>
@@ -542,14 +559,50 @@
             </el-table-column>
           </el-table>
         </el-form-item>
-        
-        <!-- 无产品提示 -->
-        <el-empty v-if="!productConfigForm.customOption && productConfigForm.productRates.length === 0" description="请选择支付产品" />
+      </el-form>
+      
+      <div style="padding: 0 20px 20px; position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: end;">
+        <el-button @click="cancelCustomChannel">取消</el-button>
+        <el-button type="primary" @click="confirmCustomChannel">确认</el-button>
+      </div>
+    </el-drawer>
+
+    <!-- 新增产品对话框 -->
+    <el-dialog
+      title="新增支付产品"
+      v-model="addProductDialogVisible"
+      width="500px"
+      append-to-body
+      destroy-on-close
+    >
+      <el-form
+        ref="addProductFormRef"
+        :model="addProductForm"
+        label-width="100px"
+      >
+        <el-form-item label="支付产品" prop="selectedProduct">
+          <el-select 
+            v-model="addProductForm.selectedProduct" 
+            placeholder="请选择支付产品"
+            style="width: 100%"
+            filterable
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
+          >
+            <el-option 
+              v-for="item in availablePaymentProducts" 
+              :key="item.id" 
+              :label="item.productName" 
+              :value="item.id" 
+            />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="productConfigVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitProductConfig">确认</el-button>
+          <el-button @click="addProductDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="confirmAddProduct">确认</el-button>
         </div>
       </template>
     </el-dialog>
@@ -817,6 +870,234 @@ const productConfigForm = reactive({
   channelsWeightMap: {} // 通道权重映射，格式为: {channelId: weight}
 })
 
+// 新增产品相关
+const addProductDialogVisible = ref(false)
+const addProductFormRef = ref(null)
+const addProductForm = reactive({
+  selectedProduct: '',
+  merchantRate: 3.00
+})
+
+// 自定义通道相关
+const showCustomSection = ref(false)
+const currentEditingProduct = reactive({
+  productId: '',
+  productName: '',
+  productCode: '',
+  rate: 0,
+  customOption: false,
+  selectedChannels: [],
+  routingMode: 'polling',
+  channelsWeightMap: {},
+  originalIndex: -1  // 用于记录正在编辑的产品在productRates中的索引
+})
+
+// 获取可选的产品列表（排除已选的）
+const availablePaymentProducts = computed(() => {
+  // 获取已经选择的产品ID列表
+  const selectedProductIds = productConfigForm.productRates.map(item => item.productId)
+  // 过滤出未选择的产品
+  return paymentProducts.value.filter(product => !selectedProductIds.includes(product.id))
+})
+
+// 显示新增产品对话框
+const showAddProductDialog = () => {
+  addProductForm.selectedProduct = ''
+  addProductForm.merchantRate = 3.00
+  addProductDialogVisible.value = true
+}
+
+// 确认新增产品
+const confirmAddProduct = () => {
+  if (!addProductForm.selectedProduct || addProductForm.selectedProduct.length === 0) {
+    ElMessage.warning('请选择支付产品')
+    return
+  }
+  
+  // 支持批量添加
+  addProductForm.selectedProduct.forEach(productId => {
+    const selectedProduct = paymentProducts.value.find(p => p.id === productId)
+    if (selectedProduct) {
+      // 生成四位随机数作为产品编码
+      const randomCode = Math.floor(1000 + Math.random() * 9000).toString()
+      
+      // 添加到产品列表
+      productConfigForm.productRates.push({
+        productId: productId,
+        productName: selectedProduct.productName,
+        productCode: randomCode,
+        rate: selectedProduct.rate || 3.00, // 默认带入产品的rate
+        customOption: false,
+        selectedChannels: [],
+        routingMode: 'polling',
+        channelsWeightMap: {}
+      })
+    }
+  })
+  
+  addProductDialogVisible.value = false
+  ElMessage.success('添加产品成功')
+}
+
+// 删除已配置产品
+const removeConfiguredProduct = (index) => {
+  ElMessageBox.confirm('确定要移除此产品配置吗?', '确认操作', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    productConfigForm.productRates.splice(index, 1)
+    ElMessage.success('已移除产品配置')
+  }).catch(() => {})
+}
+
+// 处理自定义通道
+const handleCustomChannel = (product) => {
+  // 找到产品在数组中的索引
+  const index = productConfigForm.productRates.findIndex(item => 
+    item.productId === product.productId && item.productCode === product.productCode
+  )
+  
+  if (index !== -1) {
+    // 复制产品数据到当前编辑对象
+    Object.assign(currentEditingProduct, JSON.parse(JSON.stringify(product)))
+    currentEditingProduct.originalIndex = index
+    
+    // 默认启用自定义通道
+    currentEditingProduct.customOption = true
+    
+    // 初始化channelsWeightMap如果不存在
+    if (!currentEditingProduct.channelsWeightMap) {
+      currentEditingProduct.channelsWeightMap = {}
+    }
+    
+    // 初始化selectedChannels如果不存在
+    if (!currentEditingProduct.selectedChannels) {
+      currentEditingProduct.selectedChannels = []
+    }
+    
+    // 初始化routingMode如果不存在
+    if (!currentEditingProduct.routingMode) {
+      currentEditingProduct.routingMode = 'polling'
+    }
+    
+    showCustomSection.value = true
+  }
+}
+
+// 获取特定产品的已选通道数据
+const getSelectedChannelsDataForProduct = (product) => {
+  if (!product.selectedChannels || product.selectedChannels.length === 0) {
+    return []
+  }
+  
+  // 从产品的channelsWeightMap获取权重或使用默认值10
+  return supplierChannels.value.filter(item => 
+    product.selectedChannels.includes(item.id)
+  ).map(channel => ({
+    ...channel,
+    weight: product.channelsWeightMap[channel.id] || 10
+  }))
+}
+
+// 更新特定产品的通道权重
+const updateChannelWeightForProduct = (product, channelId, weight) => {
+  if (!product.channelsWeightMap) {
+    product.channelsWeightMap = {}
+  }
+  product.channelsWeightMap[channelId] = weight
+}
+
+// 移除特定产品的已选通道
+const removeSelectedChannelForProduct = (product, channelId) => {
+  if (product.selectedChannels) {
+    const index = product.selectedChannels.indexOf(channelId)
+    if (index !== -1) {
+      product.selectedChannels.splice(index, 1)
+    }
+    
+    // 同时移除权重映射中的数据
+    if (product.channelsWeightMap && product.channelsWeightMap[channelId]) {
+      delete product.channelsWeightMap[channelId]
+    }
+  }
+}
+
+// 返回产品列表
+const backToProductList = () => {
+  // 自动保存当前编辑的产品配置
+  if (currentEditingProduct.originalIndex >= 0) {
+    // 更新原产品数据
+    const updatedProduct = JSON.parse(JSON.stringify(currentEditingProduct))
+    delete updatedProduct.originalIndex // 删除辅助字段，不需要保存
+    
+    productConfigForm.productRates[currentEditingProduct.originalIndex] = updatedProduct
+    ElMessage.success('通道配置已保存')
+  }
+  
+  // 隐藏自定义通道部分
+  showCustomSection.value = false
+  currentEditingProduct.originalIndex = -1
+}
+
+// 取消自定义通道配置
+const cancelCustomChannel = () => {
+  showCustomSection.value = false
+  currentEditingProduct.originalIndex = -1
+}
+
+// 确认自定义通道配置
+const confirmCustomChannel = () => {
+  if (currentEditingProduct.originalIndex >= 0) {
+    // 更新原产品数据
+    const updatedProduct = JSON.parse(JSON.stringify(currentEditingProduct))
+    delete updatedProduct.originalIndex // 删除辅助字段，不需要保存
+    
+    productConfigForm.productRates[currentEditingProduct.originalIndex] = updatedProduct
+    ElMessage.success('通道配置已更新')
+  }
+  
+  showCustomSection.value = false
+  currentEditingProduct.originalIndex = -1
+}
+
+// 提交批量配置
+const submitBatchConfig = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请选择至少一个商户')
+    return
+  }
+  
+  if (batchConfigForm.productRates.length === 0) {
+    ElMessage.warning('请选择至少一个支付产品')
+    return
+  }
+  
+  // 构造提交数据
+  const submitData = {
+    merchantIds: selectedRows.value.map(row => row.id),
+    products: batchConfigForm.productRates.map(item => ({
+      productId: item.productId,
+      productName: item.productName,
+      productCode: item.productCode,
+      rate: item.rate
+    }))
+  }
+  
+  console.log('提交的批量配置数据:', submitData)
+  
+  // 这里应该是调用API保存数据
+  // saveBatchConfig(submitData)
+  
+  // 模拟提交成功
+  setTimeout(() => {
+    ElMessage.success('批量配置保存成功')
+    batchConfigVisible.value = false
+    // 刷新表格
+    fetchData()
+  }, 500)
+}
+
 // 处理下拉菜单操作
 const handleCommand = (command, row) => {
   switch (command) {
@@ -845,103 +1126,79 @@ const handleConfig = (row) => {
   productConfigForm.merchantId = row.id
   productConfigForm.productId = row.productId
   productConfigForm.productName = row.productName
-  productConfigForm.selectedProduct = ''
-  productConfigForm.productCode = '' // 重置产品编码
-  productConfigForm.merchantRate = 3.00 // 重置默认费率
+  
+  // 清空产品配置相关的数据
   productConfigForm.productRates = []
-  productConfigForm.customOption = false
-  productConfigForm.selectedChannels = []
-  productConfigForm.routingMode = 'polling' // 默认使用轮询模式
-  productConfigForm.channelsWeightMap = {} // 重置通道权重映射
+  
+  // 重置自定义通道相关状态
+  showCustomSection.value = false
+  Object.keys(currentEditingProduct).forEach(key => {
+    if (key === 'customOption' || key === 'routingMode') {
+      currentEditingProduct[key] = 'polling'
+    } else if (key === 'selectedChannels') {
+      currentEditingProduct[key] = []
+    } else if (key === 'channelsWeightMap') {
+      currentEditingProduct[key] = {}
+    } else if (key === 'originalIndex') {
+      currentEditingProduct[key] = -1
+    } else {
+      currentEditingProduct[key] = ''
+    }
+  })
   
   // 获取商户已关联的产品
   const existingProducts = merchantProductList.filter(item => 
     item.merchantNo === row.productNo || item.merchantName === row.productName
   )
   
-  if (existingProducts.length > 0 && existingProducts[0]) {
-    // 加载第一个关联产品
-    const firstProduct = existingProducts[0]
-    
-    // 检查是否有路由模式设置，如果有就使用
-    if (firstProduct.routingMode) {
-      productConfigForm.routingMode = firstProduct.routingMode;
-    }
-    
-    const productId = paymentProducts.value.find(p => p.productName === firstProduct.productName)?.id
-    
-    if (productId) {
-      // 如果是标准产品
-      productConfigForm.selectedProduct = productId
+  if (existingProducts.length > 0) {
+    // 加载所有关联产品
+    existingProducts.forEach(product => {
+      const productData = {
+        productId: '',
+        productName: product.productName,
+        productCode: '',
+        rate: product.rate || 3.00,
+        customOption: false,
+        selectedChannels: [],
+        routingMode: product.routingMode || 'polling',
+        channelsWeightMap: {}
+      }
       
       // 检查编码格式，如果不是"1111"格式则生成新编码
-      if (!/^\d{4}$/.test(firstProduct.productCode)) {
+      if (!/^\d{4}$/.test(product.productCode)) {
         const randomCode = Math.floor(1000 + Math.random() * 9000).toString()
-        productConfigForm.productCode = randomCode
+        productData.productCode = randomCode
       } else {
-        productConfigForm.productCode = firstProduct.productCode // 设置产品编码
+        productData.productCode = product.productCode
       }
       
-      productConfigForm.merchantRate = firstProduct.rate // 设置商户费率
-      productConfigForm.productRates = [{
-        productId: productId,
-        productName: firstProduct.productName,
-        productCode: productConfigForm.productCode,
-        rate: firstProduct.rate,
-        weight: firstProduct.weight || 10
-      }]
-    } else if (firstProduct.productName.startsWith('自定义-')) {
-      // 如果是自定义产品
-      productConfigForm.customOption = true
-      const channelName = firstProduct.productName.replace('自定义-', '')
-      const channel = supplierChannels.value.find(c => c.channelName === channelName)
-      
-      if (channel) {
-        productConfigForm.selectedChannels = [channel.id]
+      // 判断是标准产品还是自定义产品
+      if (product.productName.startsWith('自定义-')) {
+        // 自定义产品
+        productData.customOption = true
+        const channelName = product.productName.replace('自定义-', '')
+        const channel = supplierChannels.value.find(c => c.channelName === channelName)
         
-        // 检查编码格式，如果不是"1111"格式则生成新编码
-        if (!/^\d{4}$/.test(firstProduct.productCode)) {
-          const randomCode = Math.floor(1000 + Math.random() * 9000).toString()
-          productConfigForm.productCode = randomCode
-        } else {
-          productConfigForm.productCode = firstProduct.productCode // 设置产品编码
-        }
-        
-        productConfigForm.merchantRate = firstProduct.rate // 设置商户费率
-        
-        // 设置通道权重
-        if (firstProduct.weight) {
-          productConfigForm.channelsWeightMap[channel.id] = firstProduct.weight;
-        }
-        
-        productConfigForm.productRates = [{
-          productId: firstProduct.productId,
-          productName: firstProduct.productName,
-          productCode: productConfigForm.productCode,
-          rate: firstProduct.rate,
-          weight: firstProduct.weight || 10
-        }]
-      }
-    }
-    
-    // 如果有多个产品，还需要加载其他产品的权重设置
-    if (existingProducts.length > 1) {
-      existingProducts.slice(1).forEach(product => {
-        if (product.productName.startsWith('自定义-')) {
-          const channelName = product.productName.replace('自定义-', '')
-          const channel = supplierChannels.value.find(c => c.channelName === channelName)
+        if (channel) {
+          productData.selectedChannels = [channel.id]
           
-          if (channel && !productConfigForm.selectedChannels.includes(channel.id)) {
-            productConfigForm.selectedChannels.push(channel.id);
-            
-            // 设置通道权重
-            if (product.weight) {
-              productConfigForm.channelsWeightMap[channel.id] = product.weight;
-            }
+          // 设置通道权重
+          if (product.weight) {
+            productData.channelsWeightMap[channel.id] = product.weight
           }
         }
-      });
-    }
+      } else {
+        // 标准产品
+        const paymentProduct = paymentProducts.value.find(p => p.productName === product.productName)
+        if (paymentProduct) {
+          productData.productId = paymentProduct.id
+        }
+      }
+      
+      // 添加到产品列表
+      productConfigForm.productRates.push(productData)
+    })
   }
   
   productConfigVisible.value = true
@@ -1033,66 +1290,56 @@ const getSubAccountName = (id) => {
   return account ? `${account.productName} (${account.id})` : `未知账户(${id})`
 }
 
-// 更新通道权重映射
+// 更新通道权重
 const updateChannelWeight = (channelId, weight) => {
-  productConfigForm.channelsWeightMap[channelId] = weight;
+  productConfigForm.channelsWeightMap[channelId] = weight
 }
 
-// 移除已选择的通道
+// 移除已选通道
 const removeSelectedChannel = (channelId) => {
-  // 从已选择的通道中移除
-  productConfigForm.selectedChannels = productConfigForm.selectedChannels.filter(id => id !== channelId);
-  // 从权重映射中移除
-  if (channelId in productConfigForm.channelsWeightMap) {
-    delete productConfigForm.channelsWeightMap[channelId];
+  const index = productConfigForm.selectedChannels.indexOf(channelId)
+  if (index !== -1) {
+    productConfigForm.selectedChannels.splice(index, 1)
   }
-}
-
-// 监听表格中权重的变化
-const handleWeightChange = (channel, newWeight) => {
-  updateChannelWeight(channel.id, newWeight);
 }
 
 // 提交产品配置
 const submitProductConfig = () => {
-  // 验证必填字段
-  if (!productConfigForm.productCode.trim()) {
-    ElMessage.warning('请输入支付产品编码')
+  if (productConfigForm.productRates.length === 0) {
+    ElMessage.warning('请至少配置一个支付产品')
     return
   }
-  
-  // 提取标准支付产品信息
-  let products = [...productConfigForm.productRates];
-  
-  // 处理自定义通道模式
-  if (productConfigForm.customOption && productConfigForm.selectedChannels.length > 0) {
-    // 添加选中的通道信息
-    const selectedChannelsData = getSelectedChannelsData();
-    
-    // 记录自定义通道信息
-    const channelProducts = selectedChannelsData.map(channel => ({
-      productId: `channel_${channel.id}`,
-      productName: `自定义-${channel.channelName}`,
-      productCode: productConfigForm.productCode,
-      rate: productConfigForm.merchantRate,
-      weight: productConfigForm.routingMode === 'weight' ? (channel.weight || 10) : 10
-    }));
-    
-    // 合并产品列表
-    products = products.concat(channelProducts);
+
+  // 检查每个产品的配置是否完整
+  for (const product of productConfigForm.productRates) {
+    if (product.customOption && (!product.selectedChannels || product.selectedChannels.length === 0)) {
+      ElMessage.warning(`产品"${product.productName}"已启用自定义通道，但未选择任何供应商通道`)
+      return
+    }
   }
   
   // 构造提交数据
   const submitData = {
     merchantId: productConfigForm.merchantId,
-    productId: productConfigForm.productId,
-    productName: productConfigForm.productName,
-    productCode: productConfigForm.productCode,
-    merchantRate: productConfigForm.merchantRate,
-    products: products,
-    customOption: productConfigForm.customOption,
-    selectedChannels: productConfigForm.selectedChannels,
-    routingMode: productConfigForm.routingMode
+    merchantName: productConfigForm.productName,
+    productConfigs: productConfigForm.productRates.map(product => {
+      const productConfig = {
+        productId: product.productId,
+        productName: product.productName,
+        productCode: product.productCode,
+        merchantRate: product.rate
+      }
+      
+      // 如果启用了自定义通道
+      if (product.customOption) {
+        productConfig.customOption = true
+        productConfig.selectedChannels = product.selectedChannels
+        productConfig.routingMode = product.routingMode
+        productConfig.channelsWeightMap = product.channelsWeightMap
+      }
+      
+      return productConfig
+    })
   }
   
   console.log('提交的产品配置数据:', submitData)
@@ -1132,43 +1379,6 @@ const removeBatchProductRate = (productId) => {
   if (index !== -1) {
     batchConfigForm.productRates.splice(index, 1)
   }
-}
-
-// 提交批量配置
-const submitBatchConfig = () => {
-  if (selectedRows.value.length === 0) {
-    ElMessage.warning('请选择至少一个商户')
-    return
-  }
-  
-  if (batchConfigForm.productRates.length === 0) {
-    ElMessage.warning('请选择至少一个支付产品')
-    return
-  }
-  
-  // 构造提交数据
-  const submitData = {
-    merchantIds: selectedRows.value.map(row => row.id),
-    products: batchConfigForm.productRates.map(item => ({
-      productId: item.productId,
-      productName: item.productName,
-      productCode: item.productCode,
-      rate: item.rate
-    }))
-  }
-  
-  console.log('提交的批量配置数据:', submitData)
-  
-  // 这里应该是调用API保存数据
-  // saveBatchConfig(submitData)
-  
-  // 模拟提交成功
-  setTimeout(() => {
-    ElMessage.success('批量配置保存成功')
-    batchConfigVisible.value = false
-    // 刷新表格
-    fetchData()
-  }, 500)
 }
 
 // 处理批量配置
@@ -1480,13 +1690,11 @@ const availableSubAccounts = computed(() => {
   return productList.filter(item => item.id !== productForm.id);
 });
 
-// 获取已选产品名称
+// 获取已选产品名称（废弃，目前已不需要）
 const getSelectedProductName = () => {
-  if (productConfigForm.selectedProduct) {
-    const product = paymentProducts.value.find(p => p.id === productConfigForm.selectedProduct);
-    return product ? product.productName : '';
-  }
-  return '';
+  return productConfigForm.customOption 
+    ? '自定义通道' 
+    : paymentProducts.value.find(p => p.id === productConfigForm.selectedProduct)?.productName || '未选择'
 }
 
 // 组件挂载时获取数据

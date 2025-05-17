@@ -14,6 +14,19 @@
           <el-form-item label="通道编码：">
             <el-input v-model="searchForm.channelCode" placeholder="请输入通道编码" style="width: 220px" clearable />
           </el-form-item>
+          <el-form-item label="分组：">
+            <el-select v-model="searchForm.category" placeholder="请选择分组" style="width: 168px" clearable>
+              <el-option label="全部" value="" />
+              <el-option v-for="item in categoryOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="状态：">
+            <el-select v-model="searchForm.status" placeholder="请选择状态" style="width: 120px" clearable>
+              <el-option label="全部" value="" />
+              <el-option label="启用" :value="true" />
+              <el-option label="禁用" :value="false" />
+            </el-select>
+          </el-form-item>
         </div>
         
         <div class="filter-buttons">
@@ -185,7 +198,7 @@
           />
         </el-form-item>
         <el-form-item label="渠道名称" prop="supplier">
-          <el-select v-model="channelForm.supplier" placeholder="请选择渠道" clearable style="width: 100%">
+          <el-select v-model="channelForm.supplier" placeholder="请选择渠道" clearable style="width: 100%" filterable>
             <el-option
               v-for="item in supplierOptions"
               :key="item.value"
@@ -318,7 +331,9 @@ import { supplierList } from '@/data/supplierData'
 const searchForm = reactive({
   id: '',
   channelName: '',
-  channelCode: ''
+  channelCode: '',
+  category: '',
+  status: ''
 })
 
 // 表格数据相关
@@ -458,6 +473,14 @@ const fetchData = () => {
     if (searchForm.channelCode) {
       filteredData = filteredData.filter(item => 
         item.channelCode.includes(searchForm.channelCode))
+    }
+    
+    if (searchForm.category) {
+      filteredData = filteredData.filter(item => item.category === searchForm.category)
+    }
+    
+    if (searchForm.status !== '') {
+      filteredData = filteredData.filter(item => item.enabled === (searchForm.status === true || searchForm.status === 'true'))
     }
     
     tableData.value = filteredData

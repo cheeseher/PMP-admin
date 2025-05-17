@@ -124,7 +124,7 @@
           <el-input v-model="productForm.productCode" placeholder="请输入支付产品编码" />
         </el-form-item>
         <el-form-item label="供应商通道" prop="channelCode">
-          <el-select v-model="productForm.channelCode" multiple placeholder="请选择供应商通道" style="width: 100%" @change="handleChannelChange">
+          <el-select v-model="productForm.channelCode" multiple filterable placeholder="请选择供应商通道" style="width: 100%" @change="handleChannelChange">
             <el-option
               v-for="item in supplierChannelOptions"
               :key="item.value"

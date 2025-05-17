@@ -489,6 +489,7 @@
           <el-select 
             v-model="currentEditingProduct.selectedChannels" 
             multiple
+            filterable
             collapse-tags
             collapse-tags-tooltip
             placeholder="请选择供应商通道"

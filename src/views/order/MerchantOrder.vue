@@ -56,6 +56,10 @@
             <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" class="input-normal" clearable />
           </el-form-item>
           
+          <el-form-item label="商户号：">
+            <el-input v-model="searchForm.merchantNo" placeholder="请输入商户号" class="input-normal" clearable />
+          </el-form-item>
+          
           <el-form-item label="商户账户：">
             <el-input v-model="searchForm.merchantAccount" placeholder="请输入商户账户" class="input-normal" clearable />
           </el-form-item>
@@ -94,12 +98,7 @@
           </el-form-item>
 
           <el-form-item label="支付产品：">
-            <el-select v-model="searchForm.productName" placeholder="请选择" class="input-normal" clearable>
-              <el-option label="全部产品" value="all" />
-              <el-option label="支付产品A" value="productA" />
-              <el-option label="支付产品B" value="productB" />
-              <el-option label="支付产品C" value="productC" />
-            </el-select>
+            <el-input v-model="searchForm.productName" placeholder="请输入支付产品名称" class="input-large" clearable />
           </el-form-item>
 
           <el-form-item label="支付产品编码：">
@@ -107,24 +106,14 @@
           </el-form-item>
 
           <el-form-item label="供应商：">
-            <el-select v-model="searchForm.supplier" placeholder="请选择" class="input-normal" clearable>
-              <el-option label="全部供应商" value="all" />
-              <el-option label="上游通道A" value="A" />
-              <el-option label="上游通道B" value="B" />
-              <el-option label="上游通道C" value="C" />
-            </el-select>
+            <el-input v-model="searchForm.supplier" placeholder="请输入供应商名称" class="input-normal" clearable />
           </el-form-item>
         </div>
 
         <!-- 第四行筛选项 -->
         <div class="filter-line">
           <el-form-item label="供应商通道：">
-            <el-select v-model="searchForm.supplierChannel" placeholder="请选择" class="input-normal" clearable>
-              <el-option label="全部通道" value="all" />
-              <el-option label="通道A" value="A" />
-              <el-option label="通道B" value="B" />
-              <el-option label="通道C" value="C" />
-            </el-select>
+            <el-input v-model="searchForm.supplierChannel" placeholder="请输入供应商通道名称" class="input-large" clearable />
           </el-form-item>
 
           <el-form-item label="隔日补单：">
@@ -257,6 +246,16 @@
         <el-table-column prop="channelCode" label="通道编码" width="100" />
         <el-table-column prop="productName" label="支付产品名称" width="120" />
         <el-table-column prop="productCode" label="支付产品编码" width="100" />
+        <el-table-column prop="orderStatus" label="订单状态" width="100" align="center">
+          <template #default="scope">
+            <el-tag 
+              :class="getOrderStatusTagClass(scope.row.orderStatus)"
+              size="small"
+            >
+              {{ getStatusText(scope.row.orderStatus) }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="orderAmount" label="订单金额" width="100" align="right">
           <template #default="scope">
             <span class="amount-cell">{{ formatAmount(scope.row.orderAmount) }}</span>
@@ -264,45 +263,44 @@
         </el-table-column>
         <el-table-column prop="fee" label="手续费" width="100" align="right">
           <template #default="scope">
-            <span class="amount-cell outcome">{{ formatAmount(scope.row.fee || 0) }}</span>
+            <span class="amount-cell income-green">{{ formatAmount(scope.row.fee || 0) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="receiveAmount" label="入账金额" width="100" align="right">
           <template #default="scope">
-            <span class="amount-cell income">{{ formatAmount(scope.row.receiveAmount || scope.row.orderAmount) }}</span>
+            <span class="amount-cell income-green">{{ formatAmount(scope.row.receiveAmount || scope.row.orderAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="channelCost" label="通道成本" width="100" align="right">
           <template #default="scope">
-            <span class="amount-cell outcome">{{ formatAmount(scope.row.channelCost || 0) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="orderStatus" label="订单状态" width="100" align="center">
-          <template #default="scope">
-            <el-tag 
-              :type="getStatusType(scope.row.orderStatus)" 
-              :style="getStatusStyle(scope.row.orderStatus)"
-              size="small"
-            >
-              {{ getStatusText(scope.row.orderStatus) }}
-            </el-tag>
+            <span class="amount-cell cost-black">{{ formatAmount(scope.row.channelCost || 0) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="pushStatus" label="推送状态" width="90" align="center">
           <template #default="scope">
-            <el-tag 
-              :type="scope.row.pushResult === 'success' ? 'success' : 'danger'" 
-              size="small"
-              v-if="scope.row.pushResult === 'success' || scope.row.pushResult === 'failed'"
-            >
-              {{ scope.row.pushResult === 'success' ? '成功' : '失败' }}
-            </el-tag>
+            <template v-if="scope.row.orderStatus === 'success' || scope.row.orderStatus === 'reorder_success'">
+              <el-tag 
+                :type="scope.row.pushResult === 'success' ? 'success' : 'danger'" 
+                size="small"
+                v-if="scope.row.pushResult === 'success' || scope.row.pushResult === 'failed'"
+              >
+                {{ scope.row.pushResult === 'success' ? '成功' : '失败' }}
+              </el-tag>
+            </template>
+            <template v-else>
+              —
+            </template>
           </template>
         </el-table-column>
         
         <el-table-column prop="pushResultContent" label="推送结果" width="120">
           <template #default="scope">
-            <span v-if="scope.row.pushResult === 'success' || scope.row.pushResult === 'failed'">商户回调内容</span>
+            <template v-if="scope.row.orderStatus === 'success' || scope.row.orderStatus === 'reorder_success'">
+              <span v-if="scope.row.pushResult === 'success' || scope.row.pushResult === 'failed'">商户回调内容</span>
+            </template>
+            <template v-else>
+              —
+            </template>
           </template>
         </el-table-column>
         
@@ -319,7 +317,7 @@
         <el-table-column prop="createTime" label="订单创建时间" width="150" />
         <el-table-column prop="completeTime" label="订单完成时间" width="150" />
         <el-table-column prop="remarkInfo" label="备注" min-width="150" />
-        <el-table-column label="操作" width="170" fixed="right">
+        <el-table-column label="操作" width="120" fixed="right">
           <template #default="{ row }">
             <el-dropdown @command="handleCommand">
               <el-button link type="primary">
@@ -327,23 +325,33 @@
               </el-button>
               <template #dropdown>
                 <el-dropdown-menu>
+                  <!-- 订单创建 -->
+                  <template v-if="row.orderStatus === 'created'">
+                    <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
+                  </template>
+                  <!-- 待付款 -->
+                  <template v-else-if="row.orderStatus === 'pending'">
+                    <el-dropdown-item :command="{type: 'reorder', row: row}">手动补单</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
+                  </template>
                   <!-- 交易成功/补单成功 -->
-                  <template v-if="row.orderStatus === 'success' || row.orderStatus === 'reorder_success'">
+                  <template v-else-if="row.orderStatus === 'success' || row.orderStatus === 'reorder_success'">
+                    <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'resend', row: row}">重新推送</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'cancel', row: row}">双向撤销</el-dropdown-item>
+                  </template>
+                  <!-- 交易失败/拉单失败/交易关闭 -->
+                  <template v-else-if="row.orderStatus === 'failed' || row.orderStatus === 'pull_failed' || row.orderStatus === 'closed'">
+                    <el-dropdown-item :command="{type: 'reorder', row: row}">手动补单</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
                   </template>
                   <!-- 交易撤销 -->
                   <template v-else-if="row.orderStatus === 'canceled'">
-                    <el-dropdown-item :command="{type: 'manualCallback', row: row}" disabled>手动回调</el-dropdown-item>
-                    <el-dropdown-item :command="{type: 'editAmount', row: row}" disabled>修改金额</el-dropdown-item>
-                    <el-dropdown-item :command="{type: 'reorder', row: row}" disabled>手动补单</el-dropdown-item>
-                  </template>
-                  <!-- 其他状态 -->
-                  <template v-else>
-                    <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
-                    <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
-                    <el-dropdown-item :command="{type: 'reorder', row: row}">手动补单</el-dropdown-item>
+                    <el-dropdown-item disabled>手动回调</el-dropdown-item>
+                    <el-dropdown-item disabled>修改金额</el-dropdown-item>
                   </template>
                 </el-dropdown-menu>
               </template>
@@ -416,6 +424,7 @@ const searchForm = reactive({
   orderNo: '',
   merchantOrderNo: '',
   merchantId: '',
+  merchantNo: '',
   merchantAccount: '',
   merchantName: '',
   upstreamOrderNo: '',
@@ -453,7 +462,7 @@ const tableData = ref([
     orderStatus: 'success',
     createTime: '2023-03-14 17:31:32',
     completeTime: '2025-03-22 13:20:31',
-    remarkInfo: '正常订单'
+    remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
     merchantId: '2',
@@ -476,7 +485,7 @@ const tableData = ref([
     orderStatus: 'reorder_success',
     createTime: '2024-02-28 10:25:16',
     completeTime: '2024-02-28 10:30:45',
-    remarkInfo: '补单'
+    remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
     merchantId: '3',
@@ -499,7 +508,7 @@ const tableData = ref([
     orderStatus: 'pending',
     createTime: '2024-03-31 14:22:10',
     completeTime: '',
-    remarkInfo: '待处理'
+    remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
     merchantId: '4',
@@ -522,7 +531,7 @@ const tableData = ref([
     orderStatus: 'canceled',
     createTime: '2024-04-05 09:15:30',
     completeTime: '2024-04-05 09:25:45',
-    remarkInfo: '交易撤销状态订单不支持手动回调及修改金额，点击提示：交易撤销状态订单不支持该操作'
+    remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
     merchantId: '5',
@@ -545,7 +554,7 @@ const tableData = ref([
     orderStatus: 'created',
     createTime: '2024-04-10 14:05:10',
     completeTime: '',
-    remarkInfo: '订单刚创建，尚未处理'
+    remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
     merchantId: '6',
@@ -568,7 +577,7 @@ const tableData = ref([
     orderStatus: 'failed',
     createTime: '2024-04-08 16:20:45',
     completeTime: '2024-04-08 16:25:30',
-    remarkInfo: '用户支付失败，交易未完成'
+    remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
     merchantId: '7',
@@ -591,7 +600,7 @@ const tableData = ref([
     orderStatus: 'pull_failed',
     createTime: '2024-04-09 11:40:20',
     completeTime: '2024-04-09 11:41:05',
-    remarkInfo: '上游渠道拉单失败，请检查通道配置'
+    remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
     merchantId: '8',
@@ -614,7 +623,7 @@ const tableData = ref([
     orderStatus: 'closed',
     createTime: '2024-04-07 19:15:40',
     completeTime: '2024-04-07 19:45:40',
-    remarkInfo: '超时未支付，系统自动关闭'
+    remarkInfo: '请查看右下角悬浮文档图标'
   }
 ])
 
@@ -717,6 +726,7 @@ const handleReset = () => {
     orderNo: '',
     merchantOrderNo: '',
     merchantId: '',
+    merchantNo: '',
     merchantAccount: '',
     merchantName: '',
     upstreamOrderNo: '',
@@ -851,6 +861,20 @@ watch(() => searchForm.timeType, (newType) => {
     searchForm.timeRange = getDateRangeByType(newType)
   }
 })
+
+function getOrderStatusTagClass(status) {
+  switch (status) {
+    case 'created': return 'tag-status-created';
+    case 'pending': return 'tag-status-pending';
+    case 'success': return 'tag-status-success';
+    case 'reorder_success': return 'tag-status-reorder-success';
+    case 'failed': return 'tag-status-failed';
+    case 'pull_failed': return 'tag-status-pull-failed';
+    case 'closed': return 'tag-status-closed';
+    case 'canceled': return 'tag-status-canceled';
+    default: return '';
+  }
+}
 </script>
 
 <style scoped>
@@ -1132,5 +1156,54 @@ watch(() => searchForm.timeType, (newType) => {
 
 :deep(.amount-edit-dialog .el-button--primary) {
   background-color: #409eff !important;
+}
+
+.amount-cell.income-green {
+  color: #67C23A !important;
+}
+
+.amount-cell.cost-black {
+  color: #303133 !important;
+}
+
+.tag-status-created {
+  border: 1px solid #5A9BD5 !important;
+  background: #E6EEF7 !important;
+  color: #1E5F9F !important;
+}
+.tag-status-pending {
+  border: 1px solid #F6B26B !important;
+  background: #FFF2DF !important;
+  color: #C98024 !important;
+}
+.tag-status-success {
+  border: 1px solid #4CAF50 !important;
+  background: #EAF6EA !important;
+  color: #2E7D32 !important;
+}
+.tag-status-reorder-success {
+  border: 1px solid #35B0A6 !important;
+  background: #E3F6F4 !important;
+  color: #1A7B72 !important;
+}
+.tag-status-failed {
+  border: 1px solid #E06666 !important;
+  background: #FBECEC !important;
+  color: #B73232 !important;
+}
+.tag-status-pull-failed {
+  border: 1px solid #F36C6C !important;
+  background: #FDECEC !important;
+  color: #C84040 !important;
+}
+.tag-status-closed {
+  border: 1px solid #A0A0A0 !important;
+  background: #F2F2F2 !important;
+  color: #666666 !important;
+}
+.tag-status-canceled {
+  border: 1px solid #808080 !important;
+  background: #EDEDED !important;
+  color: #555555 !important;
 }
 </style> 

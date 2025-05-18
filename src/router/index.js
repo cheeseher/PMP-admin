@@ -109,6 +109,12 @@ const router = createRouter({
               name: 'PaymentProduct',
               component: () => import('@/views/payment/Product.vue'),
               meta: { title: '支付产品管理' }
+            },
+            {
+              path: 'setting',
+              name: 'PaymentSetting',
+              component: () => import('@/views/payment/Setting.vue'),
+              meta: { title: '支付设置' }
             }
           ]
         },

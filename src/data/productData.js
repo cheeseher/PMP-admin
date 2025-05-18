@@ -12,6 +12,7 @@ export const productList = [
     authIp: '',
     loginCount: 0,
     verified: 'N',
+    enableDeposit: true,
     registerTime: '2024-03-15 10:30:15'
   },
   {
@@ -27,6 +28,7 @@ export const productList = [
     authIp: '',
     loginCount: 0,
     verified: 'N',
+    enableDeposit: false,
     registerTime: '2024-03-20 14:25:36'
   },
   {
@@ -41,6 +43,7 @@ export const productList = [
     authIp: '192.168.1.100',
     loginCount: 5,
     verified: 'Y',
+    enableDeposit: true,
     registerTime: '2024-02-10 08:15:42'
   },
   {
@@ -55,6 +58,7 @@ export const productList = [
     authIp: '192.168.1.101',
     loginCount: 8,
     verified: 'Y',
+    enableDeposit: false,
     registerTime: '2024-02-15 09:20:30'
   },
   {
@@ -69,6 +73,7 @@ export const productList = [
     authIp: '192.168.1.102',
     loginCount: 3,
     verified: 'Y',
+    enableDeposit: true,
     registerTime: '2024-02-20 11:45:18'
   },
   {
@@ -83,6 +88,7 @@ export const productList = [
     authIp: '192.168.1.103',
     loginCount: 6,
     verified: 'Y',
+    enableDeposit: false,
     registerTime: '2024-02-25 14:30:55'
   },
   {
@@ -97,6 +103,7 @@ export const productList = [
     authIp: '192.168.1.104',
     loginCount: 4,
     verified: 'N',
+    enableDeposit: true,
     registerTime: '2024-03-01 16:10:25'
   },
   {
@@ -111,6 +118,7 @@ export const productList = [
     authIp: '192.168.1.105',
     loginCount: 7,
     verified: 'Y',
+    enableDeposit: false,
     registerTime: '2024-03-05 10:05:40'
   },
   {
@@ -125,6 +133,7 @@ export const productList = [
     authIp: '192.168.1.106',
     loginCount: 9,
     verified: 'Y',
+    enableDeposit: true,
     registerTime: '2024-03-10 12:40:15'
   },
   {
@@ -139,6 +148,7 @@ export const productList = [
     authIp: '192.168.1.107',
     loginCount: 2,
     verified: 'N',
+    enableDeposit: false,
     registerTime: '2024-03-15 15:25:30'
   }
 ]; 

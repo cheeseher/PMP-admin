@@ -84,6 +84,7 @@
             </template>
             <el-menu-item index="/payment/type">支付类型管理</el-menu-item>
             <el-menu-item index="/payment/product">支付产品管理</el-menu-item>
+            <el-menu-item index="/payment/setting">支付设置</el-menu-item>
           </el-sub-menu>
 
           <!-- 系统管理 -->

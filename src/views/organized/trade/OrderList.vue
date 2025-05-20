@@ -97,13 +97,6 @@
               <el-option label="否" value="no" />
             </el-select>
      </el-form-item>
-
-          <el-form-item label="测试清账：">
-            <el-select v-model="searchForm.testClearStatus" placeholder="请选择" clearable style="width: 100px">
-              <el-option label="是" value="yes" />
-              <el-option label="否" value="no" />
-            </el-select>
-          </el-form-item>
           
           <el-form-item label="时间过滤：">
             <el-select v-model="searchForm.timeFilter" style="width: 100px" @change="handleTimeFilterChange">
@@ -369,7 +362,6 @@ const searchForm = reactive({
   payEndTime: '',
   showCallbacks: '',
   supplementStatus: '',
-  testClearStatus: '',
   timeFilter: 'today',
   amountOperator: '',
   orderAmount: ''
@@ -598,7 +590,6 @@ const handleReset = () => {
   searchForm.timeFilter = timeFilter
   searchForm.showCallbacks = ''
   searchForm.supplementStatus = ''
-  searchForm.testClearStatus = ''
   searchForm.amountOperator = ''
   searchForm.orderAmount = ''
   

@@ -390,8 +390,8 @@
                 <el-dropdown-menu>
                   <!-- 订单创建 -->
                   <template v-if="row.orderStatus === 'created'">
-                    <el-dropdown-item :command="{type: 'manualCallback', row: row}">手动回调</el-dropdown-item>
-                    <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
+                    <el-dropdown-item disabled>手动回调</el-dropdown-item>
+                    <el-dropdown-item disabled>修改金额</el-dropdown-item>
                   </template>
                   
                   <!-- 付款中 -->

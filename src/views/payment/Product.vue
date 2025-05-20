@@ -293,7 +293,7 @@ const tableData = ref([
   {
     id: 2,
     productName: '支付产品B',
-    productCode: 'WECHAT_PAY',
+    productCode: 'WECHATPAY',
     payType: 'WECHAT',
     feeRate: 0.5,
     scheduledFeeEnabled: 'YES',
@@ -305,7 +305,7 @@ const tableData = ref([
   {
     id: 3,
     productName: '支付产品C',
-    productCode: 'UNION_PAY',
+    productCode: 'UNIONPAY',
     payType: 'UNIONPAY',
     feeRate: 0,
     scheduledFeeEnabled: 'NO',

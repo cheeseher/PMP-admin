@@ -65,7 +65,7 @@
         <el-table-column label="供应商通道ID" prop="id" width="120" align="center" />
         <el-table-column label="通道名称" min-width="120">
           <template #default="scope">
-            {{ scope.row.supplier }}|{{ scope.row.channelName }}
+            {{ scope.row.channelName }}
           </template>
         </el-table-column>
         <el-table-column label="通道编码" prop="channelCode" width="100" align="center" />

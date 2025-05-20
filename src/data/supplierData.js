@@ -2,7 +2,7 @@
 export const supplierList = [
   {
     id: 1,
-    supplier: '上游通道A',
+    supplier: '渠道A',
     code: 'NewSdPay',
     merchantNo: '20230001',
     apiKey: 'sdpay_api_key_001',
@@ -23,7 +23,7 @@ export const supplierList = [
   },
   {
     id: 2,
-    supplier: '上游通道B',
+    supplier: '渠道B',
     code: 'RTpay',
     merchantNo: '20230002',
     apiKey: 'rtpay_api_key_001',
@@ -44,7 +44,7 @@ export const supplierList = [
   },
   {
     id: 3,
-    supplier: '上游通道C',
+    supplier: '渠道C',
     code: 'YFpay',
     merchantNo: '20230003',
     apiKey: 'yfpay_api_key_001',
@@ -65,7 +65,7 @@ export const supplierList = [
   },
   {
     id: 4,
-    supplier: '上游通道D',
+    supplier: '渠道D',
     code: 'XYpay',
     merchantNo: '20230004',
     apiKey: 'xypay_api_key_001',
@@ -86,7 +86,7 @@ export const supplierList = [
   },
   {
     id: 5,
-    supplier: '上游通道E',
+    supplier: '渠道E',
     code: 'HYpay',
     merchantNo: '20230005',
     apiKey: 'hypay_api_key_001',
@@ -107,7 +107,7 @@ export const supplierList = [
   },
   {
     id: 6,
-    supplier: '上游通道F',
+    supplier: '渠道F',
     code: 'Huifu',
     merchantNo: '20240212345678',
     amount: 986420.15,
@@ -119,7 +119,7 @@ export const supplierList = [
   },
   {
     id: 7,
-    supplier: '上游通道G',
+    supplier: '渠道G',
     code: 'BaofuPay',
     merchantNo: '20240212345678',
     amount: 421570.40,
@@ -131,7 +131,7 @@ export const supplierList = [
   },
   {
     id: 8,
-    supplier: '上游通道H',
+    supplier: '渠道H',
     code: 'GuofuPay',
     merchantNo: '20230625876543',
     amount: 756840.25,
@@ -143,7 +143,7 @@ export const supplierList = [
   },
   {
     id: 9,
-    supplier: '上游通道I',
+    supplier: '渠道I',
     code: 'Allinpay',
     merchantNo: '20240103567890',
     amount: 865230.90,
@@ -155,7 +155,7 @@ export const supplierList = [
   },
   {
     id: 10,
-    supplier: '上游通道J',
+    supplier: '渠道J',
     code: 'SuixingPay',
     merchantNo: '20230930246813',
     amount: 368470.55,

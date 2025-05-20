@@ -221,14 +221,6 @@
             placeholder="多个IP请用英文逗号分隔" 
           />
         </el-form-item>
-        <el-form-item label="出款IP白名单" prop="withdrawIpWhitelist">
-          <el-input 
-            v-model="productForm.withdrawIpWhitelist" 
-            type="textarea" 
-            :rows="2" 
-            placeholder="多个IP请用英文逗号分隔" 
-          />
-        </el-form-item>
         <el-form-item label="后台IP白名单" prop="adminIpWhitelist">
           <el-input 
             v-model="productForm.adminIpWhitelist" 

@@ -378,7 +378,7 @@ const formatAmount = (amount) => {
 const handleSearch = () => {
   tableLoading.value = true
   
-  // 模拟API调用
+  // 模拟API调用和前端过滤
   setTimeout(() => {
     let filteredData = [...supplierList]
     
@@ -406,7 +406,7 @@ const handleSearch = () => {
     total.value = filteredData.length
     
     tableLoading.value = false
-    ElMessage.success('查询成功')
+    ElMessage.success('查询成功 (模拟操作)')
   }, 500)
 }
 
@@ -431,9 +431,9 @@ const handleStatusChange = (row, val) => {
       type: 'warning',
     }
   ).then(() => {
-    // 模拟API调用
+    // 模拟API调用，实际应发送请求到后端更新状态
     row.enabled = val
-    ElMessage.success(`${action}成功`)
+    ElMessage.success(`${action}成功 (模拟操作)`)
   }).catch(() => {
     // 取消操作，恢复原状态
     row.enabled = !val
@@ -497,11 +497,11 @@ const handleDelete = (row) => {
       type: 'warning',
     }
   ).then(() => {
-    // 模拟API调用
+    // 模拟API调用，实际应发送请求到后端删除数据
     const index = tableData.value.findIndex(item => item.id === row.id)
     if (index !== -1) {
       tableData.value.splice(index, 1)
-      ElMessage.success('删除成功')
+      ElMessage.success('删除成功 (模拟操作)')
     }
   }).catch(() => {
     ElMessage.info('已取消操作')
@@ -548,7 +548,7 @@ const handleSubmitForm = () => {
   formRef.value.validate((valid) => {
     if (valid) {
       if (dialogType.value === 'add') {
-        // 添加操作
+        // 添加操作 (模拟前端生成ID和部分默认值)
         const newId = Math.max(...tableData.value.map(item => item.id), 0) + 1
         const newSupplier = {
           ...supplierForm,
@@ -559,9 +559,9 @@ const handleSubmitForm = () => {
           flow: 0
         }
         tableData.value.push(newSupplier)
-        ElMessage.success('添加成功')
+        ElMessage.success('添加成功 (模拟操作)')
       } else {
-        // 编辑操作
+        // 编辑操作 (模拟前端数据更新)
         const index = tableData.value.findIndex(item => item.id === supplierForm.id)
         if (index !== -1) {
           // 保留原有金额和流转数据
@@ -573,7 +573,7 @@ const handleSubmitForm = () => {
             alertThreshold,
             flow
           }
-          ElMessage.success('更新成功')
+          ElMessage.success('更新成功 (模拟操作)')
         }
       }
       dialogVisible.value = false
@@ -599,17 +599,17 @@ const handleCurrentChange = (page) => {
 const submitBalanceOperation = () => {
   balanceFormRef.value.validate((valid) => {
     if (valid) {
-      // 模拟API调用
+      // 模拟API调用，实际应发送请求到后端操作余额
       const index = tableData.value.findIndex(item => item.supplier === balanceForm.supplier && item.code === balanceForm.code)
       if (index !== -1) {
         if (balanceForm.operationType === 'add') {
           // 增加余额
           tableData.value[index].amount += parseFloat(balanceForm.amount)
-          ElMessage.success(`余额增加成功，当前余额: ${formatAmount(tableData.value[index].amount)}`)
+          ElMessage.success(`余额增加成功，当前余额: ${formatAmount(tableData.value[index].amount)} (模拟操作)`)
         } else {
           // 减少余额
           tableData.value[index].amount -= parseFloat(balanceForm.amount)
-          ElMessage.success(`余额减少成功，当前余额: ${formatAmount(tableData.value[index].amount)}`)
+          ElMessage.success(`余额减少成功，当前余额: ${formatAmount(tableData.value[index].amount)} (模拟操作)`)
         }
       }
       balanceOperationVisible.value = false
@@ -621,7 +621,9 @@ const submitBalanceOperation = () => {
 
 // 导出数据
 const handleExport = () => {
-  ElMessage.success('供应商数据导出成功')
+  // 实际项目中这里会准备数据并调用导出库或API
+  console.log('handleExport (模拟)', tableData.value);
+  ElMessage.success('供应商数据导出成功 (模拟操作)')
 }
 
 // 页面加载时获取数据
@@ -629,9 +631,10 @@ onMounted(() => {
   // 模拟从服务器获取数据
   tableLoading.value = true
   setTimeout(() => {
-    tableData.value = supplierList
+    tableData.value = supplierList // 直接使用导入的模拟数据
     total.value = supplierList.length
     tableLoading.value = false
+    console.log('供应商列表数据已加载 (模拟数据源)');
   }, 500)
 })
 </script>

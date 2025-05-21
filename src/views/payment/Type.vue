@@ -96,14 +96,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { 
   Search, 
   Refresh,
   Plus, 
   Delete,
-  Edit,
-  Download
+  Edit
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCleanup } from '@/utils/cleanupUtils'
@@ -191,6 +190,17 @@ const typeForm = reactive({
   remark: ''
 })
 
+// 新增：用于重置类型表单的函数
+const resetTypeForm = () => {
+  if (typeFormRef.value) {
+    typeFormRef.value.resetFields() // 清除校验状态和表单项的值
+  }
+  // 手动重置表单数据，因为 resetFields 可能只重置为初始值，而不是空
+  typeForm.id = ''
+  typeForm.typeName = ''
+  typeForm.remark = ''
+}
+
 // 表单校验规则
 const rules = {
   typeName: [
@@ -210,14 +220,23 @@ onMounted(() => {
 // 获取数据
 const fetchData = () => {
   loading.value = true
+  // 模拟API调用延迟
   safeTimeout(() => {
     loading.value = false
+    // 实际项目中，这里应该用API返回的数据更新 tableData.value 和 total.value
+    // 例如: 
+    // const res = await fetchPaymentTypesAPI({ page: currentPage.value, size: pageSize.value, ...searchForm });
+    // tableData.value = res.data.records;
+    // total.value = res.data.total;
+    console.log('fetchData (模拟) 完成')
   }, 500)
 }
 
 // 导出数据
 const handleExport = () => {
-  ElMessage.success('支付类型数据导出成功')
+  // 实际项目中这里会准备数据并调用导出库或API
+  console.log('handleExport (模拟)', tableData.value);
+  ElMessage.success('支付类型数据导出成功 (模拟操作)')
 }
 
 // 搜索方法
@@ -242,24 +261,19 @@ const handleSelectionChange = (rows) => {
 // 新增方法
 const handleAdd = () => {
   formType.value = 'add'
-  // 重置表单
-  if (typeFormRef.value) {
-    typeFormRef.value.resetFields()
-  }
-  
-  typeForm.id = ''
-  typeForm.typeName = ''
-  typeForm.remark = ''
-  
+  resetTypeForm() // 使用新的重置函数
   dialogVisible.value = true
 }
 
 // 编辑方法
 const handleEdit = (row) => {
   formType.value = 'edit'
+  resetTypeForm() // 先重置表单
   // 填充表单
   Object.keys(typeForm).forEach(key => {
-    typeForm[key] = row[key]
+    if (row.hasOwnProperty(key)) { // 确保只从 row 中存在的属性赋值
+      typeForm[key] = row[key]
+    }
   })
   dialogVisible.value = true
 }
@@ -275,6 +289,7 @@ const handleDelete = (row) => {
       type: 'warning'
     }
   ).then(() => {
+    // 模拟API调用和前端数据更新
     const index = tableData.value.findIndex(item => item.id === row.id)
     if (index !== -1) {
       tableData.value.splice(index, 1)
@@ -300,6 +315,7 @@ const handleBatchDelete = () => {
       type: 'warning'
     }
   ).then(() => {
+    // 模拟API调用和前端数据更新
     const ids = selectedRows.value.map(row => row.id)
     tableData.value = tableData.value.filter(item => !ids.includes(item.id))
     total.value = tableData.value.length
@@ -312,27 +328,28 @@ const submitForm = () => {
   typeFormRef.value.validate((valid) => {
     if (valid) {
       if (formType.value === 'add') {
-        // 新增逻辑
-        const newId = Math.max(...tableData.value.map(item => item.id)) + 1
+        // 新增逻辑 (模拟前端生成ID和时间)
+        const newId = tableData.value.length > 0 ? Math.max(...tableData.value.map(item => item.id)) + 1 : 1;
         const newType = {
           id: newId,
           typeName: typeForm.typeName,
-          createTime: new Date().toLocaleString(),
+          createTime: new Date().toLocaleString(), // 实际项目中应由后端生成
           remark: typeForm.remark
         }
         tableData.value.push(newType)
         total.value++
-        ElMessage.success('新增成功')
+        ElMessage.success('新增成功 (模拟操作)')
       } else {
-        // 编辑逻辑
+        // 编辑逻辑 (模拟前端数据更新)
         const index = tableData.value.findIndex(item => item.id === typeForm.id)
         if (index !== -1) {
           tableData.value[index] = { 
             ...tableData.value[index],
             typeName: typeForm.typeName,
             remark: typeForm.remark
+            // createTime 通常不由前端编辑时更新，除非业务需要
           }
-          ElMessage.success('编辑成功')
+          ElMessage.success('编辑成功 (模拟操作)')
         }
       }
       dialogVisible.value = false

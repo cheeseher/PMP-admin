@@ -331,8 +331,20 @@
       </el-form>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="pullOrderDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="handleSubmitPullOrder" :loading="pullOrderLoading">确认</el-button>
+          <!-- 如果还没有拉单结果，显示取消和确认按钮 -->
+          <template v-if="!pullOrderResult">
+            <el-button @click="pullOrderDialogVisible = false">取消</el-button>
+            <el-button 
+              type="primary" 
+              @click="handleSubmitPullOrder" 
+              :loading="pullOrderLoading">
+              确认
+            </el-button>
+          </template>
+          <!-- 如果已经有拉单结果，显示关闭按钮 -->
+          <template v-else>
+            <el-button type="primary" @click="pullOrderDialogVisible = false">关闭</el-button>
+          </template>
         </span>
       </template>
     </el-dialog>
@@ -341,10 +353,11 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed, watch, onBeforeUnmount } from 'vue'
-import { Search, Refresh, Plus, Check, Close, EditPen, DocumentCopy, SetUp, Delete, Download, Timer, Loading } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, EditPen, DocumentCopy, SetUp, Delete, Download, Timer, Loading } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { channelList, payTypeOptions, categoryOptions } from '@/data/channelData'
 import { supplierList } from '@/data/supplierData'
+import { disabledDate, getRemainingTimeText } from '@/utils/datetimeUtils'
 
 // 格式化金额显示
 const formatAmount = (amount) => {
@@ -452,40 +465,6 @@ watch(() => channelForm.supplier, (newVal) => {
     channelForm.supplierCode = ''
   }
 })
-
-// 禁用过去的日期
-const disabledDate = (time) => {
-  return time.getTime() < Date.now() - 8.64e7 // 禁用今天之前的日期
-}
-
-// 计算剩余时间文本
-const getRemainingTimeText = (scheduledTime) => {
-  if (!scheduledTime) return '时间未设置';
-  
-  const targetTime = new Date(scheduledTime).getTime();
-  const now = Date.now();
-  
-  // 如果已经过了生效时间
-  if (now >= targetTime) {
-    return '已生效';
-  }
-  
-  // 计算剩余时间
-  const diffMs = targetTime - now;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-  
-  if (diffDays > 0) {
-    return `${diffDays}天${diffHours}小时后`;
-  } else if (diffHours > 0) {
-    return `${diffHours}小时${diffMinutes}分钟后`;
-  } else if (diffMinutes > 0) {
-    return `${diffMinutes}分钟后`;
-  } else {
-    return `即将`;
-  }
-}
 
 // 获取数据
 const fetchData = () => {
@@ -911,25 +890,6 @@ let feeRateTimer = null;
   margin-top: 16px;
 }
 
-.rate-cell {
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 500;
-}
-
-.channel-form .el-form-item {
-  margin-bottom: 20px;
-}
-
-.dialog-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-:deep(.el-input-number .el-input__inner) {
-  text-align: left;
-}
-
 .rate-input-group {
   display: flex;
   align-items: center;
@@ -1018,5 +978,10 @@ let feeRateTimer = null;
   font-size: 14px;
   line-height: 1.4;
   font-family: monospace;
+}
+
+.channel-form .el-form-item {
+  margin-bottom: 18px;
+  margin-right: 20px;
 }
 </style> 

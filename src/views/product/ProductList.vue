@@ -675,45 +675,16 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue'
-import { Search, Refresh, Plus, Delete, Setting, Edit, ArrowDown, Download, ArrowRight, ArrowLeft, Check } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, Delete, Setting, ArrowDown, Download } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { productList } from '@/data/productData'
 import { merchantProductList } from '@/data/merchantProductData'
 import { useRouter } from 'vue-router'
+import { formatAmount } from '@/utils/formatUtils'
+import { generateMerchantNo, generateApiKey } from '@/utils/generatorUtils'
+import { paymentProducts, supplierChannels } from '@/data/productRelatedData'
 
 const router = useRouter()
-
-// 支付产品数据
-const paymentProducts = ref([
-  { id: 1, productName: '产品A', productCode: '8888', rate: 10.00 },
-  { id: 2, productName: '产品B', productCode: 'WX001', rate: 3.50 },
-  { id: 3, productName: '产品C', productCode: 'ZFB001', rate: 3.00 },
-  { id: 4, productName: '产品D', productCode: 'YL001', rate: 2.80 },
-  { id: 5, productName: '产品E', productCode: 'YSF001', rate: 2.50 },
-  { id: 6, productName: '产品F', productCode: 'ICC001', rate: 4.50 },
-  { id: 7, productName: '产品G', productCode: 'QP001', rate: 2.60 },
-  { id: 8, productName: '产品H', productCode: 'AGG001', rate: 3.80 },
-  { id: 9, productName: '产品I', productCode: 'SCAN001', rate: 2.20 }
-])
-
-// 供应商通道数据
-const supplierChannels = ref([
-  { id: 101, channelName: '通道A', channelCode: 'A', rate: 6.00 },
-  { id: 102, channelName: '通道B', channelCode: 'B', rate: 6.00 },
-  { id: 103, channelName: '通道C', channelCode: 'C', rate: 5.80 },
-  { id: 104, channelName: '通道D', channelCode: 'D', rate: 5.90 },
-  { id: 105, channelName: '通道E', channelCode: 'E', rate: 6.20 },
-  { id: 106, channelName: '通道F', channelCode: 'F', rate: 6.30 }
-])
-
-// 渠道选项
-const channelOptions = ref([
-  { label: '通道A', value: 'channel_a' },
-  { label: '通道B', value: 'channel_b' },
-  { label: '通道C', value: 'channel_c' },
-  { label: '通道D', value: 'channel_d' },
-  { label: '通道E', value: 'channel_e' }
-])
 
 // 搜索表单
 const searchForm = reactive({
@@ -740,10 +711,11 @@ const total = ref(0)
 const fetchData = () => {
   loading.value = true
   
-  // 模拟异步请求
+  // 模拟异步请求和前端分页、筛选
   setTimeout(() => {
-    let filteredData = [...productList]
+    let filteredData = [...productList] // 使用导入的模拟商户列表数据
     
+    // 执行前端筛选逻辑
     if (searchForm.id) {
       filteredData = filteredData.filter(item => 
         item.id.toString().includes(searchForm.id))
@@ -790,11 +762,6 @@ const fetchData = () => {
     tableData.value = filteredData.slice(start, end)
     loading.value = false
   }, 300)
-}
-
-// 格式化金额
-const formatAmount = (amount) => {
-  return '￥' + (amount?.toFixed(2) || '0.00')
 }
 
 // 搜索与重置
@@ -848,23 +815,6 @@ const productRules = {
   productNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }]
 }
 
-// 生成随机商户号
-const generateMerchantNo = () => {
-  // 生成10位数字的商户号
-  return Math.floor(1000000000 + Math.random() * 9000000000).toString();
-}
-
-// 生成随机API密钥
-const generateApiKey = () => {
-  // 生成32位的随机字符串（MD5格式）
-  const chars = '0123456789abcdef';
-  let result = '';
-  for (let i = 0; i < 32; i++) {
-    result += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return result;
-}
-
 // 产品配置
 const productConfigVisible = ref(false)
 const productConfigFormRef = ref(null)
@@ -911,7 +861,7 @@ const availablePaymentProducts = computed(() => {
   // 获取已经选择的产品ID列表
   const selectedProductIds = productConfigForm.productRates.map(item => item.productId)
   // 过滤出未选择的产品
-  return paymentProducts.value.filter(product => !selectedProductIds.includes(product.id))
+  return paymentProducts.filter(product => !selectedProductIds.includes(product.id))
 })
 
 // 显示新增产品对话框
@@ -930,7 +880,7 @@ const confirmAddProduct = () => {
   
   // 支持批量添加
   addProductForm.selectedProduct.forEach(productId => {
-    const selectedProduct = paymentProducts.value.find(p => p.id === productId)
+    const selectedProduct = paymentProducts.find(p => p.id === productId)
     if (selectedProduct) {
       // 生成四位随机数作为产品编码
       const randomCode = Math.floor(1000 + Math.random() * 9000).toString()
@@ -967,30 +917,25 @@ const removeConfiguredProduct = (index) => {
 
 // 处理自定义通道
 const handleCustomChannel = (product) => {
-  // 找到产品在数组中的索引
   const index = productConfigForm.productRates.findIndex(item => 
     item.productId === product.productId && item.productCode === product.productCode
   )
   
   if (index !== -1) {
-    // 复制产品数据到当前编辑对象
     Object.assign(currentEditingProduct, JSON.parse(JSON.stringify(product)))
     currentEditingProduct.originalIndex = index
     
-    // 默认启用自定义通道
-    currentEditingProduct.customOption = true
+    currentEditingProduct.customOption = true 
+    console.log('In handleCustomChannel, after setting customOption:', 
+                currentEditingProduct.customOption, 
+                JSON.parse(JSON.stringify(currentEditingProduct)));
     
-    // 初始化channelsWeightMap如果不存在
     if (!currentEditingProduct.channelsWeightMap) {
       currentEditingProduct.channelsWeightMap = {}
     }
-    
-    // 初始化selectedChannels如果不存在
     if (!currentEditingProduct.selectedChannels) {
       currentEditingProduct.selectedChannels = []
     }
-    
-    // 初始化routingMode如果不存在
     if (!currentEditingProduct.routingMode) {
       currentEditingProduct.routingMode = 'polling'
     }
@@ -1006,7 +951,7 @@ const getSelectedChannelsDataForProduct = (product) => {
   }
   
   // 从产品的channelsWeightMap获取权重或使用默认值10
-  return supplierChannels.value.filter(item => 
+  return supplierChannels.filter(item => 
     product.selectedChannels.includes(item.id)
   ).map(channel => ({
     ...channel,
@@ -1105,7 +1050,7 @@ const submitBatchConfig = () => {
   
   // 模拟提交成功
   setTimeout(() => {
-    ElMessage.success('批量配置保存成功')
+    ElMessage.success('批量配置保存成功 (模拟操作)')
     batchConfigVisible.value = false
     // 刷新表格
     fetchData()
@@ -1193,7 +1138,7 @@ const handleConfig = (row) => {
         // 自定义产品
         productData.customOption = true
         const channelName = product.productName.replace('自定义-', '')
-        const channel = supplierChannels.value.find(c => c.channelName === channelName)
+        const channel = supplierChannels.find(c => c.channelName === channelName)
         
         if (channel) {
           productData.selectedChannels = [channel.id]
@@ -1205,7 +1150,7 @@ const handleConfig = (row) => {
         }
       } else {
         // 标准产品
-        const paymentProduct = paymentProducts.value.find(p => p.productName === product.productName)
+        const paymentProduct = paymentProducts.find(p => p.productName === product.productName)
         if (paymentProduct) {
           productData.productId = paymentProduct.id
         }
@@ -1226,7 +1171,7 @@ const getSelectedChannelsData = () => {
   }
   
   // 从channelsWeightMap获取权重或使用默认值10
-  return supplierChannels.value.filter(item => 
+  return supplierChannels.filter(item => 
     productConfigForm.selectedChannels.includes(item.id)
   ).map(channel => ({
     ...channel,
@@ -1249,7 +1194,7 @@ watch(() => productConfigForm.customOption, (newVal) => {
 watch(() => productConfigForm.selectedProduct, (newVal) => {
   if (newVal && !productConfigForm.customOption) {
     // 选择了标准支付产品时
-    const selectedProduct = paymentProducts.value.find(p => p.id === newVal)
+    const selectedProduct = paymentProducts.find(p => p.id === newVal)
     if (selectedProduct) {
       // 自动设置产品编码为"1111"格式
       const randomCode = Math.floor(1000 + Math.random() * 9000).toString()
@@ -1364,7 +1309,7 @@ const submitProductConfig = () => {
   
   // 模拟提交成功
   setTimeout(() => {
-    ElMessage.success('产品配置保存成功')
+    ElMessage.success('产品配置保存成功 (模拟操作)')
     productConfigVisible.value = false
     // 刷新表格
     fetchData()
@@ -1418,7 +1363,7 @@ watch(() => batchConfigForm.selectedProduct, (newVal, oldVal) => {
     
     // 为新增的产品添加到费率列表
     addedProductIds.forEach(productId => {
-      const selectedProduct = paymentProducts.value.find(p => p.id === productId);
+      const selectedProduct = paymentProducts.find(p => p.id === productId);
       if (selectedProduct && !batchConfigForm.productRates.some(item => item.productId === productId)) {
         // 生成四位随机数作为产品编码
         const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
@@ -1499,7 +1444,7 @@ const submitBalanceOperation = () => {
       
       // 模拟提交成功
       setTimeout(() => {
-        ElMessage.success('余额操作成功')
+        ElMessage.success('余额操作成功 (模拟操作)')
         balanceOperationVisible.value = false
         // 刷新表格
         fetchData()
@@ -1555,7 +1500,7 @@ const submitForm = () => {
       
       // 模拟提交成功
       setTimeout(() => {
-        ElMessage.success(dialogTitle.value === '新增商户' ? '商户添加成功' : '商户编辑成功')
+        ElMessage.success((dialogTitle.value === '新增商户' ? '商户添加成功' : '商户编辑成功') + ' (模拟操作)')
         dialogVisible.value = false
         // 刷新表格
         fetchData()
@@ -1571,7 +1516,7 @@ const handleStatusChange = (row) => {
   // 这里应该是调用API保存状态
   // updateStatus(row.id, row.verified)
   
-  ElMessage.success(`已${statusText}商户: ${row.productName}`)
+  ElMessage.success(`已${statusText}商户: ${row.productName} (模拟操作)`)
 }
 
 // 重置谷歌认证
@@ -1586,7 +1531,7 @@ const handleResetGoogle = (row) => {
     
     // 模拟操作成功
     setTimeout(() => {
-      ElMessage.success('谷歌认证重置成功')
+      ElMessage.success('谷歌认证重置成功 (模拟操作)')
       // 刷新表格
       fetchData()
     }, 500)
@@ -1607,7 +1552,7 @@ const handleResetApiKey = (row) => {
     
     // 模拟操作成功
     setTimeout(() => {
-      ElMessage.success(`API密钥重置成功: ${newApiKey}`)
+      ElMessage.success(`API密钥重置成功: ${newApiKey} (模拟操作)`)
       // 刷新表格
       fetchData()
     }, 500)
@@ -1633,7 +1578,7 @@ const handleBatchDelete = () => {
     
     // 模拟操作成功
     setTimeout(() => {
-      ElMessage.success('批量删除成功')
+      ElMessage.success('批量删除成功 (模拟操作)')
       // 刷新表格
       fetchData()
     }, 500)
@@ -1642,21 +1587,21 @@ const handleBatchDelete = () => {
 
 // 导出数据
 const handleExport = () => {
-  ElMessage.success('正在导出数据，请稍候...')
+  ElMessage.success('正在导出数据，请稍候... (模拟操作)')
   
   // 这里应该是调用API导出数据
   // exportData(searchForm)
   
   // 模拟操作成功
   setTimeout(() => {
-    ElMessage.success('数据导出成功')
+    ElMessage.success('数据导出成功 (模拟操作)')
   }, 1500)
 }
 
 // 模拟获取商户登录 Token
 const getMerchantLoginToken = async (merchantId) => {
   // 实际场景中，这里应该调用后端API获取真实的Token
-  console.log(`尝试为商户 ${merchantId} 获取登录Token...`)
+  console.log(`尝试为商户 ${merchantId} 获取登录Token... (模拟)`)
   return new Promise(resolve => {
     setTimeout(() => {
       const token = `fake-token-for-${merchantId}-${Date.now()}`
@@ -1703,13 +1648,6 @@ const availableSubAccounts = computed(() => {
   // 过滤出可选的子账户（不包括当前商户自己）
   return productList.filter(item => item.id !== productForm.id);
 });
-
-// 获取已选产品名称（废弃，目前已不需要）
-const getSelectedProductName = () => {
-  return productConfigForm.customOption 
-    ? '自定义通道' 
-    : paymentProducts.value.find(p => p.id === productConfigForm.selectedProduct)?.productName || '未选择'
-}
 
 // 组件挂载时获取数据
 onMounted(() => {

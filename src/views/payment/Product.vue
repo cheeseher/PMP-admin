@@ -264,19 +264,13 @@ import { Search, Delete, Plus, Edit, Refresh, Check, Close, Remove, Download, Ti
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCleanup } from '@/utils/cleanupUtils'
 import { channelList } from '@/data/channelData.js'
+import { getTomorrowDate, disabledDate, formatScheduledTime, getRemainingTimeText } from '@/utils/datetimeUtils'
 
 const searchForm = reactive({
   id: '',
   productName: '',
   productCode: ''
 })
-
-// 获取明天的日期字符串
-const getTomorrowDate = () => {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return `${tomorrow.getFullYear()}-${String(tomorrow.getMonth() + 1).padStart(2, '0')}-${String(tomorrow.getDate()).padStart(2, '0')} ${String(tomorrow.getHours()).padStart(2, '0')}:${String(tomorrow.getMinutes()).padStart(2, '0')}:${String(tomorrow.getSeconds()).padStart(2, '0')}`;
-}
 
 const tableData = ref([
   {
@@ -348,6 +342,26 @@ const submitLoading = ref(false)
 
 const channelTableData = ref([])
 
+// 新增：用于重置产品表单的函数
+const resetProductForm = () => {
+  if (productFormRef.value) {
+    productFormRef.value.resetFields()
+  }
+  productForm.id = null
+  productForm.productName = ''
+  productForm.productCode = ''
+  productForm.channelCode = []
+  productForm.feeRate = 0
+  productForm.scheduledFeeEnabled = 'NO'
+  productForm.scheduledFeeTime = ''
+  productForm.status = 'ONLINE'
+  productForm.isPolling = 'POLLING'
+  productForm.syncFeeToMerchant = 'NO'
+  productForm.superPassword = ''
+  productForm.remark = ''
+  channelTableData.value = []
+}
+
 // 新增计算属性，用于格式化供应商通道下拉菜单的选项
 const supplierChannelOptions = computed(() => {
   return channelList.map(channel => ({
@@ -415,64 +429,54 @@ const handleReset = () => {
   Object.keys(searchForm).forEach(key => {
     searchForm[key] = ''
   })
+  // 注意：这里可能需要重新获取完整数据，如果 searchForm 是用于前端过滤的话
+  // fetchData() // 如果需要重置后重新拉取所有数据，取消此行注释
 }
 
 const handleAdd = () => {
   formType.value = 'add'
-  if (productFormRef.value) {
-    productFormRef.value.resetFields()
-  }
-  
-  productForm.id = null;
-  productForm.productName = ''
-  productForm.productCode = ''
-  productForm.channelCode = []
-  productForm.feeRate = 0
-  productForm.scheduledFeeEnabled = 'NO'
-  productForm.scheduledFeeTime = ''
-  productForm.status = 'ONLINE'
-  productForm.isPolling = 'POLLING'
-  productForm.syncFeeToMerchant = 'NO'
-  productForm.superPassword = ''
-  productForm.remark = ''
-  
-  channelTableData.value = []
-  
+  resetProductForm() // 使用新的重置函数
   formDialogVisible.value = true
 }
 
 const handleEdit = (row) => {
   formType.value = 'edit'
-  const rowData = { ...row };
+  // 先重置表单，避免之前的数据残留
+  resetProductForm()
   
-  // 确保设置ID字段
-  productForm.id = rowData.id;
+  const rowData = { ...row }
   
   // 为表单赋值
   Object.keys(productForm).forEach(key => {
-    if (key in rowData) {
-      productForm[key] = rowData[key];
-    } else {
-      // 如果是编辑但行数据中没有定时费率相关字段，设置默认值
-      if (key === 'scheduledFeeEnabled') productForm[key] = 'NO';
-      else if (key === 'scheduledFeeTime') productForm[key] = '';
-      else productForm[key] = '';
+    if (rowData.hasOwnProperty(key)) {
+      productForm[key] = rowData[key]
     }
-  });
+  })
+  // 特殊处理 channelCode，确保是数组
+  if (rowData.channelCode && !Array.isArray(rowData.channelCode)) {
+      // 假设 channelCode 存储的是ID数组，但原始数据可能是逗号分隔字符串或其他
+      // 这里需要根据实际情况转换，当前假设它已经是数组或需要包装成数组
+      productForm.channelCode = Array.isArray(rowData.channelCode) ? rowData.channelCode : [rowData.channelCode];
+  } else if (!rowData.channelCode) {
+    productForm.channelCode = [];
+    }
+
   
   // 如果存在待生效的费率，则填充到表单的费率字段中
   if (rowData.pendingFeeRate !== undefined && rowData.scheduledFeeEnabled === 'YES') {
-    productForm.feeRate = rowData.pendingFeeRate;
-    productForm.scheduledFeeEnabled = 'YES';
-    productForm.scheduledFeeTime = rowData.scheduledFeeTime;
+    productForm.feeRate = rowData.pendingFeeRate
+    // productForm.scheduledFeeEnabled = 'YES'; // 这行已在Object.keys中处理
+    // productForm.scheduledFeeTime = rowData.scheduledFeeTime; // 这行已在Object.keys中处理
   } else {
-    // 默认不启用定时生效
-    productForm.scheduledFeeEnabled = 'NO';
-    productForm.scheduledFeeTime = '';
+    // 如果没有待生效费率，确保 scheduledFeeEnabled 和 scheduledFeeTime 被正确设置 (可能为 'NO' 和空)
+    // 这一步在 resetProductForm 和 Object.keys 赋值后，通常已正确，但可按需保留下面的显式设置
+    // productForm.scheduledFeeEnabled = 'NO';
+    // productForm.scheduledFeeTime = '';
   }
   
+  // 更新通道表格数据
   if (productForm.channelCode && productForm.channelCode.length > 0) {
-    handleChannelChange(productForm.channelCode);
+    handleChannelChange(productForm.channelCode)
   }
   
   formDialogVisible.value = true
@@ -786,54 +790,6 @@ const handleExport = () => {
   // 实际项目中这里可能需要调用API进行导出
   console.log('导出数据:', exportData);
   ElMessage.success('数据导出成功');
-}
-
-// 新增：禁用过去的日期
-const disabledDate = (time) => {
-  return time.getTime() < Date.now() - 8.64e7 // 禁用今天之前的日期
-}
-
-// 格式化定时时间显示
-const formatScheduledTime = (timeStr) => {
-  if (!timeStr) return '-';
-  
-  try {
-    // 如果是真实数据，可以使用日期格式化库来处理
-    // 这里只做简单处理，实际项目中建议使用dayjs或date-fns等库
-    const date = new Date(timeStr);
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-  } catch (e) {
-    return timeStr;
-  }
-}
-
-// 计算剩余时间文本
-const getRemainingTimeText = (scheduledTime) => {
-  if (!scheduledTime) return '时间未设置';
-  
-  const targetTime = new Date(scheduledTime).getTime();
-  const now = Date.now();
-  
-  // 如果已经过了生效时间
-  if (now >= targetTime) {
-    return '已生效';
-  }
-  
-  // 计算剩余时间
-  const diffMs = targetTime - now;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-  
-  if (diffDays > 0) {
-    return `${diffDays}天${diffHours}小时后`;
-  } else if (diffHours > 0) {
-    return `${diffHours}小时${diffMinutes}分钟后`;
-  } else if (diffMinutes > 0) {
-    return `${diffMinutes}分钟后`;
-  } else {
-    return `即将`;
-  }
 }
 
 // 检查是否有定时费率需要生效

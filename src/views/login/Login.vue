@@ -64,7 +64,7 @@ import { reactive, ref } from 'vue';
 import { User, Lock } from '@element-plus/icons-vue';
 import { ElMessage, ElLoading } from 'element-plus';
 import { useRouter } from 'vue-router'; 
-import axios from 'axios';
+import axios from 'axios'; // 导入axios，预期用于真实的API调用
 
 const router = useRouter();
 const loading = ref(false);

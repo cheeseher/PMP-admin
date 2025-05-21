@@ -77,7 +77,7 @@
           <template #default="scope">
             <template v-if="scope.row.selectedChannels && scope.row.selectedChannels.length">
               <span v-for="(channel, idx) in scope.row.selectedChannels.slice(0,2)" :key="channel.name" class="supplier-channel-item">
-                {{ channel.name }} | {{ channel.channelName ? channel.channelName : channel.name }} | {{ channel.rate }}%
+                {{ channel.name }} | 通道A | {{ channel.rate }}%
                 <span v-if="idx < Math.min(scope.row.selectedChannels.length,2) - 1">，</span>
               </span>
               <el-button v-if="scope.row.selectedChannels.length > 2" type="text" size="small" @click.stop="showAllChannels(scope.row)">全部</el-button>
@@ -105,7 +105,7 @@
       <el-table :data="paginatedChannels" border size="small">
         <el-table-column label="通道名称" min-width="120">
           <template #default="scope">
-            {{ scope.row.name }} | {{ scope.row.channelName ? scope.row.channelName : scope.row.name }} | {{ scope.row.rate }}%
+            {{ scope.row.name }} | 通道A | {{ scope.row.rate }}%
           </template>
         </el-table-column>
       </el-table>

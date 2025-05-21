@@ -74,11 +74,13 @@ const submitForm = () => {
 const fetchSettings = () => {
   // 这里应该是调用API获取设置
   // const res = await getSettings()
+  // settingForm.orderCloseTime = res.data.orderCloseTime; // 示例：API成功返回数据后赋值
   
-  // 模拟获取成功
+  // 模拟获取成功（当前为演示，并未实际从API获取或更新表单）
   setTimeout(() => {
     // 假设已经从API获取了数据，这里直接使用初始值
-    console.log('已加载支付设置')
+    // 在实际应用中，如果API返回了数据，应该在这里更新 settingForm
+    console.log('已加载支付设置 (模拟数据)')
   }, 300)
 }
 

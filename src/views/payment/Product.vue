@@ -80,18 +80,6 @@
           </template>
         </el-table-column>
         
-        <!-- 新增：定时生效列，显示倒计时 -->
-        <el-table-column label="定时生效" width="180">
-          <template #default="scope">
-            <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.scheduledFeeTime">
-              <el-tag type="warning" effect="plain">
-                <span class="countdown-text">{{ getCountdown(scope.row.scheduledFeeTime) }}</span>
-              </el-tag>
-            </div>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
-        
         <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
             <div class="field-container">
@@ -201,36 +189,6 @@
           </div>
         </el-form-item>
         
-        <!-- 修改：改为费率变更定时生效 -->
-        <el-form-item label="定时生效" prop="scheduledFeeEnabled" v-if="formType === 'edit'">
-          <el-switch
-            v-model="productForm.scheduledFeeEnabled"
-            active-value="YES"
-            inactive-value="NO"
-            active-text="启用"
-            inactive-text="禁用"
-          />
-          <div class="form-tip" v-if="productForm.scheduledFeeEnabled === 'YES'">
-            启用后，本次提交的配置将在指定时间生效而非立即生效
-          </div>
-        </el-form-item>
-        
-        <el-form-item 
-          label="生效时间" 
-          prop="scheduledFeeTime" 
-          v-if="formType === 'edit' && productForm.scheduledFeeEnabled === 'YES'"
-        >
-          <el-date-picker
-            v-model="productForm.scheduledFeeTime"
-            type="date"
-            placeholder="选择配置变更生效时间"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            :disabledDate="disabledDate"
-            style="width: 100%"
-          />
-        </el-form-item>
-        
         <el-form-item label="状态" prop="status">
           <el-switch
             v-model="productForm.status"
@@ -241,36 +199,51 @@
           />
         </el-form-item>
         <el-form-item label="是否轮询" prop="isPolling">
-          <el-select v-model="productForm.isPolling" placeholder="请选择轮询方式" style="width: 100%">
-            <el-option label="轮询" value="POLLING" />
-            <el-option label="权重" value="WEIGHT" />
-          </el-select>
+          <el-radio-group v-model="productForm.isPolling">
+            <el-radio label="WEIGHT">权重</el-radio>
+            <el-radio label="POLLING">轮询</el-radio>
+          </el-radio-group>
         </el-form-item>
-        <!-- 同步配置到商户选项，仅在编辑模式下显示 -->
-        <el-form-item label="同步配置到商户" prop="syncFeeToMerchant" v-if="formType === 'edit'">
-          <el-switch
-            v-model="productForm.syncFeeToMerchant"
-            active-value="YES"
-            inactive-value="NO"
-            active-text="是"
-            inactive-text="否"
-          />
+        
+        <!-- 修改为同步配置到商户的三选一方案 -->
+        <el-form-item label="同步配置到商户" prop="syncOption" v-if="formType === 'edit'">
+          <el-radio-group v-model="productForm.syncOption" @change="handleSyncOptionChange">
+            <el-radio label="none">不同步</el-radio>
+            <el-radio label="immediate">立即同步</el-radio>
+            <el-radio label="scheduled">定时同步</el-radio>
+          </el-radio-group>
         </el-form-item>
-        <!-- 添加定时同步选项 -->
+        
+        <!-- 生效时间设置 -->
         <el-form-item 
-          label="定时同步" 
-          prop="scheduledSyncEnabled" 
-          v-if="formType === 'edit' && productForm.syncFeeToMerchant === 'YES'"
+          label="生效时间" 
+          prop="effectiveTime"
+          v-if="formType === 'edit' && (productForm.syncOption === 'none' || productForm.syncOption === 'scheduled')"
+          :rules="[
+            { required: productForm.syncOption === 'scheduled', message: '定时同步时生效时间为必填项', trigger: 'change' }
+          ]"
         >
-          <el-switch
-            v-model="productForm.scheduledSyncEnabled"
-            active-value="YES"
-            inactive-value="NO"
-            active-text="启用"
-            inactive-text="禁用"
+          <el-date-picker
+            v-model="productForm.effectiveTime"
+            type="datetime"
+            placeholder="选择生效时间"
+            style="width: 240px"
+            :disabled-date="disabledDate"
+            format="YYYY-MM-DD HH:00:00"
+            value-format="YYYY-MM-DD HH:00:00"
+            :default-time="new Date(2000, 0, 1, 0, 0, 0)"
           />
+          
+          <span v-if="productForm.syncOption === 'scheduled' && productForm.effectiveTime && !isEffectiveTimeExpired" class="countdown-tip">
+            距离生效还有：{{ formattedCountdown }}
+          </span>
+          
+          <span v-if="productForm.syncOption === 'none' && productForm.effectiveTime" class="sync-tip">
+            (仅修改模板配置，不影响商户)
+          </span>
         </el-form-item>
-        <el-form-item label="超级密码" prop="superPassword" v-if="formType === 'edit' && productForm.syncFeeToMerchant === 'YES'">
+        
+        <el-form-item label="超级密码" prop="superPassword" v-if="formType === 'edit' && productForm.syncOption !== 'none'">
           <el-input 
             v-model="productForm.superPassword" 
             type="password"
@@ -324,6 +297,7 @@ const tableData = ref([
     scheduledFeeEnabled: 'NO',
     scheduledFeeTime: '',
     status: 'ONLINE',
+    isPolling: 'WEIGHT',
     remark: '这是演示产品的备注说明'
   },
   {
@@ -333,12 +307,17 @@ const tableData = ref([
     payType: 'WECHAT',
     feeRate: 0.5,
     scheduledFeeEnabled: 'YES',
-    scheduledFeeTime: getTomorrowDate(), // 使用明天的日期
+    scheduledFeeTime: (() => {
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 7);
+      return futureDate.toISOString().split('T')[0];
+    })(),
     pendingFeeRate: 1.0,
     pendingProductName: '支付产品B（升级版）',
     pendingProductCode: 'WECHATPAY_V2',
     pendingStatus: 'OFFLINE',
     status: 'ONLINE',
+    isPolling: 'WEIGHT',
     remark: '微信支付通道产品'
   },
   {
@@ -350,6 +329,7 @@ const tableData = ref([
     scheduledFeeEnabled: 'NO',
     scheduledFeeTime: '',
     status: 'OFFLINE',
+    isPolling: 'WEIGHT',
     remark: '银联支付通道产品，暂时下线维护'
   }
 ])
@@ -377,9 +357,9 @@ const productForm = reactive({
   scheduledFeeEnabled: 'NO',
   scheduledFeeTime: '',
   status: 'ONLINE',
-  isPolling: 'POLLING',
-  syncFeeToMerchant: 'NO',
-  scheduledSyncEnabled: 'NO',
+  isPolling: 'WEIGHT',
+  syncOption: 'none',
+  effectiveTime: '',
   superPassword: '',
   remark: ''
 })
@@ -401,9 +381,9 @@ const resetProductForm = () => {
   productForm.scheduledFeeEnabled = 'NO'
   productForm.scheduledFeeTime = ''
   productForm.status = 'ONLINE'
-  productForm.isPolling = 'POLLING'
-  productForm.syncFeeToMerchant = 'NO'
-  productForm.scheduledSyncEnabled = 'NO'
+  productForm.isPolling = 'WEIGHT'
+  productForm.syncOption = 'none'
+  productForm.effectiveTime = ''
   productForm.superPassword = ''
   productForm.remark = ''
   channelTableData.value = []
@@ -435,9 +415,12 @@ const formRules = {
   scheduledFeeTime: [
     { required: true, message: '请选择费率变更生效时间', trigger: 'change' }
   ],
+  effectiveTime: [
+    { required: false, message: '请选择生效时间', trigger: 'change' }
+  ],
   superPassword: [
     { required: true, message: '请输入超级密码', trigger: 'blur', validator: (rule, value, callback) => {
-      if (formType.value === 'edit' && productForm.syncFeeToMerchant === 'YES' && !value) {
+      if (formType.value === 'edit' && productForm.syncOption !== 'none' && !value) {
         callback(new Error('请输入超级密码'))
       } else {
         callback()
@@ -488,37 +471,42 @@ const handleAdd = () => {
 
 const handleEdit = (row) => {
   formType.value = 'edit'
-  // 先重置表单，避免之前的数据残留
   resetProductForm()
   
-  const rowData = { ...row }
+  // 填充表单数据
+  productForm.id = row.id
+  productForm.productName = row.productName
+  productForm.productCode = row.productCode
+  productForm.feeRate = row.feeRate
+  productForm.scheduledFeeEnabled = row.scheduledFeeEnabled
+  productForm.scheduledFeeTime = row.scheduledFeeTime
+  productForm.status = row.status
+  productForm.isPolling = row.isPolling || 'WEIGHT'
+  productForm.remark = row.remark
   
-  // 为表单赋值
-  Object.keys(productForm).forEach(key => {
-    if (rowData.hasOwnProperty(key)) {
-      productForm[key] = rowData[key]
-    }
-  })
   // 特殊处理 channelCode，确保是数组
-  if (rowData.channelCode && !Array.isArray(rowData.channelCode)) {
-      // 假设 channelCode 存储的是ID数组，但原始数据可能是逗号分隔字符串或其他
-      // 这里需要根据实际情况转换，当前假设它已经是数组或需要包装成数组
-      productForm.channelCode = Array.isArray(rowData.channelCode) ? rowData.channelCode : [rowData.channelCode];
-  } else if (!rowData.channelCode) {
-    productForm.channelCode = [];
-    }
-
+  if (row.channelCode && !Array.isArray(row.channelCode)) {
+    productForm.channelCode = Array.isArray(row.channelCode) ? row.channelCode : [row.channelCode]
+  } else if (!row.channelCode) {
+    productForm.channelCode = []
+  }
   
-  // 如果存在待生效的费率，则填充到表单的费率字段中
-  if (rowData.pendingFeeRate !== undefined && rowData.scheduledFeeEnabled === 'YES') {
-    productForm.feeRate = rowData.pendingFeeRate
-    // productForm.scheduledFeeEnabled = 'YES'; // 这行已在Object.keys中处理
-    // productForm.scheduledFeeTime = rowData.scheduledFeeTime; // 这行已在Object.keys中处理
+  // 根据是否有定时功能，设置syncOption的值
+  if (row.scheduledFeeEnabled === 'YES' && row.scheduledFeeTime) {
+    productForm.syncOption = 'scheduled'
+    
+    // 修复时间格式问题：确保时间格式正确并包含时分秒
+    const dateObj = new Date(row.scheduledFeeTime)
+    // 格式化为 YYYY-MM-DD HH:MM:SS
+    const formattedDate = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')} ${String(dateObj.getHours()).padStart(2, '0')}:${String(dateObj.getMinutes()).padStart(2, '0')}:${String(dateObj.getSeconds()).padStart(2, '0')}`
+    
+    productForm.effectiveTime = formattedDate
+  } else if (row.syncFeeToMerchant === 'YES') {
+    productForm.syncOption = 'immediate'
+    productForm.effectiveTime = ''
   } else {
-    // 如果没有待生效费率，确保 scheduledFeeEnabled 和 scheduledFeeTime 被正确设置 (可能为 'NO' 和空)
-    // 这一步在 resetProductForm 和 Object.keys 赋值后，通常已正确，但可按需保留下面的显式设置
-    // productForm.scheduledFeeEnabled = 'NO';
-    // productForm.scheduledFeeTime = '';
+    productForm.syncOption = 'none'
+    productForm.effectiveTime = ''
   }
   
   // 更新通道表格数据
@@ -527,6 +515,11 @@ const handleEdit = (row) => {
   }
   
   formDialogVisible.value = true
+  
+  // 更新倒计时的显示（如果有effectiveTime）
+  if (productForm.effectiveTime) {
+    updateCountdown()
+  }
 }
 
 const handleDelete = (row) => {
@@ -657,76 +650,85 @@ const handleBatchRemove = () => {
   }).catch(() => {})
 }
 
-const handleFormSubmit = () => {
+const handleFormSubmit = async () => {
   if (!productFormRef.value) return
   
-  productFormRef.value.validate((valid) => {
-    if (valid) {
-      // 验证定时费率时间是否合法（如果启用）
-      if (formType.value === 'edit' && productForm.scheduledFeeEnabled === 'YES') {
-        const now = new Date();
-        now.setHours(0, 0, 0, 0); // 设置当前日期的时间部分为0
-        const scheduledDate = new Date(productForm.scheduledFeeTime);
+  try {
+    await productFormRef.value.validate()
+    
+    submitLoading.value = true
+    
+    // 创建要提交的数据副本
+    const submitData = { ...productForm }
+    
+    // 根据syncOption设置相应的字段
+    if (submitData.syncOption === 'none') {
+      submitData.syncFeeToMerchant = 'NO'
+      submitData.scheduledSyncEnabled = 'NO'
+      // 保留effectiveTime，它可能被设置用于模板的生效时间
+    } else if (submitData.syncOption === 'immediate') {
+      submitData.syncFeeToMerchant = 'YES'
+      submitData.scheduledSyncEnabled = 'NO'
+      submitData.effectiveTime = '' // 清空生效时间
+    } else if (submitData.syncOption === 'scheduled') {
+      submitData.syncFeeToMerchant = 'YES'
+      submitData.scheduledSyncEnabled = 'YES'
+      // effectiveTime已设置
+    }
+    
+    // 更新scheduledFeeEnabled和scheduledFeeTime字段，用于向后兼容
+    submitData.scheduledFeeEnabled = 'NO'
+    submitData.scheduledFeeTime = ''
+    
+    // 如果是新增操作
+    if (formType.value === 'add') {
+      // API调用：创建产品
+      console.log('新增产品数据:', submitData)
+      // 模拟API调用成功
+      setTimeout(() => {
+        ElMessage.success('新增支付产品成功')
+        formDialogVisible.value = false
+        fetchData() // 重新加载表格数据
+        submitLoading.value = false
+      }, 1000)
+    } 
+    // 编辑操作
+    else {
+      // API调用：更新产品
+      console.log('更新产品数据:', submitData)
+      // 模拟API调用成功
+      setTimeout(() => {
+        ElMessage.success('更新支付产品成功')
+        formDialogVisible.value = false
         
-        if (scheduledDate < now) {
-          ElMessage.warning('费率变更生效日期必须晚于今天');
-          return false;
-        }
-      }
-      
-      submitLoading.value = true
-      
-      // 模拟提交逻辑
-      safeTimeout(() => {
-        if (formType.value === 'edit' && productForm.scheduledFeeEnabled === 'YES') {
-          // 创建一个待处理的费率变更记录
-          const updatedRow = tableData.value.find(item => item.id === productForm.id);
-          if (updatedRow) {
-            // 存储原始值
-            const originalValues = {
-              productName: updatedRow.productName,
-              productCode: updatedRow.productCode,
-              feeRate: updatedRow.feeRate,
-              status: updatedRow.status
-            };
-            
-            // 设置定时生效标志和时间
-            updatedRow.scheduledFeeEnabled = 'YES';
-            updatedRow.scheduledFeeTime = productForm.scheduledFeeTime;
-            
-            // 设置待生效的值
-            updatedRow.pendingProductName = productForm.productName !== originalValues.productName ? productForm.productName : undefined;
-            updatedRow.pendingProductCode = productForm.productCode !== originalValues.productCode ? productForm.productCode : undefined;
-            updatedRow.pendingFeeRate = productForm.feeRate !== originalValues.feeRate ? productForm.feeRate : undefined;
-            updatedRow.pendingStatus = productForm.status !== originalValues.status ? productForm.status : undefined;
-            
-            // 保持原来的值不变
-            updatedRow.productName = originalValues.productName;
-            updatedRow.productCode = originalValues.productCode;
-            updatedRow.feeRate = originalValues.feeRate;
-            updatedRow.status = originalValues.status;
-            
-            console.log('设置定时配置', updatedRow);
-          }
-        } else {
-          // 新增
-          const newId = Math.max(...tableData.value.map(item => item.id)) + 1;
-          tableData.value.push({
-            id: newId,
-            ...productForm,
+        // 更新表格中对应的行数据，模拟后端更新结果
+        const rowIndex = tableData.value.findIndex(row => row.id === submitData.id)
+        if (rowIndex !== -1) {
+          // 直接更新当前数据
+          tableData.value[rowIndex] = {
+            ...tableData.value[rowIndex],
+            productName: submitData.productName,
+            productCode: submitData.productCode,
+            feeRate: submitData.feeRate,
+            status: submitData.status,
+            remark: submitData.remark,
             scheduledFeeEnabled: 'NO',
-            scheduledFeeTime: ''
-          });
+            scheduledFeeTime: '',
+            pendingFeeRate: undefined,
+            pendingProductName: undefined,
+            pendingProductCode: undefined,
+            pendingStatus: undefined
+          }
         }
         
         submitLoading.value = false
-        ElMessage.success(formType.value === 'add' ? '添加成功' : '修改成功')
-        formDialogVisible.value = false
-      }, 800)
-    } else {
-      return false
+      }, 1000)
     }
-  })
+  } catch (error) {
+    console.error('表单验证失败:', error)
+    ElMessage.error('请完善表单信息')
+    submitLoading.value = false
+  }
 }
 
 const handleToggleStatus = (row, val) => {
@@ -793,53 +795,82 @@ const handleChannelChange = (selectedChannelIds) => {
 // 获取安全定时器
 const { safeTimeout } = useCleanup()
 
-// 获取倒计时显示文本
-const getCountdown = (scheduledTimeStr) => {
-  if (!scheduledTimeStr) return '-';
+// 新增计算属性：是否已过生效时间
+const isEffectiveTimeExpired = computed(() => {
+  if (!productForm.effectiveTime) return false
   
-  const now = new Date();
-  const scheduledDate = new Date(scheduledTimeStr);
-  // 设置为当天结束时间
-  scheduledDate.setHours(23, 59, 59, 999);
+  const now = new Date()
+  const effectiveDate = new Date(productForm.effectiveTime)
   
-  // 如果已经过了预定时间，返回已生效
-  if (now >= scheduledDate) {
-    return '已生效';
+  return effectiveDate < now // 使用小于而不是小于等于，避免刚刚好的时间也显示为已过期
+})
+
+// 新增：倒计时相关
+const countdown = ref({
+  days: 0,
+  hours: 0,
+  minutes: 0,
+  seconds: 0
+})
+
+// 新增计算属性：格式化倒计时显示
+const formattedCountdown = computed(() => {
+  const { days, hours, minutes, seconds } = countdown.value
+  return `${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`
+})
+
+const countdownTimer = ref(null)
+
+// 新增：更新倒计时
+const updateCountdown = () => {
+  if (!productForm.effectiveTime) return
+  
+  const effectiveDate = new Date(productForm.effectiveTime)
+  const now = new Date()
+  
+  if (effectiveDate <= now) {
+    countdown.value = { days: 0, hours: 0, minutes: 0, seconds: 0 }
+    return
   }
   
-  // 计算天数差异
-  const diffMs = scheduledDate - now;
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  const diff = effectiveDate - now
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000)
   
-  // 格式化显示
-  if (diffDays > 1) {
-    return `${diffDays}天后生效`;
-  } else {
-    return '明天生效';
+  countdown.value = { days, hours, minutes, seconds }
+}
+
+// 处理同步选项变更
+const handleSyncOptionChange = (value) => {
+  if (value === 'immediate' && productForm.effectiveTime) {
+    ElMessageBox.confirm(
+      '切换为立即同步将取消定时任务，是否继续？',
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    ).then(() => {
+      productForm.effectiveTime = ''
+    }).catch(() => {
+      productForm.syncOption = 'scheduled'
+    })
   }
 }
 
 // 初始化获取数据
 onMounted(() => {
   fetchData()
-  
-  // 设置定时检查
-  feeRateTimer = setInterval(() => {
-    checkScheduledFeeRates();
-  }, 60000); // 每分钟检查一次
-  
-  // 添加倒计时更新定时器
-  countdownTimer = setInterval(() => {
-    // 强制表格重新渲染以更新倒计时
-    tableData.value = [...tableData.value];
-  }, 1000); // 每秒更新一次
+  updateCountdown()
+  countdownTimer.value = setInterval(updateCountdown, 1000)
 })
 
 // 获取数据
 const fetchData = () => {
   loading.value = true
-  // 检查并应用定时费率变更
-  checkScheduledFeeRates();
   
   safeTimeout(() => {
     loading.value = false
@@ -848,12 +879,9 @@ const fetchData = () => {
 
 // 导出数据
 const handleExport = () => {
-  // 准备导出数据，添加定时费率变更信息
+  // 准备导出数据
   const exportData = tableData.value.map(item => {
     const exportItem = { ...item };
-    if (item.scheduledFeeEnabled === 'YES' && item.pendingFeeRate !== undefined) {
-      exportItem.scheduledFeeInfo = `将于${formatScheduledTime(item.scheduledFeeTime)}更新为${item.pendingFeeRate}%`;
-    }
     return exportItem;
   });
   
@@ -862,53 +890,11 @@ const handleExport = () => {
   ElMessage.success('数据导出成功');
 }
 
-// 检查是否有定时费率需要生效
-const checkScheduledFeeRates = () => {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // 当天开始时间
-  let hasUpdates = false;
-  
-  tableData.value.forEach(item => {
-    if (item.scheduledFeeEnabled === 'YES' && item.scheduledFeeTime && item.pendingFeeRate !== undefined) {
-      const scheduledDate = new Date(item.scheduledFeeTime);
-      
-      // 如果已到达或超过设定日期，应用新费率
-      if (today >= scheduledDate) {
-        // 更新费率
-        item.feeRate = item.pendingFeeRate;
-        // 禁用定时费率设置（避免重复应用）
-        item.scheduledFeeEnabled = 'NO';
-        item.scheduledFeeTime = '';
-        // 清除待生效费率
-        delete item.pendingFeeRate;
-        hasUpdates = true;
-      }
-    }
-  });
-  
-  // 如果有更新，提示用户
-  if (hasUpdates) {
-    ElMessage.success('系统已自动应用定时费率变更');
-  }
-}
-
-// 设置定时器，每分钟检查一次是否有定时费率需要生效
-let feeRateTimer = null;
-
-// 倒计时定时器
-let countdownTimer = null;
-
 // 组件销毁前清除定时器
 onBeforeUnmount(() => {
-  if (feeRateTimer) {
-    clearInterval(feeRateTimer);
-    feeRateTimer = null;
-  }
-  
   // 清除倒计时定时器
-  if (countdownTimer) {
-    clearInterval(countdownTimer);
-    countdownTimer = null;
+  if (countdownTimer.value) {
+    clearInterval(countdownTimer.value)
   }
 })
 </script>
@@ -1104,5 +1090,70 @@ onBeforeUnmount(() => {
 .pending-text {
   color: #E6A23C;
   font-weight: 500;
+}
+
+.countdown-tip {
+  margin-left: 8px;
+  color: #E6A23C;
+  font-size: 12px;
+}
+
+.sync-tip {
+  margin-left: 8px;
+  color: #909399;
+  font-size: 12px;
+}
+
+.pending-value {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.pending-text {
+  font-size: 12px;
+  color: #E6A23C;
+  margin-right: 4px;
+}
+
+.pending-text:before {
+  content: "待生效: ";
+  color: #909399;
+}
+
+.fee-value {
+  font-weight: bold;
+}
+
+.field-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
+  margin-left: 2px;
+}
+
+/* 修改一些表单元素的样式 */
+.el-radio {
+  margin-right: 20px;
+}
+
+.el-radio__label {
+  font-size: 14px;
+}
+
+.el-date-picker {
+  width: 240px;
+}
+
+.channel-table-container {
+  margin-top: 8px;
+  border: 1px solid #EBEEF5;
+  border-radius: 4px;
+  overflow: hidden;
 }
 </style> 

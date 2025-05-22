@@ -114,7 +114,6 @@
             </div>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item @click="goToAccountInfo">账户信息</el-dropdown-item>
                 <el-dropdown-item @click="showChangePasswordDialog">修改密码</el-dropdown-item>
                 <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
@@ -324,11 +323,6 @@ const submitPasswordForm = () => {
       return false
     }
   })
-}
-
-// 跳转到账户信息页
-const goToAccountInfo = () => {
-  router.push('/merchant/account/info')
 }
 
 // 修改密码页面跳转改为直接显示弹窗

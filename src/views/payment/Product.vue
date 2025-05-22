@@ -184,7 +184,7 @@
             inactive-text="禁用"
           />
           <div class="form-tip" v-if="productForm.scheduledFeeEnabled === 'YES'">
-            启用后，费率变更将在指定时间生效而非立即生效
+            启用后，本次提交的配置将在指定时间生效而非立即生效
           </div>
         </el-form-item>
         
@@ -219,7 +219,8 @@
             <el-option label="权重" value="WEIGHT" />
           </el-select>
         </el-form-item>
-        <el-form-item label="同步配置到商户" prop="syncFeeToMerchant">
+        <!-- 同步配置到商户选项，仅在编辑模式下显示 -->
+        <el-form-item label="同步配置到商户" prop="syncFeeToMerchant" v-if="formType === 'edit'">
           <el-switch
             v-model="productForm.syncFeeToMerchant"
             active-value="YES"
@@ -228,7 +229,7 @@
             inactive-text="否"
           />
         </el-form-item>
-        <el-form-item label="超级密码" prop="superPassword" v-if="productForm.syncFeeToMerchant === 'YES'">
+        <el-form-item label="超级密码" prop="superPassword" v-if="formType === 'edit' && productForm.syncFeeToMerchant === 'YES'">
           <el-input 
             v-model="productForm.superPassword" 
             type="password"
@@ -390,7 +391,7 @@ const formRules = {
   ],
   superPassword: [
     { required: true, message: '请输入超级密码', trigger: 'blur', validator: (rule, value, callback) => {
-      if (productForm.syncFeeToMerchant === 'YES' && !value) {
+      if (formType.value === 'edit' && productForm.syncFeeToMerchant === 'YES' && !value) {
         callback(new Error('请输入超级密码'))
       } else {
         callback()
@@ -626,10 +627,12 @@ const handleFormSubmit = () => {
         }
       }
       
-      // 验证超级密码
-      if (productForm.superPassword !== 'admin123') { // 实际项目中应该使用后端验证
-        ElMessage.error('超级密码不正确');
-        return false;
+      // 验证超级密码（仅在编辑模式且开启同步配置时需要）
+      if (formType.value === 'edit' && productForm.syncFeeToMerchant === 'YES') {
+        if (productForm.superPassword !== 'admin123') { // 实际项目中应该使用后端验证
+          ElMessage.error('超级密码不正确');
+          return false;
+        }
       }
       
       submitLoading.value = true

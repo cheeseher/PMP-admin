@@ -49,35 +49,62 @@
         @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" fixed="left" />
         <el-table-column prop="id" label="支付产品ID" width="120" />
-        <el-table-column prop="productName" label="支付产品名称" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="productCode" label="支付产品编码" min-width="120" show-overflow-tooltip />
-        <el-table-column prop="feeRate" label="商户费率" width="200">
+        <el-table-column prop="productName" label="支付产品名称" min-width="150" show-overflow-tooltip>
           <template #default="scope">
-            <div class="fee-rate-container">
-              <div class="current-fee">
-                <span class="fee-label">当前费率：</span>
-                <span class="fee-value">{{ scope.row.feeRate }}%</span>
-              </div>
-              
-              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingFeeRate !== undefined" class="pending-fee">
-                <span class="fee-label">定时费率：</span>
-                <span class="fee-value pending">{{ scope.row.pendingFeeRate }}%</span>
-                <div class="effective-time">
-                  <el-icon><timer /></el-icon>
-                  <span>{{ getRemainingTimeText(scope.row.scheduledFeeTime) }}生效</span>
-                </div>
+            <div class="field-container">
+              <span>{{ scope.row.productName }}</span>
+              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingProductName" class="pending-value">
+                <span class="pending-text">{{ scope.row.pendingProductName }}</span>
               </div>
             </div>
           </template>
         </el-table-column>
+        <el-table-column prop="productCode" label="支付产品编码" min-width="120" show-overflow-tooltip>
+          <template #default="scope">
+            <div class="field-container">
+              <span>{{ scope.row.productCode }}</span>
+              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingProductCode" class="pending-value">
+                <span class="pending-text">{{ scope.row.pendingProductCode }}</span>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="feeRate" label="商户费率" width="120">
+          <template #default="scope">
+            <div class="field-container">
+              <span class="fee-value">{{ scope.row.feeRate }}%</span>
+              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingFeeRate !== undefined" class="pending-value">
+                <span class="pending-text">{{ scope.row.pendingFeeRate }}%</span>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+        
+        <!-- 新增：定时生效列，显示倒计时 -->
+        <el-table-column label="定时生效" width="180">
+          <template #default="scope">
+            <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.scheduledFeeTime">
+              <el-tag type="warning" effect="plain">
+                <span class="countdown-text">{{ getCountdown(scope.row.scheduledFeeTime) }}</span>
+              </el-tag>
+            </div>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        
         <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
-            <el-switch
-              v-model="scope.row.status"
-              active-value="ONLINE"
-              inactive-value="OFFLINE"
-              @change="(val) => handleToggleStatus(scope.row, val)"
-            />
+            <div class="field-container">
+              <el-switch
+                v-model="scope.row.status"
+                active-value="ONLINE"
+                inactive-value="OFFLINE"
+                @change="(val) => handleToggleStatus(scope.row, val)"
+              />
+              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingStatus" class="pending-value">
+                <span class="pending-text">{{ scope.row.pendingStatus === 'ONLINE' ? '启用' : '禁用' }}</span>
+              </div>
+            </div>
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
@@ -195,10 +222,10 @@
         >
           <el-date-picker
             v-model="productForm.scheduledFeeTime"
-            type="datetime"
-            placeholder="选择费率变更生效时间"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
+            type="date"
+            placeholder="选择配置变更生效时间"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
             :disabledDate="disabledDate"
             style="width: 100%"
           />
@@ -227,6 +254,20 @@
             inactive-value="NO"
             active-text="是"
             inactive-text="否"
+          />
+        </el-form-item>
+        <!-- 添加定时同步选项 -->
+        <el-form-item 
+          label="定时同步" 
+          prop="scheduledSyncEnabled" 
+          v-if="formType === 'edit' && productForm.syncFeeToMerchant === 'YES'"
+        >
+          <el-switch
+            v-model="productForm.scheduledSyncEnabled"
+            active-value="YES"
+            inactive-value="NO"
+            active-text="启用"
+            inactive-text="禁用"
           />
         </el-form-item>
         <el-form-item label="超级密码" prop="superPassword" v-if="formType === 'edit' && productForm.syncFeeToMerchant === 'YES'">
@@ -294,6 +335,9 @@ const tableData = ref([
     scheduledFeeEnabled: 'YES',
     scheduledFeeTime: getTomorrowDate(), // 使用明天的日期
     pendingFeeRate: 1.0,
+    pendingProductName: '支付产品B（升级版）',
+    pendingProductCode: 'WECHATPAY_V2',
+    pendingStatus: 'OFFLINE',
     status: 'ONLINE',
     remark: '微信支付通道产品'
   },
@@ -335,6 +379,7 @@ const productForm = reactive({
   status: 'ONLINE',
   isPolling: 'POLLING',
   syncFeeToMerchant: 'NO',
+  scheduledSyncEnabled: 'NO',
   superPassword: '',
   remark: ''
 })
@@ -358,6 +403,7 @@ const resetProductForm = () => {
   productForm.status = 'ONLINE'
   productForm.isPolling = 'POLLING'
   productForm.syncFeeToMerchant = 'NO'
+  productForm.scheduledSyncEnabled = 'NO'
   productForm.superPassword = ''
   productForm.remark = ''
   channelTableData.value = []
@@ -619,18 +665,11 @@ const handleFormSubmit = () => {
       // 验证定时费率时间是否合法（如果启用）
       if (formType.value === 'edit' && productForm.scheduledFeeEnabled === 'YES') {
         const now = new Date();
-        const scheduledTime = new Date(productForm.scheduledFeeTime);
+        now.setHours(0, 0, 0, 0); // 设置当前日期的时间部分为0
+        const scheduledDate = new Date(productForm.scheduledFeeTime);
         
-        if (scheduledTime <= now) {
-          ElMessage.warning('费率变更生效时间必须晚于当前时间');
-          return false;
-        }
-      }
-      
-      // 验证超级密码（仅在编辑模式且开启同步配置时需要）
-      if (formType.value === 'edit' && productForm.syncFeeToMerchant === 'YES') {
-        if (productForm.superPassword !== 'admin123') { // 实际项目中应该使用后端验证
-          ElMessage.error('超级密码不正确');
+        if (scheduledDate < now) {
+          ElMessage.warning('费率变更生效日期必须晚于今天');
           return false;
         }
       }
@@ -643,45 +682,41 @@ const handleFormSubmit = () => {
           // 创建一个待处理的费率变更记录
           const updatedRow = tableData.value.find(item => item.id === productForm.id);
           if (updatedRow) {
-            // 存储原始费率
-            const originalFeeRate = updatedRow.feeRate;
+            // 存储原始值
+            const originalValues = {
+              productName: updatedRow.productName,
+              productCode: updatedRow.productCode,
+              feeRate: updatedRow.feeRate,
+              status: updatedRow.status
+            };
+            
             // 设置定时生效标志和时间
             updatedRow.scheduledFeeEnabled = 'YES';
             updatedRow.scheduledFeeTime = productForm.scheduledFeeTime;
-            // 这里可以添加一个待生效的费率字段，实际项目中可能需要保存到后端
-            updatedRow.pendingFeeRate = productForm.feeRate;
-            // 不立即修改商户费率，保留原来的费率
-            updatedRow.feeRate = originalFeeRate;
             
-            console.log('设置定时费率', updatedRow); // 添加调试信息
-          } else {
-            console.log('未找到要更新的行', productForm.id); // 添加调试信息
+            // 设置待生效的值
+            updatedRow.pendingProductName = productForm.productName !== originalValues.productName ? productForm.productName : undefined;
+            updatedRow.pendingProductCode = productForm.productCode !== originalValues.productCode ? productForm.productCode : undefined;
+            updatedRow.pendingFeeRate = productForm.feeRate !== originalValues.feeRate ? productForm.feeRate : undefined;
+            updatedRow.pendingStatus = productForm.status !== originalValues.status ? productForm.status : undefined;
+            
+            // 保持原来的值不变
+            updatedRow.productName = originalValues.productName;
+            updatedRow.productCode = originalValues.productCode;
+            updatedRow.feeRate = originalValues.feeRate;
+            updatedRow.status = originalValues.status;
+            
+            console.log('设置定时配置', updatedRow);
           }
         } else {
-          // 正常立即更新（新增或者没有启用定时生效的编辑）
-          if (formType.value === 'edit') {
-            const updatedRow = tableData.value.find(item => item.id === productForm.id);
-            if (updatedRow) {
-              Object.keys(productForm).forEach(key => {
-                if (key in updatedRow) {
-                  updatedRow[key] = productForm[key];
-                }
-              });
-              // 清除定时生效标志
-              updatedRow.scheduledFeeEnabled = 'NO';
-              updatedRow.scheduledFeeTime = '';
-              delete updatedRow.pendingFeeRate; // 确保清除待生效费率
-            }
-          } else {
-            // 新增
-            const newId = Math.max(...tableData.value.map(item => item.id)) + 1;
-            tableData.value.push({
-              id: newId,
-              ...productForm,
-              scheduledFeeEnabled: 'NO',
-              scheduledFeeTime: ''
-            });
-          }
+          // 新增
+          const newId = Math.max(...tableData.value.map(item => item.id)) + 1;
+          tableData.value.push({
+            id: newId,
+            ...productForm,
+            scheduledFeeEnabled: 'NO',
+            scheduledFeeTime: ''
+          });
         }
         
         submitLoading.value = false
@@ -758,6 +793,32 @@ const handleChannelChange = (selectedChannelIds) => {
 // 获取安全定时器
 const { safeTimeout } = useCleanup()
 
+// 获取倒计时显示文本
+const getCountdown = (scheduledTimeStr) => {
+  if (!scheduledTimeStr) return '-';
+  
+  const now = new Date();
+  const scheduledDate = new Date(scheduledTimeStr);
+  // 设置为当天结束时间
+  scheduledDate.setHours(23, 59, 59, 999);
+  
+  // 如果已经过了预定时间，返回已生效
+  if (now >= scheduledDate) {
+    return '已生效';
+  }
+  
+  // 计算天数差异
+  const diffMs = scheduledDate - now;
+  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  
+  // 格式化显示
+  if (diffDays > 1) {
+    return `${diffDays}天后生效`;
+  } else {
+    return '明天生效';
+  }
+}
+
 // 初始化获取数据
 onMounted(() => {
   fetchData()
@@ -766,6 +827,12 @@ onMounted(() => {
   feeRateTimer = setInterval(() => {
     checkScheduledFeeRates();
   }, 60000); // 每分钟检查一次
+  
+  // 添加倒计时更新定时器
+  countdownTimer = setInterval(() => {
+    // 强制表格重新渲染以更新倒计时
+    tableData.value = [...tableData.value];
+  }, 1000); // 每秒更新一次
 })
 
 // 获取数据
@@ -798,14 +865,15 @@ const handleExport = () => {
 // 检查是否有定时费率需要生效
 const checkScheduledFeeRates = () => {
   const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // 当天开始时间
   let hasUpdates = false;
   
   tableData.value.forEach(item => {
     if (item.scheduledFeeEnabled === 'YES' && item.scheduledFeeTime && item.pendingFeeRate !== undefined) {
-      const scheduledTime = new Date(item.scheduledFeeTime);
+      const scheduledDate = new Date(item.scheduledFeeTime);
       
-      // 如果已到达或超过设定时间，应用新费率
-      if (now >= scheduledTime) {
+      // 如果已到达或超过设定日期，应用新费率
+      if (today >= scheduledDate) {
         // 更新费率
         item.feeRate = item.pendingFeeRate;
         // 禁用定时费率设置（避免重复应用）
@@ -827,11 +895,20 @@ const checkScheduledFeeRates = () => {
 // 设置定时器，每分钟检查一次是否有定时费率需要生效
 let feeRateTimer = null;
 
+// 倒计时定时器
+let countdownTimer = null;
+
 // 组件销毁前清除定时器
 onBeforeUnmount(() => {
   if (feeRateTimer) {
     clearInterval(feeRateTimer);
     feeRateTimer = null;
+  }
+  
+  // 清除倒计时定时器
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
   }
 })
 </script>
@@ -1005,5 +1082,27 @@ onBeforeUnmount(() => {
 .effective-time .el-icon {
   margin-right: 4px;
   font-size: 12px;
+}
+
+.countdown-text {
+  vertical-align: middle;
+  font-size: 12px;
+}
+
+.field-container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pending-value {
+  font-size: 12px;
+  color: #E6A23C;
+  line-height: 1.2;
+}
+
+.pending-text {
+  color: #E6A23C;
+  font-weight: 500;
 }
 </style> 

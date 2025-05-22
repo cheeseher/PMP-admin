@@ -198,7 +198,7 @@
           <el-input v-model="productForm.password" type="password" placeholder="不填表示不更新密码" show-password />
         </el-form-item>
         <el-form-item label="商户号" prop="productNo">
-          <el-input v-model="productForm.productNo" placeholder="请输入商户号" />
+          <el-input v-model="productForm.productNo" placeholder="请输入商户号" :disabled="dialogTitle === '编辑商户'" />
         </el-form-item>
         <el-form-item label="API密钥" prop="apiKey">
           <el-input v-model="productForm.apiKey" placeholder="请输入API密钥">
@@ -238,10 +238,13 @@
           />
         </el-form-item>
         <el-form-item label="状态">
-          <el-radio-group v-model="productForm.verified">
-            <el-radio label="Y">开启</el-radio>
-            <el-radio label="N">关闭</el-radio>
-          </el-radio-group>
+          <el-switch
+            v-model="productForm.verified"
+            active-value="Y"
+            inactive-value="N"
+            active-text="开启"
+            inactive-text="关闭"
+          />
         </el-form-item>
         <el-form-item label="子账户" prop="subAccounts">
           <el-select

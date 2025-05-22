@@ -199,10 +199,10 @@
         >
           <el-date-picker
             v-model="channelForm.scheduledFeeTime"
-            type="datetime"
-            placeholder="选择费率变更生效时间"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
+            type="date"
+            placeholder="选择费率变更生效日期"
+            format="YYYY-MM-DD"
+            value-format="YYYY-MM-DD"
             :disabledDate="disabledDate"
             style="width: 100%"
           />
@@ -716,10 +716,11 @@ const handleSubmitForm = () => {
       // 验证定时费率时间是否合法（如果启用）
       if (dialogType.value === 'edit' && channelForm.scheduledFeeEnabled === 'YES') {
         const now = new Date();
-        const scheduledTime = new Date(channelForm.scheduledFeeTime);
+        now.setHours(0, 0, 0, 0); // 设置当前日期的时间部分为0
+        const scheduledDate = new Date(channelForm.scheduledFeeTime);
         
-        if (scheduledTime <= now) {
-          ElMessage.warning('费率变更生效时间必须晚于当前时间');
+        if (scheduledDate < now) {
+          ElMessage.warning('费率变更生效日期必须晚于今天');
           return false;
         }
       }
@@ -805,14 +806,15 @@ onBeforeUnmount(() => {
 // 检查是否有定时费率需要生效
 const checkScheduledFeeRates = () => {
   const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // 当天开始时间
   let hasUpdates = false;
   
   tableData.value.forEach(item => {
     if (item.scheduledFeeEnabled === 'YES' && item.scheduledFeeTime && item.pendingFeeRate !== undefined) {
-      const scheduledTime = new Date(item.scheduledFeeTime);
+      const scheduledDate = new Date(item.scheduledFeeTime);
       
-      // 如果已到达或超过设定时间，应用新费率
-      if (now >= scheduledTime) {
+      // 如果已到达或超过设定日期，应用新费率
+      if (today >= scheduledDate) {
         // 更新费率
         item.rate = item.pendingFeeRate;
         // 禁用定时费率设置（避免重复应用）

@@ -83,6 +83,9 @@
                 inactive-value="OFFLINE"
                 @change="(val) => handleToggleStatus(scope.row, val)"
               />
+              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingStatus" class="pending-value">
+                <span class="pending-text">{{ scope.row.pendingStatus === 'OFFLINE' ? '禁用' : '启用' }}</span>
+              </div>
             </div>
           </template>
         </el-table-column>

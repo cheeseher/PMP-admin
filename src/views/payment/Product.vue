@@ -53,9 +53,6 @@
           <template #default="scope">
             <div class="field-container">
               <span>{{ scope.row.productName }}</span>
-              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingProductName" class="pending-value">
-                <span class="pending-text">{{ scope.row.pendingProductName }}</span>
-              </div>
             </div>
           </template>
         </el-table-column>
@@ -63,9 +60,6 @@
           <template #default="scope">
             <div class="field-container">
               <span>{{ scope.row.productCode }}</span>
-              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingProductCode" class="pending-value">
-                <span class="pending-text">{{ scope.row.pendingProductCode }}</span>
-              </div>
             </div>
           </template>
         </el-table-column>
@@ -89,9 +83,6 @@
                 inactive-value="OFFLINE"
                 @change="(val) => handleToggleStatus(scope.row, val)"
               />
-              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingStatus" class="pending-value">
-                <span class="pending-text">{{ scope.row.pendingStatus === 'ONLINE' ? '启用' : '禁用' }}</span>
-              </div>
             </div>
           </template>
         </el-table-column>

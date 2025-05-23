@@ -83,12 +83,12 @@
         <el-table-column prop="status" label="状态" width="100">
           <template #default="scope">
             <div class="field-container">
-              <el-switch
-                v-model="scope.row.status"
-                active-value="ONLINE"
-                inactive-value="OFFLINE"
-                @change="(val) => handleToggleStatus(scope.row, val)"
-              />
+              <el-tag
+                :type="scope.row.status === 'ONLINE' ? 'success' : 'danger'"
+                effect="plain"
+              >
+                {{ scope.row.status === 'ONLINE' ? '启用' : '禁用' }}
+              </el-tag>
               <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingStatus" class="pending-value">
                 <span class="pending-text">{{ scope.row.pendingStatus === 'ONLINE' ? '启用' : '禁用' }}</span>
               </div>

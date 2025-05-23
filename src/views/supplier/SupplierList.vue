@@ -77,10 +77,12 @@
         </el-table-column>
         <el-table-column label="状态" width="100" align="center">
           <template #default="scope">
-            <el-switch
-              v-model="scope.row.enabled"
-              @change="(val) => handleStatusChange(scope.row, val)"
-            />
+            <el-tag
+              :type="scope.row.enabled ? 'success' : 'danger'"
+              effect="plain"
+            >
+              {{ scope.row.enabled ? '启用' : '禁用' }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" width="120" fixed="right" align="center">

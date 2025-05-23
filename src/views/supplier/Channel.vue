@@ -103,10 +103,12 @@
         <el-table-column label="分组" prop="category" width="100" align="center" />
         <el-table-column label="状态" width="80" align="center">
           <template #default="scope">
-            <el-switch
-              v-model="scope.row.enabled"
-              @change="(val) => handleStatusChange(scope.row, val)"
-            />
+            <el-tag
+              :type="scope.row.enabled ? 'success' : 'danger'"
+              effect="plain"
+            >
+              {{ scope.row.enabled ? '启用' : '禁用' }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="备注" prop="remark" min-width="120" show-overflow-tooltip />
@@ -548,28 +550,6 @@ const handleEdit = (row) => {
   }
   
   dialogVisible.value = true
-}
-
-// 状态切换处理
-const handleStatusChange = (row, newValue) => {
-  const action = newValue ? '启用' : '禁用'
-  
-  ElMessageBox.confirm(
-    `确认${action}通道 "${row.channelName}"?`,
-    `${action}确认`,
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    }
-  ).then(() => {
-    // 模拟API调用
-    ElMessage.success(`${action}成功`)
-  }).catch(() => {
-    // 取消操作，恢复原状态
-    row.enabled = !newValue
-    ElMessage.info('已取消操作')
-  })
 }
 
 // 拉单处理

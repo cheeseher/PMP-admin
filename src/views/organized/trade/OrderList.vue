@@ -19,12 +19,6 @@
               <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-          
-          <el-form-item label="通知状态：">
-            <el-select v-model="searchForm.channelStatus" placeholder="请选择" clearable style="width: 150px">
-              <el-option v-for="item in channelStatusOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
         </div>
         
         <div class="filter-line">
@@ -85,18 +79,12 @@
             <el-input v-model="searchForm.orderAmount" placeholder="请输入金额" clearable style="width: 120px; margin-left: 10px" />
           </el-form-item>
           
-          <el-form-item label="隔日回调：">
+          <el-form-item label="隔日补单：">
             <el-select v-model="searchForm.showCallbacks" placeholder="请选择" clearable style="width: 100px">
               <el-option label="是" value="yes" />
               <el-option label="否" value="no" />
             </el-select>
           </el-form-item>
-          <el-form-item label="是否补单：">
-            <el-select v-model="searchForm.supplementStatus" placeholder="请选择" clearable style="width: 100px">
-              <el-option label="是" value="yes" />
-              <el-option label="否" value="no" />
-            </el-select>
-     </el-form-item>
           
           <el-form-item label="时间过滤：">
             <el-select v-model="searchForm.timeFilter" style="width: 100px" @change="handleTimeFilterChange">
@@ -212,10 +200,10 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="merchantNotify" label="通知状态" min-width="120" align="center">
+        <el-table-column prop="isLateOrder" label="隔日补单" min-width="120" align="center">
           <template #default="scope">
-            <el-tag :type="getNotifyStatusType(scope.row.merchantNotify)" size="small">
-              {{ scope.row.merchantNotify }}
+            <el-tag :type="scope.row.isLateOrder ? 'warning' : 'info'" size="small">
+              {{ scope.row.isLateOrder ? '是' : '否' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -285,16 +273,6 @@ const statusOptions = ref([
   { value: 'closed', label: '交易关闭' }
 ])
 
-// 通知状态选项
-const channelStatusOptions = ref([
-  { value: 'waiting_callback', label: '待回调' },
-  { value: 'callback_success', label: '隔日回调' },
-  { value: 'callback_failed', label: '回调失败' },
-  { value: 'not_notified', label: '未通知' },
-  { value: 'error_not_notified', label: '异常未通知' },
-  { value: 'no_more_callback', label: '不再回调' }
-])
-
 // 根据时间类型获取日期范围
 const getDateRangeByType = (type) => {
   const now = dayjs()
@@ -355,13 +333,11 @@ const searchForm = reactive({
   orderNo: '',
   paymentChannel: [],
   orderStatus: '',
-  channelStatus: '',
   createStartTime: '',
   createEndTime: '',
   payStartTime: '',
   payEndTime: '',
   showCallbacks: '',
-  supplementStatus: '',
   timeFilter: 'today',
   amountOperator: '',
   orderAmount: ''
@@ -385,20 +361,52 @@ const pagination = reactive({
 // 表格数据
 const tableData = ref([
   {
-    merchantOrderNo: 'P202503281006...',
-    systemOrderNo: 'MM03281006...',
-    paymentChannelCode: '[1112]',
-    paymentChannel: 'uid小额',
+    merchantOrderNo: 'MORD202406030001',
+    systemOrderNo: 'PAY2024060300918273',
+    paymentChannel: '数字人民币',
+    paymentChannelCode: '1111',
     orderAmount: 200.00,
     orderStatus: 'pending',
-    merchantNotify: '未通知',
+    isLateOrder: true,
     feeRate: '5.30%',
     fee: 10.60,
-    remark: '-',
-    createTime: '2025/03/28 10:06:47',
-    payTime: '-',
-    paySuccessTime: '-',
-    completeTime: '-'
+    remark: '',
+    createTime: '2024-06-03 10:15:20',
+    payTime: '',
+    paySuccessTime: '',
+    completeTime: ''
+  },
+  {
+    merchantOrderNo: 'MORD202406030002',
+    systemOrderNo: 'PAY2024060300918274',
+    paymentChannel: '支付宝小额包',
+    paymentChannelCode: '1117',
+    orderAmount: 200.00,
+    orderStatus: 'closed',
+    isLateOrder: false,
+    feeRate: '5.30%',
+    fee: 10.60,
+    remark: '超时关闭',
+    createTime: '2024-06-03 10:18:30',
+    payTime: '',
+    paySuccessTime: '',
+    completeTime: '2024-06-03 10:48:30'
+  },
+  {
+    merchantOrderNo: 'MORD202406030003',
+    systemOrderNo: 'PAY2024060300918275',
+    paymentChannel: '口令红包',
+    paymentChannelCode: '1119',
+    orderAmount: 300.00,
+    orderStatus: 'success',
+    isLateOrder: true,
+    feeRate: '5.30%',
+    fee: 15.90,
+    remark: '',
+    createTime: '2024-06-03 10:20:12',
+    payTime: '2024-06-03 10:21:03',
+    paySuccessTime: '2024-06-03 10:21:10',
+    completeTime: '2024-06-03 10:21:11'
   },
   {
     merchantOrderNo: 'P202503280951...',
@@ -407,7 +415,7 @@ const tableData = ref([
     paymentChannel: 'uid小额',
     orderAmount: 200.00,
     orderStatus: 'closed',
-    merchantNotify: '未通知',
+    isLateOrder: false,
     feeRate: '5.30%',
     fee: 10.60,
     remark: '-',
@@ -423,7 +431,7 @@ const tableData = ref([
     paymentChannel: 'uid小额',
     orderAmount: 300.00,
     orderStatus: 'success',
-    merchantNotify: '回调成功',
+    isLateOrder: false,
     feeRate: '5.30%',
     fee: 15.90,
     remark: '-',
@@ -439,7 +447,7 @@ const tableData = ref([
     paymentChannel: 'uid小额',
     orderAmount: 300.00,
     orderStatus: 'closed',
-    merchantNotify: '未通知',
+    isLateOrder: false,
     feeRate: '5.30%',
     fee: 15.90,
     remark: '-',
@@ -455,7 +463,7 @@ const tableData = ref([
     paymentChannel: 'uid小额',
     orderAmount: 200.00,
     orderStatus: 'closed',
-    merchantNotify: '未通知',
+    isLateOrder: false,
     feeRate: '5.30%',
     fee: 10.60,
     remark: '-',
@@ -471,7 +479,7 @@ const tableData = ref([
     paymentChannel: 'uid大额',
     orderAmount: 800.00,
     orderStatus: 'created',
-    merchantNotify: '未通知',
+    isLateOrder: false,
     feeRate: '3.20%',
     fee: 25.60,
     remark: '-',
@@ -487,7 +495,7 @@ const tableData = ref([
     paymentChannel: 'uid小额',
     orderAmount: 200.00,
     orderStatus: 'success',
-    merchantNotify: '回调成功',
+    isLateOrder: false,
     feeRate: '5.30%',
     fee: 10.60,
     remark: '-',
@@ -495,6 +503,70 @@ const tableData = ref([
     payTime: '2025/03/28 09:06:42',
     paySuccessTime: '59.982秒',
     completeTime: '2025/03/28 09:07:00'
+  },
+  {
+    merchantOrderNo: 'MORD202406030004',
+    systemOrderNo: 'PAY2024060300918276',
+    paymentChannel: '支付宝小额包',
+    paymentChannelCode: '1117',
+    orderAmount: 300.00,
+    orderStatus: 'closed',
+    isLateOrder: false,
+    feeRate: '5.30%',
+    fee: 15.90,
+    remark: '手动关闭',
+    createTime: '2024-06-03 10:22:30',
+    payTime: '',
+    paySuccessTime: '',
+    completeTime: '2024-06-03 10:28:30'
+  },
+  {
+    merchantOrderNo: 'MORD202406030005',
+    systemOrderNo: 'PAY2024060300918277',
+    paymentChannel: 'uid中额',
+    paymentChannelCode: '1113',
+    orderAmount: 200.00,
+    orderStatus: 'closed',
+    isLateOrder: false,
+    feeRate: '5.30%',
+    fee: 10.60,
+    remark: '超时关闭',
+    createTime: '2024-06-03 10:25:18',
+    payTime: '',
+    paySuccessTime: '',
+    completeTime: '2024-06-03 10:55:18'
+  },
+  {
+    merchantOrderNo: 'MORD202406030006',
+    systemOrderNo: 'PAY2024060300918278',
+    paymentChannel: '云闪付',
+    paymentChannelCode: '1128',
+    orderAmount: 800.00,
+    orderStatus: 'created',
+    isLateOrder: false,
+    feeRate: '3.20%',
+    fee: 25.60,
+    remark: '',
+    createTime: '2024-06-03 10:28:45',
+    payTime: '',
+    paySuccessTime: '',
+    completeTime: ''
+  },
+  {
+    merchantOrderNo: 'MORD202406030007',
+    systemOrderNo: 'PAY2024060300918279',
+    paymentChannel: '零花钱',
+    paymentChannelCode: '119',
+    orderAmount: 200.00,
+    orderStatus: 'success',
+    isLateOrder: true,
+    feeRate: '5.30%',
+    fee: 10.60,
+    remark: '',
+    createTime: '2024-06-03 10:30:20',
+    payTime: '2024-06-03 10:31:05',
+    paySuccessTime: '2024-06-03 10:31:12',
+    completeTime: '2024-06-03 10:31:15'
   }
 ])
 
@@ -523,19 +595,6 @@ const formatAmount = (amount, includeCurrency = true) => {
   if (amount === null || amount === undefined) return includeCurrency ? '¥0.00' : '0.00'
   const formattedAmount = Number(amount).toFixed(2)
   return includeCurrency ? `¥${formattedAmount}` : formattedAmount
-}
-
-// 获取通知状态类型
-const getNotifyStatusType = (status) => {
-  const typeMap = {
-    '待回调': 'warning',
-    '回调成功': 'success',
-    '回调失败': 'danger',
-    '未通知': 'info',
-    '异常未通知': 'danger',
-    '不再回调': 'info'
-  }
-  return typeMap[status] || 'info'
 }
 
 // 获取状态类型
@@ -589,7 +648,6 @@ const handleReset = () => {
   })
   searchForm.timeFilter = timeFilter
   searchForm.showCallbacks = ''
-  searchForm.supplementStatus = ''
   searchForm.amountOperator = ''
   searchForm.orderAmount = ''
   

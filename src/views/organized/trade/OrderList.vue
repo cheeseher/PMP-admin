@@ -4,11 +4,15 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" label-position="left" inline class="multi-line-filter-form">
         <div class="filter-line">
-          <el-form-item label="商户/序列订单号：">
-            <el-input v-model="searchForm.orderNo" placeholder="请输入订单号" clearable style="width: 220px" />
+          <el-form-item label="商户订单号：">
+            <el-input v-model="searchForm.merchantOrderNo" placeholder="请输入商户订单号" clearable style="width: 220px" />
+          </el-form-item>
+
+          <el-form-item label="平台订单号：">
+            <el-input v-model="searchForm.systemOrderNo" placeholder="请输入平台订单号" clearable style="width: 220px" />
           </el-form-item>
           
-          <el-form-item label="支付通道：">
+          <el-form-item label="支付产品：">
             <el-select v-model="searchForm.paymentChannel" placeholder="请选择" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
               <el-option v-for="item in channelOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
@@ -175,7 +179,7 @@
           </template>
         </el-table-column>
         
-        <el-table-column prop="paymentChannel" label="支付通道" min-width="150">
+        <el-table-column prop="paymentChannel" label="支付产品" min-width="150">
           <template #default="scope">
             <div class="channel-cell">
               <el-tag type="info" size="small">{{ scope.row.paymentChannelCode }}</el-tag> 
@@ -256,10 +260,10 @@ const selectedRows = ref([])
 
 // 支付通道选项
 const channelOptions = ref([
-  { value: '1112', label: 'uid小额' },
-  { value: '1114', label: 'uid大额' },
-  { value: '1115', label: 'uid超大' },
-  { value: '1111', label: '数字人民币' }
+  { value: '1112', label: '支付产品A' },
+  { value: '1114', label: '支付产品B' },
+  { value: '1115', label: '支付产品C' },
+  { value: '1111', label: '支付产品D' }
 ])
 
 // 订单状态选项
@@ -330,7 +334,8 @@ const amountOperators = ref([
 ])
 
 const searchForm = reactive({
-  orderNo: '',
+  merchantOrderNo: '',
+  systemOrderNo: '',
   paymentChannel: [],
   orderStatus: '',
   createStartTime: '',
@@ -363,7 +368,7 @@ const tableData = ref([
   {
     merchantOrderNo: 'MORD202406030001',
     systemOrderNo: 'PAY2024060300918273',
-    paymentChannel: '数字人民币',
+    paymentChannel: '支付产品D',
     paymentChannelCode: '1111',
     orderAmount: 200.00,
     orderStatus: 'pending',
@@ -379,7 +384,7 @@ const tableData = ref([
   {
     merchantOrderNo: 'MORD202406030002',
     systemOrderNo: 'PAY2024060300918274',
-    paymentChannel: '支付宝小额包',
+    paymentChannel: '支付产品H',
     paymentChannelCode: '1117',
     orderAmount: 200.00,
     orderStatus: 'closed',
@@ -395,7 +400,7 @@ const tableData = ref([
   {
     merchantOrderNo: 'MORD202406030003',
     systemOrderNo: 'PAY2024060300918275',
-    paymentChannel: '口令红包',
+    paymentChannel: '支付产品I',
     paymentChannelCode: '1119',
     orderAmount: 300.00,
     orderStatus: 'success',
@@ -412,7 +417,7 @@ const tableData = ref([
     merchantOrderNo: 'P202503280951...',
     systemOrderNo: 'MM03280951...',
     paymentChannelCode: '[1112]',
-    paymentChannel: 'uid小额',
+    paymentChannel: '支付产品A',
     orderAmount: 200.00,
     orderStatus: 'closed',
     isLateOrder: false,
@@ -428,7 +433,7 @@ const tableData = ref([
     merchantOrderNo: 'P202503280949...',
     systemOrderNo: 'MM03280949...',
     paymentChannelCode: '[1112]',
-    paymentChannel: 'uid小额',
+    paymentChannel: '支付产品A',
     orderAmount: 300.00,
     orderStatus: 'success',
     isLateOrder: false,
@@ -444,7 +449,7 @@ const tableData = ref([
     merchantOrderNo: 'P202503280947...',
     systemOrderNo: 'MM03280947...',
     paymentChannelCode: '[1112]',
-    paymentChannel: 'uid小额',
+    paymentChannel: '支付产品A',
     orderAmount: 300.00,
     orderStatus: 'closed',
     isLateOrder: false,
@@ -460,7 +465,7 @@ const tableData = ref([
     merchantOrderNo: 'P202503280936...',
     systemOrderNo: 'MM03280936...',
     paymentChannelCode: '[1112]',
-    paymentChannel: 'uid小额',
+    paymentChannel: '支付产品A',
     orderAmount: 200.00,
     orderStatus: 'closed',
     isLateOrder: false,
@@ -476,7 +481,7 @@ const tableData = ref([
     merchantOrderNo: 'P202503280908...',
     systemOrderNo: 'MM03280908...',
     paymentChannelCode: '[1114]',
-    paymentChannel: 'uid大额',
+    paymentChannel: '支付产品B',
     orderAmount: 800.00,
     orderStatus: 'created',
     isLateOrder: false,
@@ -492,7 +497,7 @@ const tableData = ref([
     merchantOrderNo: 'P202503280905...',
     systemOrderNo: 'MM03280905...',
     paymentChannelCode: '[1112]',
-    paymentChannel: 'uid小额',
+    paymentChannel: '支付产品A',
     orderAmount: 200.00,
     orderStatus: 'success',
     isLateOrder: false,
@@ -507,7 +512,7 @@ const tableData = ref([
   {
     merchantOrderNo: 'MORD202406030004',
     systemOrderNo: 'PAY2024060300918276',
-    paymentChannel: '支付宝小额包',
+    paymentChannel: '支付产品H',
     paymentChannelCode: '1117',
     orderAmount: 300.00,
     orderStatus: 'closed',
@@ -523,7 +528,7 @@ const tableData = ref([
   {
     merchantOrderNo: 'MORD202406030005',
     systemOrderNo: 'PAY2024060300918277',
-    paymentChannel: 'uid中额',
+    paymentChannel: '支付产品E',
     paymentChannelCode: '1113',
     orderAmount: 200.00,
     orderStatus: 'closed',
@@ -539,7 +544,7 @@ const tableData = ref([
   {
     merchantOrderNo: 'MORD202406030006',
     systemOrderNo: 'PAY2024060300918278',
-    paymentChannel: '云闪付',
+    paymentChannel: '支付产品G',
     paymentChannelCode: '1128',
     orderAmount: 800.00,
     orderStatus: 'created',
@@ -555,7 +560,7 @@ const tableData = ref([
   {
     merchantOrderNo: 'MORD202406030007',
     systemOrderNo: 'PAY2024060300918279',
-    paymentChannel: '零花钱',
+    paymentChannel: '支付产品F',
     paymentChannelCode: '119',
     orderAmount: 200.00,
     orderStatus: 'success',

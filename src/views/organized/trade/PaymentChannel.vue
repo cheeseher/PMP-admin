@@ -13,7 +13,7 @@
           align="center" />
         <el-table-column 
           prop="id" 
-          label="通道编码" 
+          label="支付产品编码" 
           width="120">
           <template #default="scope">
             <div class="code-cell">
@@ -26,7 +26,7 @@
         </el-table-column>
         <el-table-column 
           prop="name" 
-          label="通道名称" 
+          label="支付产品名称" 
           min-width="150" />
         <el-table-column 
           prop="merchantFee" 
@@ -34,7 +34,7 @@
           width="120"
           align="center">
           <template #default="scope">
-            <span>{{ scope.row.merchantFee }}%</span>
+            <span>{{ scope.row.merchantFee.replace('.00', '') }}%</span>
           </template>
         </el-table-column>
         <el-table-column 
@@ -48,11 +48,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column 
-          prop="limitRange" 
-          label="单笔限额" 
-          min-width="180" 
-          align="center" />
         <el-table-column 
           label="操作" 
           width="120" 
@@ -140,73 +135,73 @@ import { CopyDocument, InfoFilled, ArrowDown } from '@element-plus/icons-vue'
 const channelList = ref([
   {
     id: '1119',
-    name: '口令红包',
+    name: '支付产品A',
     status: '禁用',
     limitRange: '¥300.00 ~ ¥2000.00',
-    merchantFee: '0.38'
+    merchantFee: '4.00'
   },
   {
     id: '119',
-    name: '零花钱',
+    name: '支付产品B',
     status: '启用',
     limitRange: '¥50.00 ~ ¥1000.00',
-    merchantFee: '0.45'
+    merchantFee: '4.00'
   },
   {
     id: '1111',
-    name: '数字人民币',
+    name: '支付产品C',
     status: '启用',
     limitRange: '¥100.00 ~ ¥5000.00',
-    merchantFee: '0.42'
+    merchantFee: '4.00'
   },
   {
     id: '1112',
-    name: 'uid小额',
+    name: '支付产品D',
     status: '启用',
     limitRange: '¥200.00 ~ ¥3000.00',
-    merchantFee: '0.55'
+    merchantFee: '4.00'
   },
   {
     id: '1115',
-    name: 'uid超大',
+    name: '支付产品E',
     status: '启用',
     limitRange: '¥2000.00 ~ ¥20000.00',
-    merchantFee: '0.65'
+    merchantFee: '4.00'
   },
   {
     id: '1114',
-    name: 'uid大额',
+    name: '支付产品F',
     status: '启用',
     limitRange: '¥800.00 ~ ¥20000.00',
-    merchantFee: '0.58'
+    merchantFee: '4.00'
   },
   {
     id: '1128',
-    name: '云闪付',
+    name: '支付产品G',
     status: '启用',
     limitRange: '¥100.00 ~ ¥2000.00',
-    merchantFee: '0.39'
+    merchantFee: '4.00'
   },
   {
     id: '1117',
-    name: '支付宝小额包',
+    name: '支付产品H',
     status: '启用',
     limitRange: '¥300.00 ~ ¥20000.00',
-    merchantFee: '0.53'
+    merchantFee: '4.00'
   },
   {
     id: '116',
-    name: '支付宝包uid大额',
+    name: '支付产品I',
     status: '禁用',
     limitRange: '¥800.00 ~ ¥20000.00',
-    merchantFee: '0.60'
+    merchantFee: '4.00'
   },
   {
     id: '1113',
-    name: 'uid中额',
+    name: '支付产品J',
     status: '启用',
     limitRange: '¥500.00 ~ ¥20000.00',
-    merchantFee: '0.50'
+    merchantFee: '4.00'
   }
 ])
 
@@ -382,10 +377,6 @@ const copyContent = (content) => {
 
 .arrow-icon.is-active {
   transform: rotate(180deg);
-}
-
-.more-params-content {
-  padding-top: 15px;
 }
 
 .payment-dialog {

@@ -198,11 +198,15 @@
           <el-input v-model="productForm.password" type="password" placeholder="不填表示不更新密码" show-password />
         </el-form-item>
         <el-form-item label="商户号" prop="productNo">
-          <el-input v-model="productForm.productNo" placeholder="请输入商户号" :disabled="dialogTitle === '编辑商户'" />
+          <el-input v-model="productForm.productNo" placeholder="请输入商户号" :disabled="dialogTitle === '编辑商户'">
+            <template #append v-if="dialogTitle === '新增商户'">
+              <el-button @click="productForm.productNo = generateMerchantNo()">自动生成</el-button>
+            </template>
+          </el-input>
         </el-form-item>
         <el-form-item label="API密钥" prop="apiKey">
           <el-input v-model="productForm.apiKey" placeholder="请输入API密钥">
-            <template #append v-if="dialogTitle === '编辑商户'">
+            <template #append>
               <el-button @click="productForm.apiKey = generateApiKey()">自动生成</el-button>
             </template>
           </el-input>

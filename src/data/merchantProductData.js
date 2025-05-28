@@ -2,7 +2,7 @@
 export const merchantProductList = [
   {
     id: 1,
-    merchantNo: 'M20240318001',
+    merchantNo: '商户A',
     merchantName: '商户A',
     productName: '产品A',
     productCode: '8888',
@@ -18,7 +18,7 @@ export const merchantProductList = [
   },
   {
     id: 2,
-    merchantNo: 'M20240318001',
+    merchantNo: '商户A',
     merchantName: '商户A',
     productName: '产品B',
     productCode: 'WX001',
@@ -33,7 +33,7 @@ export const merchantProductList = [
   },
   {
     id: 3,
-    merchantNo: 'M20240318001',
+    merchantNo: '商户A',
     merchantName: '商户A',
     productName: '产品C',
     productCode: 'ZFB001',
@@ -50,7 +50,7 @@ export const merchantProductList = [
   },
   {
     id: 4,
-    merchantNo: 'M20240318002',
+    merchantNo: '商户B',
     merchantName: '商户B',
     productName: '产品D',
     productCode: 'YL001',
@@ -66,7 +66,7 @@ export const merchantProductList = [
   },
   {
     id: 5,
-    merchantNo: 'M20240318002',
+    merchantNo: '商户B',
     merchantName: '商户B',
     productName: '产品E',
     productCode: 'YSF001',
@@ -81,7 +81,7 @@ export const merchantProductList = [
   },
   {
     id: 6,
-    merchantNo: 'M20240318003',
+    merchantNo: '商户C',
     merchantName: '商户C',
     productName: '产品B',
     productCode: 'WX001',
@@ -96,7 +96,7 @@ export const merchantProductList = [
   },
   {
     id: 7,
-    merchantNo: 'M20240318004',
+    merchantNo: '商户D',
     merchantName: '商户D',
     productName: '产品F',
     productCode: 'ICC001',
@@ -112,7 +112,7 @@ export const merchantProductList = [
   },
   {
     id: 8,
-    merchantNo: 'M20240318005',
+    merchantNo: '商户E',
     merchantName: '商户E',
     productName: '产品G',
     productCode: 'QP001',
@@ -129,7 +129,7 @@ export const merchantProductList = [
   },
   {
     id: 9,
-    merchantNo: 'M20240318006',
+    merchantNo: '商户F',
     merchantName: '商户F',
     productName: '产品H',
     productCode: 'AGG001',
@@ -144,7 +144,7 @@ export const merchantProductList = [
   },
   {
     id: 10,
-    merchantNo: 'M20240318007',
+    merchantNo: '商户G',
     merchantName: '商户G',
     productName: '产品I',
     productCode: 'SCAN001',

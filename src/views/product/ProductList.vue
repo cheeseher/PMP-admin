@@ -195,7 +195,11 @@
           <el-input v-model="productForm.productName" placeholder="请输入商户名称" />
         </el-form-item>
         <el-form-item label="商户后台密码" prop="password">
-          <el-input v-model="productForm.password" type="password" placeholder="不填表示不更新密码" show-password />
+          <el-input v-model="productForm.password" type="password" placeholder="请输入商户后台密码" show-password>
+            <template #append>
+              <el-button v-if="productForm.password" @click="copyPassword" :icon="CopyDocument" />
+            </template>
+          </el-input>
         </el-form-item>
         <el-form-item label="商户号" prop="productNo">
           <el-input v-model="productForm.productNo" placeholder="请输入商户号" :disabled="dialogTitle === '编辑商户'">
@@ -682,13 +686,13 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue'
-import { Search, Refresh, Plus, Delete, Setting, ArrowDown, Download } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, Delete, Setting, ArrowDown, Download, CopyDocument } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { productList } from '@/data/productData'
 import { merchantProductList } from '@/data/merchantProductData'
 import { useRouter } from 'vue-router'
 import { formatAmount } from '@/utils/formatUtils'
-import { generateMerchantNo, generateApiKey } from '@/utils/generatorUtils'
+import { generateMerchantNo, generateApiKey, generatePassword } from '@/utils/generatorUtils'
 import { paymentProducts, supplierChannels } from '@/data/productRelatedData'
 
 const router = useRouter()
@@ -821,6 +825,7 @@ const productForm = reactive({
   productNo: '',
   productName: '',
   productId: '',
+  password: '',
   verified: 'N',
   subAccounts: [],
   enableDeposit: true
@@ -829,7 +834,20 @@ const productForm = reactive({
 const productRules = {
   productId: [{ required: true, message: '请输入商户账号', trigger: 'blur' }],
   productName: [{ required: true, message: '请输入商户名称', trigger: 'blur' }],
-  productNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }]
+  productNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }],
+  password: [
+    { required: true, message: '请输入商户后台密码', trigger: 'blur' },
+    { 
+      validator: (rule, value, callback) => {
+        // 对于编辑情况，如果保留了占位符密码"********"，则认为是有效的
+        if (dialogTitle.value === '编辑商户' && value === '********') {
+          callback()
+        } else {
+          callback()
+        }
+      }
+    }
+  ]
 }
 
 // 产品配置
@@ -1473,23 +1491,12 @@ const submitBalanceOperation = () => {
 // 商户相关处理函数
 const handleAdd = () => {
   dialogTitle.value = '新增商户'
-  // 清空表单
-  Object.keys(productForm).forEach(key => {
-    if (key === 'verified') {
-      productForm[key] = 'N'
-    } else if (key === 'enableDeposit') {
-      productForm[key] = true
-    } else if (key === 'subAccounts') {
-      productForm[key] = []
-    } else {
-      productForm[key] = ''
-    }
-  })
-  
-  // 生成随机商户号和API密钥
+  resetForm()
+  // 自动生成商户号和API密钥
   productForm.productNo = generateMerchantNo()
   productForm.apiKey = generateApiKey()
-  
+  // 自动生成随机密码
+  productForm.password = generatePassword()
   dialogVisible.value = true
 }
 
@@ -1502,8 +1509,10 @@ const handleEdit = (row) => {
     }
   })
   
-  // 清空密码字段
-  productForm.password = ''
+  // 设置一个默认密码（在实际场景中，这里应该是从后端获取的已加密密码）
+  if (!productForm.password) {
+    productForm.password = row.password || '********' // 使用已有密码或显示占位符
+  }
   
   dialogVisible.value = true
 }
@@ -1512,8 +1521,18 @@ const handleEdit = (row) => {
 const submitForm = () => {
   productFormRef.value.validate((valid) => {
     if (valid) {
+      // 创建提交的数据对象
+      const submitData = { ...productForm }
+      
+      // 如果是编辑模式且密码为占位符，则不提交密码字段
+      if (dialogTitle.value === '编辑商户' && submitData.password === '********') {
+        delete submitData.password
+      }
+      
+      console.log('正在提交商户数据:', submitData)
+      
       // 这里应该是调用API保存数据
-      // saveProduct(productForm)
+      // saveProduct(submitData)
       
       // 模拟提交成功
       setTimeout(() => {
@@ -1665,6 +1684,33 @@ const availableSubAccounts = computed(() => {
   // 过滤出可选的子账户（不包括当前商户自己）
   return productList.filter(item => item.id !== productForm.id);
 });
+
+// 复制密码到剪贴板
+const copyPassword = () => {
+  navigator.clipboard.writeText(productForm.password)
+    .then(() => {
+      ElMessage.success('密码已复制到剪贴板')
+    })
+    .catch(() => {
+      ElMessage.error('复制失败，请手动复制')
+    })
+}
+
+// 重置表单
+const resetForm = () => {
+  // 清空表单
+  Object.keys(productForm).forEach(key => {
+    if (key === 'verified') {
+      productForm[key] = 'N'
+    } else if (key === 'enableDeposit') {
+      productForm[key] = true
+    } else if (key === 'subAccounts') {
+      productForm[key] = []
+    } else {
+      productForm[key] = ''
+    }
+  })
+}
 
 // 组件挂载时获取数据
 onMounted(() => {

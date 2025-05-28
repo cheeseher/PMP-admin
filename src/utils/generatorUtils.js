@@ -37,4 +37,36 @@ export const generateApiKey = () => {
     result += chars[Math.floor(Math.random() * chars.length)];
   }
   return result;
+};
+
+/**
+ * 生成随机密码 
+ * 密码需包含字母和数字，长度 8~20 位，可包含特殊字符，禁止空格
+ * @param {number} length 密码长度，默认为随机 8~16 位
+ * @returns {string}
+ */
+export const generatePassword = (length = 0) => {
+  // 如果未指定长度，则随机生成 8-16 之间的长度
+  const passwordLength = length || Math.floor(Math.random() * 9) + 8;
+  
+  const lowerChars = 'abcdefghijkmnpqrstuvwxyz'; // 避开容易混淆的字母 l o
+  const upperChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // 避开容易混淆的字母 I O
+  const numbers = '23456789'; // 避开容易混淆的数字 0 1
+  const specialChars = '!@#$%^&*_+-=?';
+  
+  const allChars = lowerChars + upperChars + numbers + specialChars;
+  
+  // 确保密码至少包含一个小写字母、一个大写字母和一个数字
+  let password = '';
+  password += lowerChars[Math.floor(Math.random() * lowerChars.length)];
+  password += upperChars[Math.floor(Math.random() * upperChars.length)];
+  password += numbers[Math.floor(Math.random() * numbers.length)];
+  
+  // 生成剩余的字符
+  for (let i = 3; i < passwordLength; i++) {
+    password += allChars[Math.floor(Math.random() * allChars.length)];
+  }
+  
+  // 打乱密码字符顺序
+  return password.split('').sort(() => 0.5 - Math.random()).join('');
 }; 

@@ -79,13 +79,13 @@ const router = createRouter({
             {
               path: 'list',
               name: 'ProductList',
-              component: () => import('@/views/product/ProductList.vue'),
+              component: () => import(/* webpackChunkName: "product" */ '@/views/product/ProductList.vue'),
               meta: { title: '商户列表' }
             },
             {
               path: 'merchant-products',
               name: 'MerchantProductList',
-              component: () => import('@/views/product/MerchantProductList.vue'),
+              component: () => import(/* webpackChunkName: "product" */ '@/views/product/MerchantProductList.vue'),
               meta: { title: '商户产品列表' }
             }
           ]
@@ -213,7 +213,7 @@ const router = createRouter({
 
         // 系统管理
         {
-          path: 'system',
+          path: '/system',
           name: 'System',
           redirect: '/system/admin',
           meta: { title: '系统管理' },
@@ -345,6 +345,20 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   next();
+});
+
+// 添加路由错误处理
+router.onError((error) => {
+  console.error('路由错误:', error);
+  const pattern = /Loading chunk (\d)+ failed/g;
+  const isChunkLoadFailed = error.message.match(pattern);
+  const targetPath = router.currentRoute.value.path;
+  
+  if (isChunkLoadFailed) {
+    console.log('检测到组件加载失败，尝试重新加载...');
+    // 尝试重载页面
+    window.location.href = window.location.origin + targetPath;
+  }
 });
 
 export default router 

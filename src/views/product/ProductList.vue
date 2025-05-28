@@ -713,62 +713,72 @@ const total = ref(0)
 // 获取数据
 const fetchData = () => {
   loading.value = true
-  
-  // 模拟异步请求和前端分页、筛选
-  setTimeout(() => {
-    let filteredData = [...productList] // 使用导入的模拟商户列表数据
-    
-    // 执行前端筛选逻辑
-    if (searchForm.id) {
-      filteredData = filteredData.filter(item => 
-        item.id.toString().includes(searchForm.id))
-    }
-    
-    if (searchForm.productId) {
-      filteredData = filteredData.filter(item => 
-        item.productId && item.productId.toLowerCase().includes(searchForm.productId.toLowerCase()))
-    }
-    
-    if (searchForm.productName) {
-      filteredData = filteredData.filter(item => 
-        item.productName.toLowerCase().includes(searchForm.productName.toLowerCase()))
-    }
-    
-    if (searchForm.productNo) {
-      filteredData = filteredData.filter(item => 
-        item.productNo.toLowerCase().includes(searchForm.productNo.toLowerCase()))
-    }
-    
-    if (searchForm.verified) {
-      filteredData = filteredData.filter(item => 
-        item.verified === searchForm.verified)
-    }
-    
-    if (searchForm.googleAuth !== '') {
-      const isGoogleAuth = searchForm.googleAuth === true || searchForm.googleAuth === 'true'
-      filteredData = filteredData.filter(item => 
-        item.googleAuth === isGoogleAuth)
-    }
-    
-    if (searchForm.enableDeposit !== '') {
-      const isEnableDeposit = searchForm.enableDeposit === true || searchForm.enableDeposit === 'true'
-      filteredData = filteredData.filter(item => 
-        item.enableDeposit === isEnableDeposit)
-    }
-    
-    total.value = filteredData.length
-    
-    // 分页处理
-    const start = (currentPage.value - 1) * pageSize.value
-    const end = start + pageSize.value
-    
-    tableData.value = filteredData.slice(start, end)
+  console.log('正在加载商户列表数据...', searchForm)
+
+  try {
+    // 模拟异步请求和前端分页、筛选
+    setTimeout(() => {
+      let filteredData = [...productList] // 使用导入的模拟商户列表数据
+      
+      // 执行前端筛选逻辑
+      if (searchForm.id) {
+        filteredData = filteredData.filter(item => 
+          item.id.toString().includes(searchForm.id))
+      }
+      
+      if (searchForm.productId) {
+        filteredData = filteredData.filter(item => 
+          item.productId && item.productId.toLowerCase().includes(searchForm.productId.toLowerCase()))
+      }
+      
+      if (searchForm.productName) {
+        filteredData = filteredData.filter(item => 
+          item.productName.toLowerCase().includes(searchForm.productName.toLowerCase()))
+      }
+      
+      if (searchForm.productNo) {
+        filteredData = filteredData.filter(item => 
+          item.productNo.toLowerCase().includes(searchForm.productNo.toLowerCase()))
+      }
+      
+      if (searchForm.verified) {
+        filteredData = filteredData.filter(item => 
+          item.verified === searchForm.verified)
+      }
+      
+      if (searchForm.googleAuth !== '') {
+        const isGoogleAuth = searchForm.googleAuth === true || searchForm.googleAuth === 'true'
+        filteredData = filteredData.filter(item => 
+          item.googleAuth === isGoogleAuth)
+      }
+      
+      if (searchForm.enableDeposit !== '') {
+        const isEnableDeposit = searchForm.enableDeposit === true || searchForm.enableDeposit === 'true'
+        filteredData = filteredData.filter(item => 
+          item.enableDeposit === isEnableDeposit)
+      }
+      
+      total.value = filteredData.length
+      
+      // 分页处理
+      const start = (currentPage.value - 1) * pageSize.value
+      const end = start + pageSize.value
+      
+      tableData.value = filteredData.slice(start, end)
+      loading.value = false
+      console.log('商户列表数据加载成功', tableData.value.length)
+    }, 300)
+  } catch (error) {
+    console.error('加载商户列表数据失败:', error)
+    ElMessage.error('数据加载失败，请重试')
     loading.value = false
-  }, 300)
+  }
 }
 
-// 搜索与重置
+// 搜索
 const handleSearch = () => {
+  console.log('搜索按钮被点击', JSON.stringify(searchForm))
+  ElMessage.success('正在查询数据...')
   currentPage.value = 1
   fetchData()
 }

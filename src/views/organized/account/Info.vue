@@ -20,7 +20,7 @@
         </div>
         
         <div class="info-item">
-          <span class="label">商户ID：</span>
+          <span class="label">商户号：</span>
           <span class="value">{{ merchantInfo.id }}</span>
           <el-button link type="primary" @click="handleCopy(merchantInfo.id)">复制</el-button>
         </div>
@@ -30,14 +30,13 @@
           <span class="value">{{ showToken ? merchantInfo.token : '************************' }}</span>
           <el-button link type="primary" @click="handleResetToken">重置</el-button>
           <el-button link type="primary" @click="handleShowToken">{{ showToken ? '隐藏' : '显示' }}</el-button>
-          <div class="token-tip">即API Token，对接时请使用Token对参数进行签名，请勿泄露此参数！</div>
         </div>
         
         <div class="info-item">
           <span class="label">商户配置：</span>
           <div class="whitelist-container">
             <div class="whitelist-header">
-              <span>白名单</span>
+              <span>后台白名单</span>
               <el-button link type="primary" @click="handleAddWhitelist">+ 添加白名单</el-button>
             </div>
             <div v-if="merchantInfo.whitelist.length === 0" class="empty-whitelist">
@@ -45,7 +44,8 @@
             </div>
             <div v-else class="whitelist-list">
               <div v-for="(item, index) in merchantInfo.whitelist" :key="index" class="whitelist-item">
-                {{ item }}
+                <span>{{ item }}</span>
+                <el-button link type="danger" size="small" @click="handleRemoveWhitelist(index)">移除</el-button>
               </div>
             </div>
           </div>
@@ -187,7 +187,7 @@ import { CircleCheckFilled, Close } from '@element-plus/icons-vue'
 const merchantInfo = reactive({
   name: '优速付',
   username: 'yousufu',
-  id: '10086',
+  id: 'M2407181032ABCDE000001',
   token: 'xMcHx7Z4NyRpUjV8W2bT5sQfGhK9LaPz',
   whitelist: ['192.168.1.100', '202.106.48.12'],
   googleAuthEnabled: false,
@@ -292,6 +292,19 @@ const handleAddWhitelistConfirm = () => {
   merchantInfo.whitelist.push(whitelistForm.ip)
   whitelistDialogVisible.value = false
   ElMessage.success('添加成功')
+}
+
+// 移除白名单
+const handleRemoveWhitelist = (index) => {
+  ElMessageBox.confirm('确认要移除该IP地址吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    // TODO: 调用API移除白名单
+    merchantInfo.whitelist.splice(index, 1)
+    ElMessage.success('移除成功')
+  }).catch(() => {})
 }
 
 // 打开谷歌验证设置
@@ -451,6 +464,9 @@ const handleCloseGoogleAuth = () => {
   color: #606266;
   transition: all 0.3s;
   border-left: 3px solid transparent;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .whitelist-item:hover {

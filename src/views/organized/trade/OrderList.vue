@@ -130,7 +130,7 @@
     <el-card shadow="never" class="table-card">
       <div class="table-toolbar">
         <div class="left">
-          <span class="date-display">查询日期: {{ displayDateRange }}</span>
+          <!-- 删除查询日期显示 -->
         </div>
         <div class="right">
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
@@ -660,14 +660,6 @@ const tableData = ref([
     completeTime: '2024-06-03 10:31:15'
   }
 ])
-
-// 显示的日期范围
-const displayDateRange = computed(() => {
-  if (searchForm.createStartTime && searchForm.createEndTime) {
-    return `${searchForm.createStartTime.split(' ')[0]} ~ ${searchForm.createEndTime.split(' ')[0]}`
-  }
-  return ''
-})
 
 // 处理选中行变化
 const handleSelectionChange = (rows) => {

@@ -43,9 +43,14 @@
               暂无白名单配置
             </div>
             <div v-else class="whitelist-list">
-              <div v-for="(item, index) in merchantInfo.whitelist" :key="index" class="whitelist-item">
+              <div v-for="(item, index) in displayedWhitelist" :key="index" class="whitelist-item">
                 <span>{{ item }}</span>
                 <el-button link type="danger" size="small" @click="handleRemoveWhitelist(index)">移除</el-button>
+              </div>
+              <div v-if="merchantInfo.whitelist.length > displayLimit" class="more-button-container">
+                <el-button type="primary" plain size="small" @click="showAllWhitelist">
+                  查看更多 ({{ merchantInfo.whitelist.length - displayLimit }}项)
+                </el-button>
               </div>
             </div>
           </div>
@@ -94,6 +99,30 @@
         <div class="dialog-footer">
           <el-button @click="whitelistDialogVisible = false">取消</el-button>
           <el-button type="primary" @click="handleAddWhitelistConfirm">确定</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 查看全部白名单弹窗 -->
+    <el-dialog
+      v-model="allWhitelistDialogVisible"
+      title="全部后台白名单"
+      width="600px"
+      :close-on-click-modal="false"
+    >
+      <div v-if="merchantInfo.whitelist.length === 0" class="empty-whitelist">
+        暂无白名单配置
+      </div>
+      <div v-else class="whitelist-dialog-list">
+        <div v-for="(item, index) in merchantInfo.whitelist" :key="index" class="whitelist-dialog-item">
+          <span>{{ item }}</span>
+          <el-button link type="danger" size="small" @click="handleRemoveWhitelistFromDialog(index)">移除</el-button>
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="allWhitelistDialogVisible = false">关闭</el-button>
+          <el-button type="primary" @click="handleAddWhitelist">添加白名单</el-button>
         </div>
       </template>
     </el-dialog>
@@ -179,7 +208,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { CircleCheckFilled, Close } from '@element-plus/icons-vue'
 
@@ -197,11 +226,18 @@ const merchantInfo = reactive({
   lastLoginLocation: '中国上海电信'
 })
 
+// 白名单显示限制
+const displayLimit = 3
+const displayedWhitelist = computed(() => {
+  return merchantInfo.whitelist.slice(0, displayLimit)
+})
+
 // 是否显示Token
 const showToken = ref(false)
 
 // 白名单弹窗相关
 const whitelistDialogVisible = ref(false)
+const allWhitelistDialogVisible = ref(false)
 const whitelistForm = reactive({
   ip: ''
 })
@@ -296,6 +332,24 @@ const handleAddWhitelistConfirm = () => {
 
 // 移除白名单
 const handleRemoveWhitelist = (index) => {
+  ElMessageBox.confirm('确认要移除该IP地址吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    // TODO: 调用API移除白名单
+    merchantInfo.whitelist.splice(index, 1)
+    ElMessage.success('移除成功')
+  }).catch(() => {})
+}
+
+// 显示全部白名单
+const showAllWhitelist = () => {
+  allWhitelistDialogVisible.value = true
+}
+
+// 从弹窗中移除白名单
+const handleRemoveWhitelistFromDialog = (index) => {
   ElMessageBox.confirm('确认要移除该IP地址吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -608,5 +662,36 @@ const handleCloseGoogleAuth = () => {
   font-size: 18px;
   color: #303133;
   font-weight: 500;
+}
+
+.more-button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.whitelist-dialog-list {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.whitelist-dialog-item {
+  padding: 10px 16px;
+  background: #f8f8f8;
+  border-radius: 4px;
+  color: #606266;
+  transition: all 0.3s;
+  border-left: 3px solid transparent;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.whitelist-dialog-item:hover {
+  border-left-color: #409EFF;
+  background: #f0f5ff;
 }
 </style> 

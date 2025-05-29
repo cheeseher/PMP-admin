@@ -13,7 +13,16 @@
           </el-form-item>
           
           <el-form-item label="支付产品：">
-            <el-select v-model="searchForm.paymentChannel" placeholder="请选择" clearable multiple collapse-tags collapse-tags-tooltip style="width: 180px">
+            <el-select 
+              v-model="searchForm.paymentChannel" 
+              placeholder="请选择" 
+              clearable 
+              filterable
+              multiple 
+              collapse-tags 
+              collapse-tags-tooltip 
+              style="width: 180px"
+            >
               <el-option v-for="item in channelOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
@@ -26,56 +35,21 @@
         </div>
         
         <div class="filter-line">
-          <el-form-item label="创建开始时间：">
+          <el-form-item label="订单创建时间：">
             <el-date-picker
-              v-model="searchForm.createStartTime"
-              type="datetime"
-              placeholder="选择日期时间"
-              format="YYYY-MM-DD HH:mm"
+              v-model="searchForm.dateRange"
+              type="daterange"
               value-format="YYYY-MM-DD HH:mm"
-              clearable
-              style="width: 180px"
+              format="YYYY-MM-DD HH:mm"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              :shortcuts="dateShortcuts"
+              @change="handleDateRangeChange"
+              style="width: 380px"
             />
           </el-form-item>
           
-          <el-form-item label="创建结束时间：">
-            <el-date-picker
-              v-model="searchForm.createEndTime"
-              type="datetime"
-              placeholder="选择日期时间"
-              format="YYYY-MM-DD HH:mm"
-              value-format="YYYY-MM-DD HH:mm"
-              clearable
-              style="width: 180px"
-            />
-          </el-form-item>
-          
-          <el-form-item label="支付开始时间：">
-            <el-date-picker
-              v-model="searchForm.payStartTime"
-              type="datetime"
-              placeholder="选择日期时间"
-              format="YYYY-MM-DD HH:mm"
-              value-format="YYYY-MM-DD HH:mm"
-              clearable
-              style="width: 180px"
-            />
-          </el-form-item>
-          
-          <el-form-item label="支付结束时间：">
-            <el-date-picker
-              v-model="searchForm.payEndTime"
-              type="datetime"
-              placeholder="选择日期时间"
-              format="YYYY-MM-DD HH:mm"
-              value-format="YYYY-MM-DD HH:mm"
-              clearable
-              style="width: 180px"
-            />
-          </el-form-item>
-        </div>
-        
-        <div class="filter-line">
           <el-form-item label="订单金额：">
             <el-select v-model="searchForm.amountOperator" placeholder="请选择" clearable style="width: 100px">
               <el-option v-for="item in amountOperators" :key="item.value" :label="item.label" :value="item.value" />
@@ -89,22 +63,37 @@
               <el-option label="否" value="no" />
             </el-select>
           </el-form-item>
+        </div>
+        
+        <div class="filter-line">
+          <el-form-item label="开始支付时间：">
+            <el-date-picker
+              v-model="searchForm.payDateRange"
+              type="daterange"
+              value-format="YYYY-MM-DD HH:mm"
+              format="YYYY-MM-DD HH:mm"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              :shortcuts="dateShortcuts"
+              @change="handlePayDateRangeChange"
+              style="width: 380px"
+            />
+          </el-form-item>
           
-          <el-form-item label="时间过滤：">
-            <el-select v-model="searchForm.timeFilter" style="width: 100px" @change="handleTimeFilterChange">
-              <el-option label="1分钟" value="1min" />
-              <el-option label="5分钟" value="5min" />
-              <el-option label="15分钟" value="15min" />
-              <el-option label="30分钟" value="30min" />
-              <el-option label="1小时" value="1hour" />
-              <el-option label="今天" value="today" />
-              <el-option label="昨天" value="yesterday" />
-              <el-option label="前天" value="beforeYesterday" />
-              <el-option label="近三天" value="last3days" />
-              <el-option label="近七天" value="last7days" />
-              <el-option label="本周" value="thisWeek" />
-              <el-option label="本月" value="thisMonth" />
-            </el-select>
+          <el-form-item label="支付成功时间：">
+            <el-date-picker
+              v-model="searchForm.paySuccessDateRange"
+              type="daterange"
+              value-format="YYYY-MM-DD HH:mm"
+              format="YYYY-MM-DD HH:mm"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              :shortcuts="dateShortcuts"
+              @change="handlePaySuccessDateRangeChange"
+              style="width: 380px"
+            />
           </el-form-item>
           
           <div class="filter-buttons">
@@ -220,15 +209,23 @@
           </template>
         </el-table-column>
         
+        <el-table-column label="入账金额" min-width="120" align="right">
+          <template #default="scope">
+            <span :class="{ 'highlight-amount': scope.row.orderStatus === 'success' }">
+              {{ formatAmount(calculateNetAmount(scope.row.orderAmount, scope.row.fee)) }}
+            </span>
+          </template>
+        </el-table-column>
+        
         <el-table-column prop="remark" label="备注" min-width="150" />
         
-        <el-table-column prop="createTime" label="创建时间" min-width="180" />
+        <el-table-column prop="createTime" label="订单创建时间" min-width="180" />
         
-        <el-table-column prop="payTime" label="支付时间" min-width="180" />
+        <el-table-column prop="payTime" label="开始支付时间" min-width="180" />
         
         <el-table-column prop="paySuccessTime" label="支付成功时间" min-width="180" />
         
-        <el-table-column prop="completeTime" label="完成时间" min-width="180" />
+        <el-table-column prop="completeTime" label="订单完成时间" min-width="180" />
       </el-table>
       
       <!-- 分页器 -->
@@ -277,51 +274,100 @@ const statusOptions = ref([
   { value: 'closed', label: '交易关闭' }
 ])
 
-// 根据时间类型获取日期范围
-const getDateRangeByType = (type) => {
-  const now = dayjs()
-  
-  switch (type) {
-    case '1min':
-      return [now.subtract(1, 'minute').format('YYYY-MM-DD HH:mm'), now.format('YYYY-MM-DD HH:mm')]
-    case '5min':
-      return [now.subtract(5, 'minute').format('YYYY-MM-DD HH:mm'), now.format('YYYY-MM-DD HH:mm')]
-    case '15min':
-      return [now.subtract(15, 'minute').format('YYYY-MM-DD HH:mm'), now.format('YYYY-MM-DD HH:mm')]
-    case '30min':
-      return [now.subtract(30, 'minute').format('YYYY-MM-DD HH:mm'), now.format('YYYY-MM-DD HH:mm')]
-    case '1hour':
-      return [now.subtract(1, 'hour').format('YYYY-MM-DD HH:mm'), now.format('YYYY-MM-DD HH:mm')]
-    case 'today':
-      return [now.format('YYYY-MM-DD 00:00'), now.format('YYYY-MM-DD 23:59')]
-    case 'yesterday': {
-      const yesterday = now.subtract(1, 'day')
-      return [yesterday.format('YYYY-MM-DD 00:00'), yesterday.format('YYYY-MM-DD 23:59')]
+// 日期快捷选项
+const dateShortcuts = [
+  {
+    text: '1分钟',
+    value: () => {
+      const now = dayjs()
+      const start = now.subtract(1, 'minute')
+      return [start.toDate(), now.toDate()]
     }
-    case 'beforeYesterday': {
-      const beforeYesterday = now.subtract(2, 'day')
-      return [beforeYesterday.format('YYYY-MM-DD 00:00'), beforeYesterday.format('YYYY-MM-DD 23:59')]
+  },
+  {
+    text: '5分钟',
+    value: () => {
+      const now = dayjs()
+      const start = now.subtract(5, 'minute')
+      return [start.toDate(), now.toDate()]
     }
-    case 'last3days': {
-      const threeDay = now.subtract(2, 'day')
-      return [threeDay.format('YYYY-MM-DD 00:00'), now.format('YYYY-MM-DD 23:59')]
+  },
+  {
+    text: '15分钟',
+    value: () => {
+      const now = dayjs()
+      const start = now.subtract(15, 'minute')
+      return [start.toDate(), now.toDate()]
     }
-    case 'last7days': {
-      const sevenDay = now.subtract(6, 'day')
-      return [sevenDay.format('YYYY-MM-DD 00:00'), now.format('YYYY-MM-DD 23:59')]
+  },
+  {
+    text: '30分钟',
+    value: () => {
+      const now = dayjs()
+      const start = now.subtract(30, 'minute')
+      return [start.toDate(), now.toDate()]
     }
-    case 'thisWeek': {
-      const firstDay = now.startOf('week')
-      return [firstDay.format('YYYY-MM-DD 00:00'), now.format('YYYY-MM-DD 23:59')]
+  },
+  {
+    text: '1小时',
+    value: () => {
+      const now = dayjs()
+      const start = now.subtract(1, 'hour')
+      return [start.toDate(), now.toDate()]
     }
-    case 'thisMonth': {
-      const firstDay = now.startOf('month')
-      return [firstDay.format('YYYY-MM-DD 00:00'), now.format('YYYY-MM-DD 23:59')]
+  },
+  {
+    text: '今天',
+    value: () => {
+      const now = dayjs()
+      return [now.startOf('day').toDate(), now.endOf('day').toDate()]
     }
-    default:
-      return ['', '']
+  },
+  {
+    text: '昨天',
+    value: () => {
+      const yesterday = dayjs().subtract(1, 'day')
+      return [yesterday.startOf('day').toDate(), yesterday.endOf('day').toDate()]
+    }
+  },
+  {
+    text: '前天',
+    value: () => {
+      const beforeYesterday = dayjs().subtract(2, 'day')
+      return [beforeYesterday.startOf('day').toDate(), beforeYesterday.endOf('day').toDate()]
+    }
+  },
+  {
+    text: '近三天',
+    value: () => {
+      const now = dayjs()
+      const start = now.subtract(2, 'day').startOf('day')
+      return [start.toDate(), now.endOf('day').toDate()]
+    }
+  },
+  {
+    text: '近七天',
+    value: () => {
+      const now = dayjs()
+      const start = now.subtract(6, 'day').startOf('day')
+      return [start.toDate(), now.endOf('day').toDate()]
+    }
+  },
+  {
+    text: '本周',
+    value: () => {
+      const now = dayjs()
+      return [now.startOf('week').toDate(), now.endOf('day').toDate()]
+    }
+  },
+  {
+    text: '本月',
+    value: () => {
+      const now = dayjs()
+      return [now.startOf('month').toDate(), now.endOf('day').toDate()]
+    }
   }
-}
+]
 
 // 搜索表单
 // 金额比较操作符选项
@@ -338,23 +384,63 @@ const searchForm = reactive({
   systemOrderNo: '',
   paymentChannel: [],
   orderStatus: '',
+  dateRange: [],
   createStartTime: '',
   createEndTime: '',
+  payDateRange: [],
   payStartTime: '',
   payEndTime: '',
+  paySuccessDateRange: [],
+  paySuccessStartTime: '',
+  paySuccessEndTime: '',
   showCallbacks: '',
-  timeFilter: 'today',
   amountOperator: '',
   orderAmount: ''
 })
 
 // 设置初始的时间过滤器
 onMounted(() => {
-  const [start, end] = getDateRangeByType('today')
-  searchForm.createStartTime = start
-  searchForm.createEndTime = end
-  searchForm.timeFilter = 'today'
+  const now = dayjs()
+  const todayStart = now.startOf('day')
+  const todayEnd = now.endOf('day')
+  
+  searchForm.dateRange = [todayStart.toDate(), todayEnd.toDate()]
+  searchForm.createStartTime = todayStart.format('YYYY-MM-DD HH:mm')
+  searchForm.createEndTime = todayEnd.format('YYYY-MM-DD HH:mm')
 })
+
+// 处理日期范围变化
+const handleDateRangeChange = (val) => {
+  if (val) {
+    searchForm.createStartTime = dayjs(val[0]).format('YYYY-MM-DD HH:mm')
+    searchForm.createEndTime = dayjs(val[1]).format('YYYY-MM-DD HH:mm')
+  } else {
+    searchForm.createStartTime = ''
+    searchForm.createEndTime = ''
+  }
+}
+
+// 处理支付日期范围变化
+const handlePayDateRangeChange = (val) => {
+  if (val) {
+    searchForm.payStartTime = dayjs(val[0]).format('YYYY-MM-DD HH:mm')
+    searchForm.payEndTime = dayjs(val[1]).format('YYYY-MM-DD HH:mm')
+  } else {
+    searchForm.payStartTime = ''
+    searchForm.payEndTime = ''
+  }
+}
+
+// 处理支付成功日期范围变化
+const handlePaySuccessDateRangeChange = (val) => {
+  if (val) {
+    searchForm.paySuccessStartTime = dayjs(val[0]).format('YYYY-MM-DD HH:mm')
+    searchForm.paySuccessEndTime = dayjs(val[1]).format('YYYY-MM-DD HH:mm')
+  } else {
+    searchForm.paySuccessStartTime = ''
+    searchForm.paySuccessEndTime = ''
+  }
+}
 
 // 分页数据
 const pagination = reactive({
@@ -442,7 +528,7 @@ const tableData = ref([
     remark: '-',
     createTime: '2025/03/28 09:49:17',
     payTime: '2025/03/28 09:50:50',
-    paySuccessTime: '1分31.890秒',
+    paySuccessTime: '2025/03/28 09:51:02',
     completeTime: '2025/03/28 09:51:00'
   },
   {
@@ -506,7 +592,7 @@ const tableData = ref([
     remark: '-',
     createTime: '2025/03/28 09:05:38',
     payTime: '2025/03/28 09:06:42',
-    paySuccessTime: '59.982秒',
+    paySuccessTime: '2025/03/28 09:07:42',
     completeTime: '2025/03/28 09:07:00'
   },
   {
@@ -588,13 +674,6 @@ const handleSelectionChange = (rows) => {
   selectedRows.value = rows
 }
 
-// 处理时间过滤器变化
-const handleTimeFilterChange = (value) => {
-  const [start, end] = getDateRangeByType(value)
-  searchForm.createStartTime = start
-  searchForm.createEndTime = end
-}
-
 // 格式化金额
 const formatAmount = (amount, includeCurrency = true) => {
   if (amount === null || amount === undefined) return includeCurrency ? '¥0.00' : '0.00'
@@ -614,6 +693,14 @@ const getStatusType = (status) => {
     'closed': 'info'
   }
   return typeMap[status] || 'info'
+}
+
+// 计算入账金额
+const calculateNetAmount = (orderAmount, fee) => {
+  if (orderAmount === null || orderAmount === undefined || fee === null || fee === undefined) {
+    return 0
+  }
+  return Number(orderAmount) - Number(fee)
 }
 
 // 复制内容
@@ -639,27 +726,37 @@ const handleSearch = () => {
 
 // 重置
 const handleReset = () => {
-  const timeFilter = searchForm.timeFilter
   Object.keys(searchForm).forEach(key => {
-    if (key !== 'timeFilter') {
-      if (Array.isArray(searchForm[key])) {
-        searchForm[key] = []
-      } else if (key === 'minAmount' || key === 'maxAmount') {
-        searchForm[key] = null
-      } else {
-        searchForm[key] = ''
-      }
+    if (Array.isArray(searchForm[key])) {
+      searchForm[key] = []
+    } else if (key === 'minAmount' || key === 'maxAmount') {
+      searchForm[key] = null
+    } else {
+      searchForm[key] = ''
     }
   })
-  searchForm.timeFilter = timeFilter
   searchForm.showCallbacks = ''
   searchForm.amountOperator = ''
   searchForm.orderAmount = ''
   
-  // 重置时间
-  const [start, end] = getDateRangeByType(timeFilter)
-  searchForm.createStartTime = start
-  searchForm.createEndTime = end
+  // 设置默认时间为今天
+  const now = dayjs()
+  const todayStart = now.startOf('day')
+  const todayEnd = now.endOf('day')
+  
+  searchForm.dateRange = [todayStart.toDate(), todayEnd.toDate()]
+  searchForm.createStartTime = todayStart.format('YYYY-MM-DD HH:mm')
+  searchForm.createEndTime = todayEnd.format('YYYY-MM-DD HH:mm')
+  
+  // 支付时间默认不设置
+  searchForm.payDateRange = []
+  searchForm.payStartTime = ''
+  searchForm.payEndTime = ''
+  
+  // 支付成功时间默认不设置
+  searchForm.paySuccessDateRange = []
+  searchForm.paySuccessStartTime = ''
+  searchForm.paySuccessEndTime = ''
 }
 
 // 导出

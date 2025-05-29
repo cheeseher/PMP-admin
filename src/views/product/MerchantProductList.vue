@@ -102,23 +102,13 @@
     </el-card>
 
     <el-dialog v-model="allChannelsDialog.visible" title="全部供应商通道" width="400px" :close-on-click-modal="true">
-      <el-table :data="paginatedChannels" border size="small">
+      <el-table :data="allChannelsDialog.channels" border size="small">
         <el-table-column label="通道名称" min-width="120">
           <template #default="scope">
             {{ scope.row.name }} | 通道A | {{ scope.row.rate }}%
           </template>
         </el-table-column>
       </el-table>
-      <div class="dialog-pagination-container">
-        <el-pagination
-          v-model:current-page="allChannelsDialog.currentPage"
-          v-model:page-size="allChannelsDialog.pageSize"
-          :page-sizes="[5, 10, 20]"
-          :total="allChannelsDialog.channels.length"
-          layout="total, sizes, prev, pager, next"
-          small
-        />
-      </div>
     </el-dialog>
   </div>
 </template>
@@ -149,12 +139,9 @@ const pageSize = ref(10)
 const total = ref(0)
 const jumpPage = ref('')
 
-const allChannelsDialog = ref({ visible: false, channels: [], currentPage: 1, pageSize: 5 })
-
-const paginatedChannels = computed(() => {
-  const start = (allChannelsDialog.value.currentPage - 1) * allChannelsDialog.value.pageSize
-  const end = start + allChannelsDialog.value.pageSize
-  return allChannelsDialog.value.channels.slice(start, end)
+const allChannelsDialog = ref({ 
+  visible: false, 
+  channels: []
 })
 
 // 获取数据
@@ -240,7 +227,6 @@ const handleCurrentChange = (val) => {
 function showAllChannels(row) {
   allChannelsDialog.value.channels = row.selectedChannels || []
   allChannelsDialog.value.visible = true
-  allChannelsDialog.value.currentPage = 1
 }
 
 // 页面加载时获取数据
@@ -320,11 +306,5 @@ onMounted(() => {
   display: inline-block;
   margin-right: 4px;
   color: #606266;
-}
-
-.dialog-pagination-container {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 12px;
 }
 </style> 

@@ -151,26 +151,11 @@
             placeholder="请输入授信额度"
           />
         </el-form-item>
-        <el-form-item label="API密钥">
+        <el-form-item label="API密钥" prop="apiKey">
           <el-input v-model="supplierForm.apiKey" placeholder="请输入API密钥" />
-        </el-form-item>
-        <el-form-item label="应用APPID">
-          <el-input v-model="supplierForm.appId" placeholder="请输入应用APPID" />
-        </el-form-item>
-        <el-form-item label="安全密钥">
-          <el-input v-model="supplierForm.securityKey" placeholder="请输入安全密钥" />
         </el-form-item>
         <el-form-item label="网关地址" prop="gatewayUrl">
           <el-input v-model="supplierForm.gatewayUrl" placeholder="请输入网关地址" />
-        </el-form-item>
-        <el-form-item label="商户私钥">
-          <el-input v-model="supplierForm.privateKey" placeholder="请输入商户私钥" />
-        </el-form-item>
-        <el-form-item label="平台公钥">
-          <el-input v-model="supplierForm.publicKey" placeholder="请输入平台公钥" />
-        </el-form-item>
-        <el-form-item label="页面跳转网址">
-          <el-input v-model="supplierForm.returnUrl" placeholder="请输入页面跳转网址" />
         </el-form-item>
         <el-form-item label="异步通知网址" prop="notifyUrl">
           <el-input v-model="supplierForm.notifyUrl" placeholder="请输入异步通知网址" />
@@ -178,8 +163,13 @@
         <el-form-item label="备注">
           <el-input v-model="supplierForm.remark" type="textarea" placeholder="请输入备注" />
         </el-form-item>
-        <el-form-item label="回调白名单">
-          <el-input v-model="supplierForm.whiteList" placeholder="请输入回调白名单" />
+        <el-form-item label="回调白名单" prop="whiteList">
+          <el-input 
+            v-model="supplierForm.whiteList" 
+            type="textarea" 
+            :rows="3"
+            placeholder="请输入回调白名单IP，多个IP用英文逗号分隔"
+          />
         </el-form-item>
         <el-form-item label="状态" prop="enabled">
           <el-switch
@@ -211,10 +201,8 @@
         <el-descriptions-item label="余额">{{ formatAmount(currentSupplier.amount) }}</el-descriptions-item>
         <el-descriptions-item label="授信额度">{{ formatAmount(currentSupplier.alertThreshold || 5000) }}</el-descriptions-item>
         <el-descriptions-item label="API密钥">{{ currentSupplier.apiKey || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="应用APPID">{{ currentSupplier.appId || '-' }}</el-descriptions-item>
         <el-descriptions-item label="网关地址">{{ currentSupplier.gatewayUrl || '-' }}</el-descriptions-item>
         <el-descriptions-item label="异步通知网址">{{ currentSupplier.notifyUrl || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="页面跳转网址">{{ currentSupplier.returnUrl || '-' }}</el-descriptions-item>
         <el-descriptions-item label="回调白名单">{{ currentSupplier.whiteList || '-' }}</el-descriptions-item>
         <el-descriptions-item label="备注">{{ currentSupplier.remark || '-' }}</el-descriptions-item>
         <el-descriptions-item label="状态">
@@ -324,28 +312,20 @@ const supplierForm = reactive({
   code: '',
   merchantNo: '',
   apiKey: '',
-  appId: '',
-  securityKey: '',
   gatewayUrl: '',
-  privateKey: '',
-  publicKey: '',
-  returnUrl: '',
   notifyUrl: 'https://testadmin.hxpay.vip/notify/NewSdPay/notify',
   whiteList: '',
   remark: '',
   enabled: true,
   amount: 0,
-  freeze: 0,
-  alertThreshold: 5000,
-  flow: 0
+  alertThreshold: null
 })
 const rules = {
   supplier: [{ required: true, message: '请输入渠道名称', trigger: 'blur' }],
   code: [{ required: true, message: '请输入渠道编码', trigger: 'blur' }],
   merchantNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }],
   gatewayUrl: [{ required: true, message: '请输入网关地址', trigger: 'blur' }],
-  notifyUrl: [{ required: true, message: '请输入异步通知网址', trigger: 'blur' }],
-  alertThreshold: [{ required: true, message: '请输入授信额度', trigger: 'blur' }]
+  notifyUrl: [{ required: true, message: '请输入异步通知网址', trigger: 'blur' }]
 }
 
 // 详情抽屉相关
@@ -532,16 +512,13 @@ const resetForm = () => {
     code: '',
     merchantNo: '',
     apiKey: '',
-    appId: '',
-    securityKey: '',
     gatewayUrl: '',
-    privateKey: '',
-    publicKey: '',
-    returnUrl: '',
     notifyUrl: 'https://testadmin.hxpay.vip/notify/NewSdPay/notify',
     whiteList: '',
     remark: '',
-    enabled: true
+    enabled: true,
+    amount: 0,
+    alertThreshold: null
   })
 }
 

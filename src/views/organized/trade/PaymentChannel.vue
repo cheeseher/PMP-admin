@@ -91,10 +91,6 @@
               <template #prefix>¥</template>
             </el-input>
           </el-form-item>
-
-          <div class="fee-info">
-            <span class="limit-range">[{{ selectedChannel.limitRange }}]</span>
-          </div>
           
           <div class="result-section">
             <div class="result-title">下单结果：</div>
@@ -250,28 +246,14 @@ const submitPayment = () => {
     if (valid) {
       submitting.value = true
       
-      // 构建请求参数
-      const params = {
-        channelId: selectedChannel.value.id,
-        channelName: selectedChannel.value.name,
-        amount: paymentForm.amount
-      }
-      
       // 显示请求参数
-      requestParams.value = JSON.stringify(params, null, 2)
+      requestParams.value = "此处展示请求参数"
       
       // 模拟API调用
       setTimeout(() => {
         submitting.value = false
         // 模拟返回结果
-        responseResult.value = JSON.stringify({
-          code: 200,
-          message: '支付请求已受理',
-          data: {
-            orderId: Date.now().toString(),
-            status: 'PROCESSING'
-          }
-        }, null, 2)
+        responseResult.value = "此处展示支付链接或者报错信息"
         
         ElMessage.success('支付请求已提交')
       }, 1500)

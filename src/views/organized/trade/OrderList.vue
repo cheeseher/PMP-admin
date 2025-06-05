@@ -66,36 +66,6 @@
         </div>
         
         <div class="filter-line">
-          <el-form-item label="开始支付时间：">
-            <el-date-picker
-              v-model="searchForm.payDateRange"
-              type="daterange"
-              value-format="YYYY-MM-DD HH:mm"
-              format="YYYY-MM-DD HH:mm"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              :shortcuts="dateShortcuts"
-              @change="handlePayDateRangeChange"
-              style="width: 380px"
-            />
-          </el-form-item>
-          
-          <el-form-item label="支付成功时间：">
-            <el-date-picker
-              v-model="searchForm.paySuccessDateRange"
-              type="daterange"
-              value-format="YYYY-MM-DD HH:mm"
-              format="YYYY-MM-DD HH:mm"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              :shortcuts="dateShortcuts"
-              @change="handlePaySuccessDateRangeChange"
-              style="width: 380px"
-            />
-          </el-form-item>
-          
           <div class="filter-buttons">
             <el-button plain @click="handleReset">重置</el-button>
             <el-button type="primary" @click="handleSearch">查询</el-button>
@@ -220,10 +190,6 @@
         <el-table-column prop="remark" label="备注" min-width="150" />
         
         <el-table-column prop="createTime" label="订单创建时间" min-width="180" />
-        
-        <el-table-column prop="payTime" label="开始支付时间" min-width="180" />
-        
-        <el-table-column prop="paySuccessTime" label="支付成功时间" min-width="180" />
         
         <el-table-column prop="completeTime" label="订单完成时间" min-width="180" />
       </el-table>
@@ -387,12 +353,6 @@ const searchForm = reactive({
   dateRange: [],
   createStartTime: '',
   createEndTime: '',
-  payDateRange: [],
-  payStartTime: '',
-  payEndTime: '',
-  paySuccessDateRange: [],
-  paySuccessStartTime: '',
-  paySuccessEndTime: '',
   showCallbacks: '',
   amountOperator: '',
   orderAmount: ''
@@ -420,28 +380,6 @@ const handleDateRangeChange = (val) => {
   }
 }
 
-// 处理支付日期范围变化
-const handlePayDateRangeChange = (val) => {
-  if (val) {
-    searchForm.payStartTime = dayjs(val[0]).format('YYYY-MM-DD HH:mm')
-    searchForm.payEndTime = dayjs(val[1]).format('YYYY-MM-DD HH:mm')
-  } else {
-    searchForm.payStartTime = ''
-    searchForm.payEndTime = ''
-  }
-}
-
-// 处理支付成功日期范围变化
-const handlePaySuccessDateRangeChange = (val) => {
-  if (val) {
-    searchForm.paySuccessStartTime = dayjs(val[0]).format('YYYY-MM-DD HH:mm')
-    searchForm.paySuccessEndTime = dayjs(val[1]).format('YYYY-MM-DD HH:mm')
-  } else {
-    searchForm.paySuccessStartTime = ''
-    searchForm.paySuccessEndTime = ''
-  }
-}
-
 // 分页数据
 const pagination = reactive({
   currentPage: 1,
@@ -463,8 +401,6 @@ const tableData = ref([
     fee: 10.60,
     remark: '',
     createTime: '2024-06-03 10:15:20',
-    payTime: '',
-    paySuccessTime: '',
     completeTime: ''
   },
   {
@@ -479,8 +415,6 @@ const tableData = ref([
     fee: 10.60,
     remark: '超时关闭',
     createTime: '2024-06-03 10:18:30',
-    payTime: '',
-    paySuccessTime: '',
     completeTime: '2024-06-03 10:48:30'
   },
   {
@@ -495,8 +429,6 @@ const tableData = ref([
     fee: 15.90,
     remark: '',
     createTime: '2024-06-03 10:20:12',
-    payTime: '2024-06-03 10:21:03',
-    paySuccessTime: '2024-06-03 10:21:10',
     completeTime: '2024-06-03 10:21:11'
   },
   {
@@ -511,8 +443,6 @@ const tableData = ref([
     fee: 10.60,
     remark: '-',
     createTime: '2025/03/28 09:51:39',
-    payTime: '-',
-    paySuccessTime: '-',
     completeTime: '2025/03/28 10:21:39'
   },
   {
@@ -527,8 +457,6 @@ const tableData = ref([
     fee: 15.90,
     remark: '-',
     createTime: '2025/03/28 09:49:17',
-    payTime: '2025/03/28 09:50:50',
-    paySuccessTime: '2025/03/28 09:51:02',
     completeTime: '2025/03/28 09:51:00'
   },
   {
@@ -543,8 +471,6 @@ const tableData = ref([
     fee: 15.90,
     remark: '-',
     createTime: '2025/03/28 09:47:03',
-    payTime: '-',
-    paySuccessTime: '-',
     completeTime: '2025/03/28 10:17:03'
   },
   {
@@ -559,8 +485,6 @@ const tableData = ref([
     fee: 10.60,
     remark: '-',
     createTime: '2025/03/28 09:36:18',
-    payTime: '-',
-    paySuccessTime: '-',
     completeTime: '2025/03/28 10:06:18'
   },
   {
@@ -575,8 +499,6 @@ const tableData = ref([
     fee: 25.60,
     remark: '-',
     createTime: '2025/03/28 09:08:33',
-    payTime: '-',
-    paySuccessTime: '-',
     completeTime: '-'
   },
   {
@@ -591,8 +513,6 @@ const tableData = ref([
     fee: 10.60,
     remark: '-',
     createTime: '2025/03/28 09:05:38',
-    payTime: '2025/03/28 09:06:42',
-    paySuccessTime: '2025/03/28 09:07:42',
     completeTime: '2025/03/28 09:07:00'
   },
   {
@@ -607,8 +527,6 @@ const tableData = ref([
     fee: 15.90,
     remark: '手动关闭',
     createTime: '2024-06-03 10:22:30',
-    payTime: '',
-    paySuccessTime: '',
     completeTime: '2024-06-03 10:28:30'
   },
   {
@@ -623,8 +541,6 @@ const tableData = ref([
     fee: 10.60,
     remark: '超时关闭',
     createTime: '2024-06-03 10:25:18',
-    payTime: '',
-    paySuccessTime: '',
     completeTime: '2024-06-03 10:55:18'
   },
   {
@@ -639,8 +555,6 @@ const tableData = ref([
     fee: 25.60,
     remark: '',
     createTime: '2024-06-03 10:28:45',
-    payTime: '',
-    paySuccessTime: '',
     completeTime: ''
   },
   {
@@ -655,8 +569,6 @@ const tableData = ref([
     fee: 10.60,
     remark: '',
     createTime: '2024-06-03 10:30:20',
-    payTime: '2024-06-03 10:31:05',
-    paySuccessTime: '2024-06-03 10:31:12',
     completeTime: '2024-06-03 10:31:15'
   }
 ])
@@ -739,16 +651,6 @@ const handleReset = () => {
   searchForm.dateRange = [todayStart.toDate(), todayEnd.toDate()]
   searchForm.createStartTime = todayStart.format('YYYY-MM-DD HH:mm')
   searchForm.createEndTime = todayEnd.format('YYYY-MM-DD HH:mm')
-  
-  // 支付时间默认不设置
-  searchForm.payDateRange = []
-  searchForm.payStartTime = ''
-  searchForm.payEndTime = ''
-  
-  // 支付成功时间默认不设置
-  searchForm.paySuccessDateRange = []
-  searchForm.paySuccessStartTime = ''
-  searchForm.paySuccessEndTime = ''
 }
 
 // 导出

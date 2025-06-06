@@ -91,7 +91,7 @@
               <template #prefix>¥</template>
             </el-input>
           </el-form-item>
-          
+
           <div class="result-section">
             <div class="result-title">下单结果：</div>
             <el-input

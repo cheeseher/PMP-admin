@@ -51,10 +51,27 @@
           </el-form-item>
           
           <el-form-item label="订单金额：">
-            <el-select v-model="searchForm.amountOperator" placeholder="请选择" clearable style="width: 100px">
-              <el-option v-for="item in amountOperators" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-            <el-input v-model="searchForm.orderAmount" placeholder="请输入金额" clearable style="width: 120px; margin-left: 10px" />
+            <div class="amount-range-container">
+              <el-input-number
+                v-model="searchForm.minAmount"
+                :min="0"
+                :precision="2"
+                controls-position="right"
+                placeholder="最小金额"
+                class="amount-input"
+                style="width: 150px"
+              />
+              <el-button type="default" class="amount-separator">-</el-button>
+              <el-input-number
+                v-model="searchForm.maxAmount"
+                :min="0"
+                :precision="2"
+                controls-position="right"
+                placeholder="最大金额"
+                class="amount-input"
+                style="width: 150px"
+              />
+            </div>
           </el-form-item>
           
           <el-form-item label="隔日补单：">
@@ -336,15 +353,6 @@ const dateShortcuts = [
 ]
 
 // 搜索表单
-// 金额比较操作符选项
-const amountOperators = ref([
-  { value: '=', label: '等于' },
-  { value: '>', label: '大于' },
-  { value: '<', label: '小于' },
-  { value: '>=', label: '大于等于' },
-  { value: '<=', label: '小于等于' }
-])
-
 const searchForm = reactive({
   merchantOrderNo: '',
   systemOrderNo: '',
@@ -354,8 +362,8 @@ const searchForm = reactive({
   createStartTime: '',
   createEndTime: '',
   showCallbacks: '',
-  amountOperator: '',
-  orderAmount: ''
+  minAmount: null,
+  maxAmount: null
 })
 
 // 设置初始的时间过滤器
@@ -621,6 +629,22 @@ const copyContent = (content) => {
 // 搜索
 const handleSearch = () => {
   loading.value = true
+  
+  // 示例：构建请求参数
+  const params = {
+    merchantOrderNo: searchForm.merchantOrderNo,
+    systemOrderNo: searchForm.systemOrderNo,
+    paymentChannel: searchForm.paymentChannel,
+    orderStatus: searchForm.orderStatus,
+    createStartTime: searchForm.createStartTime,
+    createEndTime: searchForm.createEndTime,
+    showCallbacks: searchForm.showCallbacks,
+    minAmount: searchForm.minAmount,
+    maxAmount: searchForm.maxAmount
+  }
+  
+  console.log('搜索参数:', params)
+  
   setTimeout(() => {
     ElMessage.success('查询成功')
     loading.value = false
@@ -640,8 +664,6 @@ const handleReset = () => {
     }
   })
   searchForm.showCallbacks = ''
-  searchForm.amountOperator = ''
-  searchForm.orderAmount = ''
   
   // 设置默认时间为今天
   const now = dayjs()
@@ -681,92 +703,59 @@ const handleCurrentChange = (val) => {
 }
 
 .filter-container {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .multi-line-filter-form {
   width: 100%;
 }
 
-.multi-line-filter-form .filter-line {
+.filter-line {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 16px;
-  row-gap: 12px;
-}
-
-.multi-line-filter-form .filter-line:last-child {
-  margin-bottom: 0;
-}
-
-.multi-line-filter-form .el-form-item {
-  margin-bottom: 0;
-  margin-right: 16px;
-  display: flex;
-  align-items: center;
-}
-
-.multi-line-filter-form .el-form-item__label {
-  line-height: 32px;
-  white-space: nowrap;
-  width: auto !important;
-  padding-right: 6px;
 }
 
 .filter-buttons {
-  display: flex;
   margin-left: auto;
+  display: flex;
+  gap: 10px;
 }
 
-.filter-buttons .el-button + .el-button {
-  margin-left: 12px;
-}
-
-/* 统计区域样式 */
 .summary-area {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
 .summary-item {
-  padding: 10px 15px;
+  flex: 1;
+  min-width: 180px;
+  height: 80px;
   border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   color: white;
   font-weight: bold;
-  flex: 1;
-  min-width: 150px;
-  text-align: center;
 }
 
-.summary-item.blue {
-  background-color: #409EFF;
-}
+.summary-item.blue { background-color: #409EFF; }
+.summary-item.green { background-color: #67C23A; }
+.summary-item.orange { background-color: #E6A23C; }
+.summary-item.purple { background-color: #8E44AD; }
+.summary-item.cyan { background-color: #20B2AA; }
+.summary-item.red { background-color: #F56C6C; }
 
-.summary-item.green {
-  background-color: #67C23A;
-}
-
-.summary-item.orange {
-  background-color: #E6A23C;
-}
-
-.summary-item.purple {
-  background-color: #9370DB;
-}
-
-.summary-item.cyan {
-  background-color: #00CED1;
-}
-
-.summary-item.red {
-  background-color: #F56C6C;
+.summary-item .label {
+  font-size: 18px;
 }
 
 .table-card {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .table-toolbar {
@@ -776,18 +765,41 @@ const handleCurrentChange = (val) => {
   margin-bottom: 16px;
 }
 
-.date-display {
-  font-size: 14px;
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.amount-range-container {
+  display: flex;
+  align-items: center;
+}
+
+.amount-input {
+  width: 150px;
+}
+
+.amount-separator {
+  margin: 0 10px;
+  padding: 0 10px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f7fa;
+  border-color: #e4e7ed;
   color: #606266;
 }
 
 .copy-cell {
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .copy-icon {
-  margin-left: 5px;
+  margin-left: 8px;
   font-size: 14px;
   color: #909399;
   cursor: pointer;
@@ -797,20 +809,39 @@ const handleCurrentChange = (val) => {
   color: #409EFF;
 }
 
-.channel-cell {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
 .highlight-amount {
   color: #67C23A;
   font-weight: bold;
 }
 
-.pagination-container {
+.channel-cell {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
+  flex-direction: column;
+  gap: 4px;
+}
+
+:deep(.el-input-number .el-input__wrapper) {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+:deep(.el-input-number--small) {
+  width: 100%;
+}
+
+:deep(.el-date-editor.el-input) {
+  width: 100%;
+}
+
+.input-large {
+  width: 220px;
+}
+
+.input-normal {
+  width: 168px;
+}
+
+.date-range-picker {
+  width: 380px;
 }
 </style>

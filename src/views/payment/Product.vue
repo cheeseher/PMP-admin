@@ -90,8 +90,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="180" show-overflow-tooltip />
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="230" fixed="right">
           <template #default="scope">
+            <el-button link type="primary" :icon="View" @click="handleView(scope.row)">查看</el-button>
             <el-button link type="primary" :icon="Edit" @click="handleEdit(scope.row)">编辑</el-button>
             <el-button link type="danger" :icon="Delete" @click="handleDelete(scope.row)">删除</el-button>
           </template>
@@ -264,15 +265,117 @@
         </div>
       </template>
     </el-dialog>
+    
+    <!-- 查看弹窗 -->
+    <el-dialog
+      title="查看支付产品"
+      v-model="viewDialogVisible"
+      width="600px"
+      destroy-on-close
+    >
+      <el-form 
+        :model="viewForm" 
+        label-width="140px"
+        class="product-form"
+        disabled
+      >
+        <el-form-item label="支付产品名称">
+          <el-input v-model="viewForm.productName" disabled />
+        </el-form-item>
+        <el-form-item label="支付产品编码">
+          <el-input v-model="viewForm.productCode" disabled />
+        </el-form-item>
+        <el-form-item label="供应商通道">
+          <el-select v-model="viewForm.channelCode" multiple filterable disabled style="width: 100%">
+            <el-option
+              v-for="item in supplierChannelOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        
+        <!-- 供应商通道表格 -->
+        <el-form-item label="" v-if="viewForm.channelCode && viewForm.channelCode.length > 0">
+          <div class="channel-table-container">
+            <el-table :data="viewChannelTableData" border style="width: 100%" size="small">
+              <el-table-column prop="channelName" label="通道名称" min-width="120" />
+              <el-table-column prop="channelCode" label="通道编码" min-width="120" />
+              <el-table-column prop="channelFeeRate" label="通道费率" width="100">
+                <template #default="scope">
+                  <span>{{ scope.row.channelFeeRate }}%</span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="weight" label="权重" width="120">
+                <template #default="scope">
+                  <span>{{ scope.row.weight }}</span>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+        </el-form-item>
+        
+        <!-- 查看弹窗中的商户费率 - 只显示当前费率 -->
+        <el-form-item label="商户费率">
+          <el-input 
+            v-model="viewForm.feeRateDisplay" 
+            disabled
+            style="width: calc(100% - 20px)"
+          />
+        </el-form-item>
+        
+        <el-form-item label="状态">
+          <el-switch
+            v-model="viewForm.status"
+            active-value="ONLINE"
+            inactive-value="OFFLINE"
+            active-text="启用"
+            inactive-text="禁用"
+            disabled
+          />
+        </el-form-item>
+        <el-form-item label="是否轮询">
+          <el-radio-group v-model="viewForm.isPolling" disabled>
+            <el-radio label="WEIGHT">权重</el-radio>
+            <el-radio label="POLLING">轮询</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input
+            v-model="viewForm.remark"
+            type="textarea"
+            :rows="3"
+            disabled
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="viewDialogVisible = false">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed, watch, onBeforeUnmount } from 'vue'
-import { Search, Delete, Plus, Edit, Refresh, Check, Close, Remove, Download, Timer, Right, InfoFilled } from '@element-plus/icons-vue'
+import { Search, Delete, Plus, Edit, Refresh, Check, Close, Remove, Download, Timer, Right, InfoFilled, View } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useCleanup } from '@/utils/cleanupUtils'
-import { channelList } from '@/data/channelData.js'
+
+// 测试通道数据
+const testChannelList = [
+  { id: 'C001', supplier: '供应商A', channelName: '通道A', channelCode: 'CHANNEL_A', rate: 2.5 },
+  { id: 'C002', supplier: '供应商B', channelName: '通道B', channelCode: 'CHANNEL_B', rate: 1.8 },
+  { id: 'C003', supplier: '供应商C', channelName: '通道C', channelCode: 'CHANNEL_C', rate: 3.0 },
+  { id: 'C004', supplier: '供应商D', channelName: '通道D', channelCode: 'CHANNEL_D', rate: 2.0 },
+  { id: 'C005', supplier: '供应商E', channelName: '通道E', channelCode: 'CHANNEL_E', rate: 3.2 }
+]
+
+// 模拟导入
+const channelList = testChannelList
 import { getTomorrowDate, disabledDate, formatScheduledTime, getRemainingTimeText } from '@/utils/datetimeUtils'
 
 const searchForm = reactive({
@@ -288,6 +391,7 @@ const tableData = ref([
     productCode: '8888',
     payType: 'ALIPAY',
     feeRate: 0,
+    channelCode: ['C001', 'C003'],
     scheduledFeeEnabled: 'NO',
     scheduledFeeTime: '',
     status: 'ONLINE',
@@ -300,6 +404,7 @@ const tableData = ref([
     productCode: 'WECHATPAY',
     payType: 'WECHAT',
     feeRate: 0.5,
+    channelCode: ['C002', 'C004', 'C005'],
     scheduledFeeEnabled: 'YES',
     scheduledFeeTime: (() => {
       const futureDate = new Date();
@@ -320,11 +425,25 @@ const tableData = ref([
     productCode: 'UNIONPAY',
     payType: 'UNIONPAY',
     feeRate: 0,
+    channelCode: ['C001', 'C002', 'C003', 'C004'],
     scheduledFeeEnabled: 'NO',
     scheduledFeeTime: '',
     status: 'OFFLINE',
     isPolling: 'WEIGHT',
     remark: '银联支付通道产品，暂时下线维护'
+  },
+  {
+    id: 4,
+    productName: '支付产品D',
+    productCode: 'QUICKPAY',
+    payType: 'QUICKPAY',
+    feeRate: 1.2,
+    channelCode: ['C005'],
+    scheduledFeeEnabled: 'NO',
+    scheduledFeeTime: '',
+    status: 'ONLINE',
+    isPolling: 'POLLING',
+    remark: '快捷支付产品'
   }
 ])
 
@@ -367,29 +486,38 @@ const resetProductForm = () => {
   if (productFormRef.value) {
     productFormRef.value.resetFields()
   }
+  
+  // 重置所有表单字段
+  Object.keys(productForm).forEach(key => {
+    if (Array.isArray(productForm[key])) {
+      productForm[key] = []
+    } else if (typeof productForm[key] === 'number') {
+      productForm[key] = 0
+    } else if (typeof productForm[key] === 'boolean') {
+      productForm[key] = false
+    } else {
+      productForm[key] = ''
+    }
+  })
+  
+  // 设置默认值
   productForm.id = null
-  productForm.productName = ''
-  productForm.productCode = ''
-  productForm.channelCode = []
-  productForm.feeRate = 0
-  productForm.scheduledFeeEnabled = 'NO'
-  productForm.scheduledFeeTime = ''
   productForm.status = 'ONLINE'
   productForm.isPolling = 'WEIGHT'
   productForm.syncOption = 'none'
-  productForm.effectiveTime = ''
-  productForm.superPassword = ''
-  productForm.remark = ''
+  productForm.scheduledFeeEnabled = 'NO'
+  
+  // 清空通道表格数据
   channelTableData.value = []
 }
 
 // 新增计算属性，用于格式化供应商通道下拉菜单的选项
 const supplierChannelOptions = computed(() => {
-  return channelList.map(channel => ({
+  return testChannelList.map(channel => ({
     value: channel.id, // 使用 channel.id 作为 el-option 的 value
     label: `${channel.supplier} | ${channel.channelName} | ${channel.rate}%` // 修改label格式
-  }));
-});
+  }))
+})
 
 const formRules = {
   productName: [
@@ -478,12 +606,8 @@ const handleEdit = (row) => {
   productForm.isPolling = row.isPolling || 'WEIGHT'
   productForm.remark = row.remark
   
-  // 特殊处理 channelCode，确保是数组
-  if (row.channelCode && !Array.isArray(row.channelCode)) {
-    productForm.channelCode = Array.isArray(row.channelCode) ? row.channelCode : [row.channelCode]
-  } else if (!row.channelCode) {
-    productForm.channelCode = []
-  }
+  // 处理通道数据
+  productForm.channelCode = Array.isArray(row.channelCode) ? [...row.channelCode] : []
   
   // 根据是否有定时功能，设置syncOption的值
   if (row.scheduledFeeEnabled === 'YES' && row.scheduledFeeTime) {
@@ -504,9 +628,7 @@ const handleEdit = (row) => {
   }
   
   // 更新通道表格数据
-  if (productForm.channelCode && productForm.channelCode.length > 0) {
-    handleChannelChange(productForm.channelCode)
-  }
+  handleChannelChange(productForm.channelCode)
   
   formDialogVisible.value = true
   
@@ -769,7 +891,7 @@ const handleChannelChange = (selectedChannelIds) => {
   const newChannelTableData = [];
   if (selectedChannelIds && selectedChannelIds.length > 0) {
     selectedChannelIds.forEach(id => {
-      const channelFromList = channelList.find(c => c.id === id);
+      const channelFromList = testChannelList.find(c => c.id === id);
       if (channelFromList) {
         // 尝试从旧的 channelTableData 中查找是否已存在该通道，以保留权重
         const existingChannelInTable = channelTableData.value.find(tc => tc.id === id);
@@ -778,7 +900,7 @@ const handleChannelChange = (selectedChannelIds) => {
           channelName: channelFromList.channelName,
           channelCode: channelFromList.channelCode,
           channelFeeRate: channelFromList.rate, // 使用真实的费率
-          weight: existingChannelInTable ? existingChannelInTable.weight : 1 // 保留权重或默认1
+          weight: existingChannelInTable ? existingChannelInTable.weight : 10 // 保留权重或默认10
         });
       }
     });
@@ -891,6 +1013,79 @@ onBeforeUnmount(() => {
     clearInterval(countdownTimer.value)
   }
 })
+
+// 查看弹窗相关变量
+const viewDialogVisible = ref(false)
+const viewForm = reactive({
+  id: null,
+  productName: '',
+  productCode: '',
+  channelCode: [],
+  feeRate: 0,
+  feeRateDisplay: '', // 添加用于显示的费率字段
+  status: 'ONLINE',
+  isPolling: 'WEIGHT',
+  remark: ''
+})
+const viewChannelTableData = ref([])
+
+// 查看支付产品
+const handleView = (row) => {
+  // 重置表单
+  Object.keys(viewForm).forEach(key => {
+    if (Array.isArray(viewForm[key])) {
+      viewForm[key] = []
+    } else if (typeof viewForm[key] === 'number') {
+      viewForm[key] = 0
+    } else {
+      viewForm[key] = ''
+    }
+  })
+  
+  // 填充表单数据
+  viewForm.id = row.id
+  viewForm.productName = row.productName
+  viewForm.productCode = row.productCode
+  viewForm.feeRate = parseFloat(row.feeRate)
+  // 设置当前生效的商户费率显示 - 确保显示正确的数字
+  viewForm.feeRateDisplay = row.feeRate !== undefined && row.feeRate !== null ? `${row.feeRate}%` : '0%'
+  
+  // 输出日志以便调试
+  console.log(`查看产品ID ${row.id}，费率: ${row.feeRate}，显示：${viewForm.feeRateDisplay}`)
+  
+  viewForm.status = row.status
+  viewForm.isPolling = row.isPolling || 'WEIGHT'
+  viewForm.remark = row.remark
+  
+  // 处理通道数据
+  viewForm.channelCode = Array.isArray(row.channelCode) ? [...row.channelCode] : []
+  
+  // 更新通道表格数据
+  updateViewChannelTable(viewForm.channelCode)
+  
+  viewDialogVisible.value = true
+}
+
+// 更新查看通道表格
+const updateViewChannelTable = (selectedChannelIds) => {
+  const newChannelTableData = []
+  if (selectedChannelIds && selectedChannelIds.length > 0) {
+    selectedChannelIds.forEach(id => {
+      // 使用测试通道列表
+      const channelFromList = testChannelList.find(c => c.id === id)
+      if (channelFromList) {
+        newChannelTableData.push({
+          id: channelFromList.id,
+          channelName: channelFromList.channelName,
+          channelCode: channelFromList.channelCode,
+          channelFeeRate: channelFromList.rate,
+          weight: 10
+        })
+      }
+    })
+  }
+  viewChannelTableData.value = newChannelTableData
+}
 </script>
 
 <style scoped>

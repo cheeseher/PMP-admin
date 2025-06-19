@@ -63,12 +63,20 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="feeRate" label="商户费率" width="120">
+        <el-table-column prop="feeRate" label="商户费率" width="200">
           <template #default="scope">
-            <div class="field-container">
-              <span class="fee-value">{{ scope.row.feeRate }}%</span>
-              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingFeeRate !== undefined" class="pending-value">
-                <span class="pending-text">{{ scope.row.pendingFeeRate }}%</span>
+            <div class="fee-rate-container">
+              <div class="current-fee">
+                <span class="fee-label">当前费率：</span>
+                <span class="fee-value">{{ scope.row.feeRate }}%</span>
+              </div>
+              <div v-if="scope.row.scheduledFeeEnabled === 'YES' && scope.row.pendingFeeRate !== undefined" class="pending-fee">
+                <span class="fee-label">定时费率：</span>
+                <span class="fee-value pending">{{ scope.row.pendingFeeRate }}%</span>
+                <div class="effective-time">
+                  <el-icon><timer /></el-icon>
+                  <span>{{ getRemainingTimeText(scope.row.scheduledFeeTime) }}生效</span>
+                </div>
               </div>
             </div>
           </template>
@@ -408,8 +416,8 @@ const tableData = ref([
     scheduledFeeEnabled: 'YES',
     scheduledFeeTime: (() => {
       const futureDate = new Date();
-      futureDate.setDate(futureDate.getDate() + 7);
-      return futureDate.toISOString().split('T')[0];
+      futureDate.setHours(futureDate.getHours() + 2); // 2小时后生效
+      return futureDate.toISOString();
     })(),
     pendingFeeRate: 1.0,
     pendingProductName: '支付产品B（升级版）',
@@ -426,8 +434,13 @@ const tableData = ref([
     payType: 'UNIONPAY',
     feeRate: 0,
     channelCode: ['C001', 'C002', 'C003', 'C004'],
-    scheduledFeeEnabled: 'NO',
-    scheduledFeeTime: '',
+    scheduledFeeEnabled: 'YES',
+    scheduledFeeTime: (() => {
+      const futureDate = new Date();
+      futureDate.setMinutes(futureDate.getMinutes() + 10); // 10分钟后生效
+      return futureDate.toISOString();
+    })(),
+    pendingFeeRate: 0.8,
     status: 'OFFLINE',
     isPolling: 'WEIGHT',
     remark: '银联支付通道产品，暂时下线维护'
@@ -439,8 +452,13 @@ const tableData = ref([
     payType: 'QUICKPAY',
     feeRate: 1.2,
     channelCode: ['C005'],
-    scheduledFeeEnabled: 'NO',
-    scheduledFeeTime: '',
+    scheduledFeeEnabled: 'YES',
+    scheduledFeeTime: (() => {
+      const futureDate = new Date();
+      futureDate.setDate(futureDate.getDate() + 3); // 3天后生效
+      return futureDate.toISOString();
+    })(),
+    pendingFeeRate: 1.5,
     status: 'ONLINE',
     isPolling: 'POLLING',
     remark: '快捷支付产品'

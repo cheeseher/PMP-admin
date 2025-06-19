@@ -201,10 +201,10 @@
         >
           <el-date-picker
             v-model="channelForm.scheduledFeeTime"
-            type="date"
-            placeholder="选择费率变更生效日期"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
+            type="datetime"
+            placeholder="选择费率变更生效时间"
+            format="YYYY-MM-DD HH:mm:ss"
+            value-format="YYYY-MM-DD HH:mm:ss"
             :disabledDate="disabledDate"
             style="width: 100%"
           />

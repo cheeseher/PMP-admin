@@ -23,22 +23,31 @@ export const getRemainingTimeText = (scheduledTime) => {
   if (!scheduledTime) return '时间未设置';
 
   const targetDate = new Date(scheduledTime);
-  // 设置为当天结束时间
-  targetDate.setHours(23, 59, 59, 999);
-  
   const now = new Date();
-  
+
   if (now >= targetDate) {
     return '已生效';
   }
-  
-  // 计算天数差异
+
   const diffMs = targetDate - now;
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-  
-  if (diffDays > 1) {
-    return `${diffDays}天后`;
-  } else {
-    return '明天生效';
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffDays > 0) {
+    return `剩余${diffDays}天`;
   }
+  if (diffHours > 0) {
+    return `剩余${diffHours}小时`;
+  }
+  if (diffMinutes > 0) {
+    const seconds = diffSeconds % 60;
+    return `剩余${diffMinutes}分${seconds}秒`;
+  }
+  if (diffSeconds > 0) {
+    return `剩余${diffSeconds}秒`;
+  }
+
+  return '即将生效';
 }; 

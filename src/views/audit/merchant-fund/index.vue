@@ -128,7 +128,9 @@ import { ElMessage } from 'element-plus'
 // 交易类型选项
 const transactionTypeOptions = [
   { label: '收款', value: 'income' },
-  { label: '交易撤销', value: 'cancel' }
+  { label: '交易撤销', value: 'cancel' },
+  { label: '余额增加', value: 'balance_increase' },
+  { label: '余额扣减', value: 'balance_decrease' }
 ]
 
 // 商户选项

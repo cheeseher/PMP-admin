@@ -150,8 +150,8 @@ const searchForm = reactive({
 
 // 交易类型选项
 const transactionTypeOptions = [
-  { label: '增加', value: 'add' },
-  { label: '扣减', value: 'reduce' }
+  { label: '余额增加', value: 'add' },
+  { label: '余额扣减', value: 'reduce' }
 ]
 
 // 渠道选项
@@ -207,7 +207,7 @@ const tableData = ref([
     beforeAvailable: 656496.88,
     beforeFrozen: 0.00,
     transactionAmount: 100.00,
-    transactionType: '增加',
+    transactionType: '余额增加',
     fee: 0.00,
     freezeAmount: 0.00,
     afterTotal: 656596.88,

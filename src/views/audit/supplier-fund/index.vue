@@ -154,7 +154,8 @@ const transactionTypeOptions = [
   { label: '收款手续费', value: 'collectFee' },
   { label: '收款', value: 'income' },
   { label: '交易撤销', value: 'cancel' },
-  { label: '交易撤销', value: 'reversal' }
+  { label: '余额增加', value: 'balance_increase' },
+  { label: '余额扣减', value: 'balance_decrease' }
 ]
 
 // 渠道选项

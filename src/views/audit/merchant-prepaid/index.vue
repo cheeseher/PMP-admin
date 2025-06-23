@@ -121,8 +121,8 @@ import { ElMessage } from 'element-plus'
 
 // 交易类型选项
 const transactionTypeOptions = ref([
-  { label: '扣减', value: '扣减' },
-  { label: '增加', value: '增加' }
+  { label: '余额扣减', value: '余额扣减' },
+  { label: '余额增加', value: '余额增加' }
 ])
 
 // 上游选项
@@ -185,7 +185,7 @@ const tableData = ref([
     beforeAvailable: 658968.10, 
     beforeFrozen: 0.00,
     transactionAmount: 0.00,
-    transactionType: '扣减',
+    transactionType: '余额扣减',
     fee: 30.00,
     freezeAmount: 0.00,
     afterTotal: 658938.10,
@@ -202,7 +202,7 @@ const tableData = ref([
     beforeAvailable: 658468.10,
     beforeFrozen: 0.00,
     transactionAmount: 500.00,
-    transactionType: '增加',
+    transactionType: '余额增加',
     fee: 0.00,
     freezeAmount: 0.00,
     afterTotal: 658968.10,
@@ -219,7 +219,7 @@ const tableData = ref([
     beforeAvailable: 101.00,
     beforeFrozen: 0.00,
     transactionAmount: 0.00,
-    transactionType: '扣减',
+    transactionType: '余额扣减',
     fee: 30.30,
     freezeAmount: 0.00,
     afterTotal: 70.70,
@@ -236,7 +236,7 @@ const tableData = ref([
     beforeAvailable: 0.00,
     beforeFrozen: 0.00,
     transactionAmount: 101.00,
-    transactionType: '增加',
+    transactionType: '余额增加',
     fee: 0.00,
     freezeAmount: 0.00,
     afterTotal: 101.00,

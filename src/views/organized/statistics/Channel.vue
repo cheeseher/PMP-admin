@@ -13,6 +13,7 @@
               placeholder="请选择支付通道" 
               clearable 
               style="width: 220px"
+              filterable
             >
               <el-option v-for="item in channelOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
@@ -21,6 +22,7 @@
           <el-form-item label="时间：">
             <div class="time-filter-container">
               <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
+                <el-option label="全部" value="all" />
                 <el-option label="自定义时间" value="custom" />
                 <el-option label="今日" value="today" />
                 <el-option label="昨日" value="yesterday" />
@@ -140,6 +142,8 @@ const getDateRangeByType = (type) => {
   const formattedToday = `${year}-${month}-${day}`
   
   switch (type) {
+    case 'all':
+      return []
     case 'today':
       return [formattedToday, formattedToday]
     case 'yesterday': {
@@ -169,15 +173,15 @@ const getDateRangeByType = (type) => {
       return [formattedFirstDay, formattedToday]
     }
     default:
-      return ['', '']
+      return []
   }
 }
 
 // 搜索表单
 const searchForm = ref({
   channels: [],
-  timeType: 'today',
-  timeRange: getDateRangeByType('today')
+  timeType: 'all',
+  timeRange: []
 })
 
 // 通道选项
@@ -298,9 +302,10 @@ const handleSearch = () => {
 const handleReset = () => {
   searchForm.value = {
     channels: [],
-    timeType: 'today',
-    timeRange: getDateRangeByType('today')
+    timeType: 'all',
+    timeRange: []
   }
+  handleSearch()
 }
 
 // 导出
@@ -313,17 +318,18 @@ const handleExport = () => {
   // 实际应用中这里应该调用API导出数据
 }
 
-// 监听时间类型变化，自动设置日期范围
+// 监听时间变化
 watch(() => searchForm.value.timeType, (newType) => {
   if (newType !== 'custom') {
     searchForm.value.timeRange = getDateRangeByType(newType)
+  } else {
+    searchForm.value.timeRange = []
   }
 })
 
-// 页面加载时初始化
+// 页面加载时执行一次搜索
 onMounted(() => {
-  // 默认今天
-  searchForm.value.timeRange = getDateRangeByType('today')
+  handleSearch()
 })
 
 // 复制内容

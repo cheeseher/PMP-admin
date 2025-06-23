@@ -5,15 +5,27 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="日期选择：">
-            <el-date-picker
-              v-model="searchForm.date"
-              type="date"
-              placeholder="选择日期"
-              format="YYYY-MM-DD"
-              value-format="YYYY-MM-DD"
-              style="width: 160px;"
-            />
+          <el-form-item label="时间筛选：">
+            <div class="time-filter-container">
+              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
+                <el-option label="全部" value="all" />
+                <el-option label="自定义时间" value="custom" />
+                <el-option label="今日" value="today" />
+                <el-option label="昨日" value="yesterday" />
+                <el-option label="最近7天" value="last7days" />
+              </el-select>
+              <el-date-picker
+                v-if="searchForm.timeType === 'custom'"
+                v-model="searchForm.dateRange"
+                type="daterange"
+                range-separator="~"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                style="width: 240px; margin-left: 8px;"
+              />
+            </div>
           </el-form-item>
           <el-form-item label="商户选择：">
             <el-select
@@ -24,6 +36,7 @@
               placeholder="请选择商户"
               style="width: 280px"
               clearable
+              filterable
             >
               <el-option
                 v-for="item in merchantOptions"
@@ -126,7 +139,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { 
   ArrowUp, 
   ArrowDown, 
@@ -142,6 +155,25 @@ import { formatAmount } from '@/utils/formatUtils'
 import { merchantBalanceData } from '@/data/statisticsData'
 import dayjs from 'dayjs'
 
+// 根据时间类型获取日期范围
+const getDateRangeByType = (type) => {
+  const today = dayjs()
+  
+  switch (type) {
+    case 'all':
+      return []
+    case 'today':
+      return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    case 'yesterday':
+      const yesterday = today.subtract(1, 'day')
+      return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]
+    case 'last7days':
+      return [today.subtract(6, 'day').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    default:
+      return []
+  }
+}
+
 // 商户选项
 const merchantOptions = ref([
   { value: '1', label: '商户A' },
@@ -153,8 +185,18 @@ const merchantOptions = ref([
 
 // 搜索表单数据
 const searchForm = reactive({
-  date: dayjs().format('YYYY-MM-DD'),
+  timeType: 'all',
+  dateRange: [],
   merchantIds: []
+})
+
+// 监听时间类型变化，自动设置日期范围
+watch(() => searchForm.timeType, (newType) => {
+  if (newType !== 'custom') {
+    searchForm.dateRange = getDateRangeByType(newType)
+  } else {
+    searchForm.dateRange = []
+  }
 })
 
 // 表格数据
@@ -201,11 +243,13 @@ const handleSearch = () => {
       )
     }
     
-    if (searchForm.date) {
-      const selectedDate = searchForm.date
-      filteredData = filteredData.filter(item => 
-        item.snapshotTime && item.snapshotTime.startsWith(selectedDate)
-      )
+    if (searchForm.timeType !== 'all' && searchForm.dateRange && searchForm.dateRange.length === 2) {
+      const [startDate, endDate] = searchForm.dateRange;
+      filteredData = filteredData.filter(item => {
+        if (!item.snapshotTime) return false;
+        const itemDate = item.snapshotTime.split(' ')[0];
+        return itemDate >= startDate && itemDate <= endDate;
+      });
     }
     
     const processedData = filteredData.map(item => ({
@@ -224,7 +268,8 @@ const handleSearch = () => {
 
 // 重置方法
 const handleReset = () => {
-  searchForm.date = dayjs().format('YYYY-MM-DD')
+  searchForm.timeType = 'all'
+  searchForm.dateRange = []
   searchForm.merchantIds = []
   handleSearch()
 }
@@ -353,7 +398,7 @@ const viewDetail = (row) => {
 
 // 页面加载时获取数据
 onMounted(() => {
-  initTableData()
+  handleSearch()
 })
 </script>
 

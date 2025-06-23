@@ -8,6 +8,7 @@
           <el-form-item label="时间筛选：">
             <div class="time-filter-container">
               <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
+                <el-option label="全部" value="all" />
                 <el-option label="自定义时间" value="custom" />
                 <el-option label="今日" value="today" />
                 <el-option label="昨日" value="yesterday" />
@@ -38,6 +39,7 @@
               multiple 
               collapse-tags 
               collapse-tags-tooltip
+              filterable
             >
               <el-option v-for="item in merchantOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
@@ -180,6 +182,8 @@ const getDateRangeByType = (type) => {
   const today = dayjs()
   
   switch (type) {
+    case 'all':
+      return []
     case 'today':
       return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
     case 'yesterday':
@@ -210,14 +214,16 @@ const getDateRangeByType = (type) => {
 const searchForm = reactive({
   productName: '',
   merchantIds: [],
-  timeType: 'today',  // 默认为今日
-  dateRange: getDateRangeByType('today') // 初始化为今日
+  timeType: 'all',  // 默认为全部
+  dateRange: [] // 初始化为空
 })
 
 // 监听时间类型变化，自动设置日期范围
 watch(() => searchForm.timeType, (newType) => {
   if (newType !== 'custom') {
     searchForm.dateRange = getDateRangeByType(newType)
+  } else {
+    searchForm.dateRange = []
   }
 })
 
@@ -361,8 +367,8 @@ const handleSearch = () => {
 const handleReset = () => {
   searchForm.productName = ''
   searchForm.merchantIds = []
-  searchForm.timeType = 'today'
-  searchForm.dateRange = getDateRangeByType('today')
+  searchForm.timeType = 'all'
+  searchForm.dateRange = []
   handleSearch()
 }
 

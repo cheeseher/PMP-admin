@@ -8,6 +8,7 @@
           <el-form-item label="时间筛选：">
             <div class="time-filter-container">
               <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
+                <el-option label="全部" value="all" />
                 <el-option label="自定义时间" value="custom" />
                 <el-option label="今日" value="today" />
                 <el-option label="昨日" value="yesterday" />
@@ -35,6 +36,7 @@
               placeholder="请选择商户"
               style="width: 220px"
               clearable
+              filterable
             >
               <el-option
                 v-for="item in merchantOptions"
@@ -56,7 +58,7 @@
     <div class="stat-cards">
       <el-card shadow="hover" class="stat-card">
         <div class="compact-card-content">
-          <div class="stat-header">总收款金额</div>
+          <div class="stat-header">总订单金额</div>
           <div class="stat-body">
             <el-icon :size="22"><Money /></el-icon>
             <span class="stat-value">{{ formatAmount(totalSuccessAmount) }}</span>
@@ -76,7 +78,7 @@
 
       <el-card shadow="hover" class="stat-card">
         <div class="compact-card-content">
-          <div class="stat-header">总收款额</div>
+          <div class="stat-header">总订单金额</div>
           <div class="stat-body">
             <el-icon :size="22"><Money /></el-icon>
             <span class="stat-value">{{ formatAmount(totalAmount) }}</span>
@@ -153,7 +155,7 @@
             <span class="amount-cell">{{ formatAmount(row.supplementAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="totalAmount" label="总收款" width="150" align="right">
+        <el-table-column prop="totalAmount" label="总订单金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.totalAmount) }}</span>
           </template>
@@ -202,6 +204,8 @@ const getDateRangeByType = (type) => {
   const today = dayjs()
   
   switch (type) {
+    case 'all':
+      return []
     case 'today':
       return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
     case 'yesterday':
@@ -224,14 +228,17 @@ const merchantOptions = ref([
 // 搜索表单数据
 const searchForm = reactive({
   merchantIds: [],
-  timeType: 'today',
-  dateRange: getDateRangeByType('today')
+  timeType: 'all',
+  dateRange: []
 })
 
 // 监听时间类型变化，自动设置日期范围
 watch(() => searchForm.timeType, (newType) => {
   if (newType !== 'custom') {
     searchForm.dateRange = getDateRangeByType(newType)
+  } else {
+    // 切换到自定义时，清空日期范围以便用户选择
+    searchForm.dateRange = []
   }
 })
 
@@ -342,8 +349,8 @@ const handleSearch = () => {
 // 重置方法
 const handleReset = () => {
   searchForm.merchantIds = []
-  searchForm.timeType = 'today'
-  searchForm.dateRange = getDateRangeByType('today')
+  searchForm.timeType = 'all'
+  searchForm.dateRange = []
   handleSearch()
 }
 

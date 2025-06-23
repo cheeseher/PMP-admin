@@ -10,7 +10,6 @@
               <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
                 <el-option label="全部" value="all" />
                 <el-option label="自定义时间" value="custom" />
-                <el-option label="今日" value="today" />
                 <el-option label="昨日" value="yesterday" />
                 <el-option label="最近7天" value="last7days" />
               </el-select>

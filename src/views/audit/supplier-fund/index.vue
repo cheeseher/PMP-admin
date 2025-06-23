@@ -151,7 +151,7 @@ const searchForm = reactive({
 
 // 交易类型选项
 const transactionTypeOptions = [
-  { label: '收数手续费', value: 'collectFee' },
+  { label: '收款手续费', value: 'collectFee' },
   { label: '收款', value: 'income' },
   { label: '交易撤销', value: 'cancel' },
   { label: '交易撤销', value: 'reversal' }
@@ -211,7 +211,7 @@ const tableData = ref([
     beforeAvailable: 658468.45,
     beforeFrozen: 500.00,
     transactionAmount: 0.00,
-    transactionType: '收数手续费',
+    transactionType: '收款手续费',
     fee: 30.00,
     freezeAmount: 0.00,
     afterTotal: 658938.45,
@@ -247,7 +247,7 @@ const tableData = ref([
     beforeAvailable: 101.00,
     beforeFrozen: 0.00,
     transactionAmount: 0.00,
-    transactionType: '收数手续费',
+    transactionType: '收款手续费',
     fee: 30.30,
     freezeAmount: 0.00,
     afterTotal: 70.70,

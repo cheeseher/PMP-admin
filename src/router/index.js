@@ -119,6 +119,46 @@ const router = createRouter({
           ]
         },
 
+        // 机器人管理
+        {
+          path: '/robot',
+          name: 'Robot',
+          redirect: '/robot/command-log',
+          meta: { title: '机器人管理' },
+          children: [
+            {
+              path: 'command-log',
+              name: 'CommandLog',
+              component: () => import('@/views/robot/CommandLog.vue'),
+              meta: { title: '指令日志中心' }
+            },
+            {
+              path: 'merchant-binding',
+              name: 'MerchantBinding',
+              component: () => import('@/views/robot/MerchantBinding.vue'),
+              meta: { title: '商户绑定管理' }
+            },
+            {
+              path: 'group-user-management',
+              name: 'GroupUserManagement',
+              component: () => import('@/views/robot/GroupUserManagement.vue'),
+              meta: { title: '群组与用户管理' }
+            },
+            {
+              path: 'command-permission',
+              name: 'CommandPermission',
+              component: () => import('@/views/robot/CommandPermission.vue'),
+              meta: { title: '指令权限配置' }
+            },
+            {
+              path: 'mass-task-record',
+              name: 'MassTaskRecord',
+              component: () => import('@/views/robot/MassTaskRecord.vue'),
+              meta: { title: '群发任务记录' }
+            }
+          ]
+        },
+
         // 数据统计
         {
           path: '/statistics',

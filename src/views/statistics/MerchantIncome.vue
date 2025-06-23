@@ -78,7 +78,7 @@
 
       <el-card shadow="hover" class="stat-card">
         <div class="compact-card-content">
-          <div class="stat-header">总订单金额</div>
+          <div class="stat-header">总成功收款金额</div>
           <div class="stat-body">
             <el-icon :size="22"><Money /></el-icon>
             <span class="stat-value">{{ formatAmount(totalAmount) }}</span>

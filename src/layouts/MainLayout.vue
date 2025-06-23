@@ -87,6 +87,19 @@
             <el-menu-item index="/payment/setting">支付设置</el-menu-item>
           </el-sub-menu>
 
+          <!-- 机器人管理 -->
+          <el-sub-menu index="/robot">
+            <template #title>
+              <el-icon><Cpu /></el-icon>
+              <span>机器人管理</span>
+            </template>
+            <el-menu-item index="/robot/command-log">指令日志中心</el-menu-item>
+            <el-menu-item index="/robot/merchant-binding">商户绑定管理</el-menu-item>
+            <el-menu-item index="/robot/group-user-management">群组与用户管理</el-menu-item>
+            <el-menu-item index="/robot/command-permission">指令权限配置</el-menu-item>
+            <el-menu-item index="/robot/mass-task-record">群发任务记录</el-menu-item>
+          </el-sub-menu>
+
           <!-- 系统管理 -->
           <el-sub-menu index="/system">
             <template #title>
@@ -218,7 +231,8 @@ import {
   ShoppingCart,
   Setting,
   DataLine,
-  Histogram
+  Histogram,
+  Cpu
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

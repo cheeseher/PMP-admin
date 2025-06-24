@@ -12,8 +12,21 @@
           <el-form-item label="渠道名称：">
             <el-input v-model="searchForm.supplierName" placeholder="请输入渠道名称" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="渠道编码：">
-            <el-input v-model="searchForm.supplierCode" placeholder="请输入渠道编码" style="width: 220px" clearable />
+          <el-form-item label="模板：">
+            <el-select 
+              v-model="searchForm.supplierCode" 
+              placeholder="请选择模板" 
+              style="width: 220px" 
+              filterable 
+              clearable
+            >
+              <el-option
+                v-for="item in templateOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
           </el-form-item>
           <el-form-item label="状态：">
             <el-select v-model="searchForm.status" placeholder="请选择状态" style="width: 168px" clearable>
@@ -58,7 +71,11 @@
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column label="供应商ID" prop="id" width="80" align="center" />
         <el-table-column label="渠道名称" prop="supplier" min-width="120" />
-        <el-table-column label="渠道编码" prop="code" width="120" />
+        <el-table-column label="模板" prop="code" width="120">
+          <template #default="scope">
+            <el-tag size="small" type="info">{{ getTemplateLabel(scope.row.code) }}</el-tag>
+          </template>
+        </el-table-column>
         <el-table-column label="渠道商户号" prop="merchantNo" width="180" />
         <el-table-column label="余额" prop="amount" width="120" align="right">
           <template #default="scope">
@@ -132,11 +149,23 @@
         label-width="120px"
         class="supplier-form"
       >
+        <el-form-item label="模板" prop="code">
+          <el-select 
+            v-model="supplierForm.code" 
+            filterable 
+            placeholder="请选择模板" 
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in templateOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="渠道名称" prop="supplier">
           <el-input v-model="supplierForm.supplier" placeholder="请输入渠道名称" />
-        </el-form-item>
-        <el-form-item label="渠道编码" prop="code">
-          <el-input v-model="supplierForm.code" placeholder="请输入渠道编码" />
         </el-form-item>
         <el-form-item label="渠道商户号" prop="merchantNo">
           <el-input v-model="supplierForm.merchantNo" placeholder="请输入渠道商户号" />
@@ -196,7 +225,7 @@
       <el-descriptions :column="1" border class="detail-descriptions" v-if="currentSupplier">
         <el-descriptions-item label="供应商ID">{{ currentSupplier.id }}</el-descriptions-item>
         <el-descriptions-item label="渠道名称">{{ currentSupplier.supplier }}</el-descriptions-item>
-        <el-descriptions-item label="渠道编码">{{ currentSupplier.code }}</el-descriptions-item>
+        <el-descriptions-item label="模板">{{ getTemplateLabel(currentSupplier.code) }}</el-descriptions-item>
         <el-descriptions-item label="渠道商户号">{{ currentSupplier.merchantNo }}</el-descriptions-item>
         <el-descriptions-item label="余额">{{ formatAmount(currentSupplier.amount) }}</el-descriptions-item>
         <el-descriptions-item label="授信额度">{{ formatAmount(currentSupplier.alertThreshold || 5000) }}</el-descriptions-item>
@@ -277,7 +306,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { Search, Refresh, Plus, ArrowDown, Download } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { supplierList } from '@/data/supplierData'
+import { supplierList, supplierTemplates } from '@/data/supplierData'
 
 // 搜索表单
 const searchForm = reactive({
@@ -322,7 +351,7 @@ const supplierForm = reactive({
 })
 const rules = {
   supplier: [{ required: true, message: '请输入渠道名称', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入渠道编码', trigger: 'blur' }],
+  code: [{ required: true, message: '请选择模板', trigger: 'change' }],
   merchantNo: [{ required: true, message: '请输入商户号', trigger: 'blur' }],
   gatewayUrl: [{ required: true, message: '请输入网关地址', trigger: 'blur' }],
   notifyUrl: [{ required: true, message: '请输入异步通知网址', trigger: 'blur' }]
@@ -331,6 +360,9 @@ const rules = {
 // 详情抽屉相关
 const drawerVisible = ref(false)
 const currentSupplier = ref(null)
+
+// 模板选项
+const templateOptions = ref(supplierTemplates)
 
 // 余额操作相关
 const balanceOperationVisible = ref(false)
@@ -356,6 +388,12 @@ const formatAmount = (amount) => {
   })
 }
 
+// 获取模板标签
+const getTemplateLabel = (code) => {
+  const template = templateOptions.value.find(item => item.value === code)
+  return template ? template.label : code
+}
+
 // 搜索方法
 const handleSearch = () => {
   tableLoading.value = true
@@ -376,7 +414,7 @@ const handleSearch = () => {
     
     if (searchForm.supplierCode) {
       filteredData = filteredData.filter(item => 
-        item.code.toLowerCase().includes(searchForm.supplierCode.toLowerCase()))
+        item.code === searchForm.supplierCode)
     }
     
     if (searchForm.status) {
@@ -520,6 +558,11 @@ const resetForm = () => {
     amount: 0,
     alertThreshold: null
   })
+  
+  // 如果是新增，清空模板下拉选择
+  if (dialogType.value === 'add') {
+    supplierForm.code = ''
+  }
 }
 
 // 提交表单

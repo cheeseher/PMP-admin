@@ -3,7 +3,7 @@ export const supplierList = [
   {
     id: 1,
     supplier: '渠道A',
-    code: 'NewSdPay',
+    code: 'template_flash',
     merchantNo: '20230001',
     apiKey: 'sdpay_api_key_001',
     appId: 'sdpay_app_001',
@@ -24,7 +24,7 @@ export const supplierList = [
   {
     id: 2,
     supplier: '渠道B',
-    code: 'RTpay',
+    code: 'template_zongheng',
     merchantNo: '20230002',
     apiKey: 'rtpay_api_key_001',
     appId: 'rtpay_app_001',
@@ -45,7 +45,7 @@ export const supplierList = [
   {
     id: 3,
     supplier: '渠道C',
-    code: 'YFpay',
+    code: 'template_panda',
     merchantNo: '20230003',
     apiKey: 'yfpay_api_key_001',
     appId: 'yfpay_app_001',
@@ -66,7 +66,7 @@ export const supplierList = [
   {
     id: 4,
     supplier: '渠道D',
-    code: 'XYpay',
+    code: 'template_flash',
     merchantNo: '20230004',
     apiKey: 'xypay_api_key_001',
     appId: 'xypay_app_001',
@@ -87,7 +87,7 @@ export const supplierList = [
   {
     id: 5,
     supplier: '渠道E',
-    code: 'HYpay',
+    code: 'template_zongheng',
     merchantNo: '20230005',
     apiKey: 'hypay_api_key_001',
     appId: 'hypay_app_001',
@@ -108,7 +108,7 @@ export const supplierList = [
   {
     id: 6,
     supplier: '渠道F',
-    code: 'Huifu',
+    code: 'template_panda',
     merchantNo: '20240212345678',
     amount: 986420.15,
     flow: 46780.30,
@@ -120,7 +120,7 @@ export const supplierList = [
   {
     id: 7,
     supplier: '渠道G',
-    code: 'BaofuPay',
+    code: 'template_flash',
     merchantNo: '20240212345678',
     amount: 421570.40,
     flow: 15280.60,
@@ -132,7 +132,7 @@ export const supplierList = [
   {
     id: 8,
     supplier: '渠道H',
-    code: 'GuofuPay',
+    code: 'template_zongheng',
     merchantNo: '20230625876543',
     amount: 756840.25,
     flow: 28950.70,
@@ -144,7 +144,7 @@ export const supplierList = [
   {
     id: 9,
     supplier: '渠道I',
-    code: 'Allinpay',
+    code: 'template_panda',
     merchantNo: '20240103567890',
     amount: 865230.90,
     flow: 32640.15,
@@ -156,7 +156,7 @@ export const supplierList = [
   {
     id: 10,
     supplier: '渠道J',
-    code: 'SuixingPay',
+    code: 'template_flash',
     merchantNo: '20230930246813',
     amount: 368470.55,
     flow: 11560.80,
@@ -165,4 +165,11 @@ export const supplierList = [
     remark: '移动支付专用',
     enabled: false
   }
+];
+
+// 供应商模板选项数据
+export const supplierTemplates = [
+  { value: 'template_flash', label: '闪电' },
+  { value: 'template_zongheng', label: '纵横' },
+  { value: 'template_panda', label: '熊猫' }
 ]; 

@@ -20,20 +20,18 @@
           </el-form-item>
           
           <el-form-item label="渠道名称：">
-            <el-select v-model="searchForm.upstreamName" placeholder="请选择渠道名称" style="width: 168px" clearable>
+            <el-select 
+              v-model="searchForm.upstreamNames" 
+              placeholder="请选择渠道名称" 
+              style="width: 220px" 
+              multiple 
+              filterable 
+              clearable
+              collapse-tags
+              collapse-tags-tooltip
+            >
               <el-option 
                 v-for="item in upstreamOptions" 
-                :key="item.value" 
-                :label="item.label" 
-                :value="item.value" 
-              />
-            </el-select>
-          </el-form-item>
-          
-          <el-form-item label="状态：">
-            <el-select v-model="searchForm.status" placeholder="请选择状态" style="width: 168px" clearable>
-              <el-option 
-                v-for="item in statusOptions" 
                 :key="item.value" 
                 :label="item.label" 
                 :value="item.value" 
@@ -105,16 +103,6 @@
             <div>余额: {{ formatAmount(scope.row.afterTotal) }}</div>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" min-width="80">
-          <template #default="scope">
-            <el-tag
-              :type="getStatusType(scope.row.status)"
-              size="small"
-            >
-              {{ scope.row.status }}
-            </el-tag>
-          </template>
-        </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="120" />
         <el-table-column prop="createTime" label="完成时间" min-width="150" />
       </el-table>
@@ -143,8 +131,7 @@ import { ElMessage } from 'element-plus'
 const searchForm = reactive({
   transactionNo: '',
   transactionType: '',
-  upstreamName: '',
-  status: '',
+  upstreamNames: [],
   dateRange: []
 })
 
@@ -157,14 +144,10 @@ const transactionTypeOptions = [
 // 渠道选项
 const upstreamOptions = [
   { label: '新闪电', value: 'xsd' },
+  { label: '闪付通', value: 'sft' },
+  { label: '万通支付', value: 'wtzf' },
+  { label: '快速通道', value: 'kstd' },
   { label: 'test', value: 'test' }
-]
-
-// 状态选项
-const statusOptions = [
-  { label: '成功', value: 'success' },
-  { label: '失败', value: 'failed' },
-  { label: '处理中', value: 'processing' }
 ]
 
 // 日期快捷选项
@@ -213,7 +196,6 @@ const tableData = ref([
     afterTotal: 656596.88,
     afterAvailable: 656596.88,
     afterFrozen: 0.00,
-    status: '成功',
     remark: '测试滴滴滴',
     createTime: '2025-02-28 14:23:59'
   }
@@ -223,16 +205,6 @@ const tableData = ref([
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(1) // 实际应用中从API获取
-
-// 获取状态类型
-const getStatusType = (status) => {
-  const typeMap = {
-    '成功': 'success',
-    '失败': 'danger',
-    '处理中': 'warning'
-  }
-  return typeMap[status] || 'info'
-}
 
 // 格式化金额
 const formatAmount = (amount) => {
@@ -253,7 +225,7 @@ const handleSearch = () => {
 
 const handleReset = () => {
   Object.keys(searchForm).forEach(key => {
-    if (key === 'dateRange') {
+    if (key === 'dateRange' || key === 'upstreamNames') {
       searchForm[key] = []
     } else {
       searchForm[key] = ''

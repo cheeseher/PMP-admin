@@ -20,20 +20,18 @@
           </el-form-item>
           
           <el-form-item label="渠道名称：">
-            <el-select v-model="searchForm.upstreamName" placeholder="请选择渠道名称" style="width: 168px" clearable>
+            <el-select 
+              v-model="searchForm.upstreamNames" 
+              placeholder="请选择渠道名称" 
+              style="width: 220px" 
+              multiple 
+              filterable 
+              clearable
+              collapse-tags
+              collapse-tags-tooltip
+            >
               <el-option 
                 v-for="item in upstreamOptions" 
-                :key="item.value" 
-                :label="item.label" 
-                :value="item.value" 
-              />
-            </el-select>
-          </el-form-item>
-          
-          <el-form-item label="状态：">
-            <el-select v-model="searchForm.status" placeholder="请选择状态" style="width: 168px" clearable>
-              <el-option 
-                v-for="item in statusOptions" 
                 :key="item.value" 
                 :label="item.label" 
                 :value="item.value" 
@@ -106,16 +104,6 @@
             <div>余额: {{ formatAmount(scope.row.afterTotal) }}</div>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" min-width="80">
-          <template #default="scope">
-            <el-tag
-              :type="getStatusType(scope.row.status)"
-              size="small"
-            >
-              {{ scope.row.status }}
-            </el-tag>
-          </template>
-        </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="120" />
         <el-table-column prop="createTime" label="完成时间" min-width="150" />
       </el-table>
@@ -144,8 +132,7 @@ import { ElMessage } from 'element-plus'
 const searchForm = reactive({
   transactionNo: '',
   transactionType: '',
-  upstreamName: '',
-  status: '',
+  upstreamNames: [],
   dateRange: []
 })
 
@@ -161,14 +148,10 @@ const transactionTypeOptions = [
 // 渠道选项
 const upstreamOptions = [
   { label: '新闪电', value: 'xsd' },
+  { label: '闪付通', value: 'sft' },
+  { label: '万通支付', value: 'wtzf' },
+  { label: '快速通道', value: 'kstd' },
   { label: 'test', value: 'test' }
-]
-
-// 状态选项
-const statusOptions = [
-  { label: '成功', value: 'success' },
-  { label: '失败', value: 'failed' },
-  { label: '处理中', value: 'processing' }
 ]
 
 // 日期快捷选项
@@ -218,7 +201,6 @@ const tableData = ref([
     afterTotal: 658938.45,
     afterAvailable: 658438.45,
     afterFrozen: 500.00,
-    status: '成功',
     remark: '',
     createTime: '2025-03-29 14:54:37'
   },
@@ -236,7 +218,6 @@ const tableData = ref([
     afterTotal: 658968.45,
     afterAvailable: 658468.45,
     afterFrozen: 500.00,
-    status: '成功',
     remark: '',
     createTime: '2025-03-29 14:54:37'
   },
@@ -254,7 +235,6 @@ const tableData = ref([
     afterTotal: 70.70,
     afterAvailable: 70.70,
     afterFrozen: 0.00,
-    status: '成功',
     remark: '',
     createTime: '2025-03-29 10:44:52'
   }
@@ -263,17 +243,7 @@ const tableData = ref([
 // 分页相关
 const currentPage = ref(1)
 const pageSize = ref(10)
-const total = ref(3) // 实际应用中从API获取
-
-// 获取状态类型
-const getStatusType = (status) => {
-  const typeMap = {
-    '成功': 'success',
-    '失败': 'danger',
-    '处理中': 'warning'
-  }
-  return typeMap[status] || 'info'
-}
+const total = ref(100)
 
 // 格式化金额
 const formatAmount = (amount) => {
@@ -283,23 +253,21 @@ const formatAmount = (amount) => {
 
 // 搜索与重置
 const handleSearch = () => {
-  console.log('搜索', searchForm)
-  loading.value = true
-  // 模拟API请求
-  setTimeout(() => {
-    loading.value = false
-    ElMessage.success('查询成功')
-  }, 500)
+  currentPage.value = 1
+  refreshData()
 }
 
 const handleReset = () => {
+  // 重置搜索表单
   Object.keys(searchForm).forEach(key => {
-    if (key === 'dateRange') {
+    if (key === 'dateRange' || key === 'upstreamNames') {
       searchForm[key] = []
     } else {
       searchForm[key] = ''
     }
   })
+  currentPage.value = 1
+  refreshData()
 }
 
 // 刷新数据
@@ -308,28 +276,31 @@ const refreshData = () => {
   setTimeout(() => {
     loading.value = false
     ElMessage.success('数据已刷新')
-  }, 500)
+  }, 800)
 }
 
-// 导出
-const handleExport = () => {
-  ElMessage.success('正在导出数据，请稍后...')
-}
-
-// 分页事件处理
+// 分页处理
 const handleSizeChange = (val) => {
   pageSize.value = val
-  // 这里应该调用获取数据的方法
+  refreshData()
 }
 
 const handleCurrentChange = (val) => {
   currentPage.value = val
-  // 这里应该调用获取数据的方法
+  refreshData()
 }
 
-// 页面加载时获取数据
+// 导出数据
+const handleExport = () => {
+  ElMessage.success('正在导出数据，请稍候...')
+  setTimeout(() => {
+    ElMessage.success('数据导出成功')
+  }, 1500)
+}
+
+// 初始化
 onMounted(() => {
-  // 实际应用中这里应该调用API获取数据
+  refreshData()
 })
 </script>
 
@@ -349,9 +320,9 @@ onMounted(() => {
 
 .filter-row {
   display: flex;
-  width: 100%;
   flex-wrap: wrap;
-  align-items: flex-start;
+  width: 100%;
+  align-items: center;
 }
 
 .filter-buttons {
@@ -364,18 +335,20 @@ onMounted(() => {
   margin-left: 8px;
 }
 
-.mt-16 {
-  margin-top: 16px;
-}
-
 .table-toolbar {
   display: flex;
   justify-content: space-between;
   margin-bottom: 16px;
 }
 
-.table-toolbar .left .el-button {
-  margin-right: 8px;
+.table-toolbar .left {
+  display: flex;
+  align-items: center;
+}
+
+.table-toolbar .right {
+  display: flex;
+  align-items: center;
 }
 
 .table-toolbar .right .el-button {
@@ -385,6 +358,10 @@ onMounted(() => {
 .pagination-container {
   display: flex;
   justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.mt-16 {
   margin-top: 16px;
 }
 </style> 

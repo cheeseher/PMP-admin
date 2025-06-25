@@ -13,9 +13,18 @@
               <el-option v-for="item in transactionTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-          <el-form-item label="状态：">
-            <el-select v-model="searchForm.status" placeholder="请选择" style="width: 168px" clearable>
-              <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+          <el-form-item label="商户账号：">
+            <el-select 
+              v-model="searchForm.merchantIds" 
+              placeholder="请选择" 
+              style="width: 220px" 
+              multiple 
+              filterable 
+              clearable
+              collapse-tags
+              collapse-tags-tooltip
+            >
+              <el-option v-for="item in merchantOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
           <el-form-item label="日期范围：">
@@ -62,7 +71,7 @@
         style="width: 100%"
       >
         <el-table-column type="selection" width="50" fixed="left" />
-        <el-table-column prop="upstreamName" label="商户名称" min-width="100" />
+        <el-table-column prop="upstreamName" label="账户账号" min-width="100" />
         <el-table-column prop="transactionNo" label="平台单号" min-width="180" />
         <el-table-column label="交易前" min-width="180">
           <template #default="scope">
@@ -83,16 +92,6 @@
         <el-table-column label="交易后" min-width="180">
           <template #default="scope">
             <div>余额: {{ formatAmount(scope.row.afterTotal) }}</div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="status" label="状态" min-width="80">
-          <template #default="scope">
-            <el-tag
-              :type="getStatusType(scope.row.status)"
-              size="small"
-            >
-              {{ scope.row.status }}
-            </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="120" />
@@ -125,16 +124,12 @@ const transactionTypeOptions = ref([
   { label: '余额增加', value: '余额增加' }
 ])
 
-// 上游选项
-const upstreamOptions = [
-  { label: '新内电', value: 'xinneidian' },
-  { label: 'test', value: 'test' }
-]
-
-// 状态选项
-const statusOptions = [
-  { label: '成功', value: 'success' },
-  { label: '失败', value: 'failed' }
+// 商户选项
+const merchantOptions = [
+  { label: '商户账号A', value: 'merchantA' },
+  { label: '商户账号B', value: 'merchantB' },
+  { label: '商户账号C', value: 'merchantC' },
+  { label: '测试账号', value: 'test' }
 ]
 
 // 日期快捷选项
@@ -172,14 +167,14 @@ const dateShortcuts = [
 const searchForm = reactive({
   transactionNo: '',
   transactionType: '',
-  status: '',
+  merchantIds: [],
   dateRange: []
 })
 
 // 表格数据
 const tableData = ref([
   {
-    upstreamName: '新内电',
+    upstreamName: '商户账号A',
     transactionNo: 'P202410311552458103063618',
     beforeTotal: 658968.10,
     beforeAvailable: 658968.10, 
@@ -191,12 +186,11 @@ const tableData = ref([
     afterTotal: 658938.10,
     afterAvailable: 658938.10,
     afterFrozen: 0.00,
-    status: '成功',
     remark: '',
     createTime: '2025-03-29 14:54:37'
   },
   {
-    upstreamName: '新内电',
+    upstreamName: '商户账号B',
     transactionNo: 'P202410311552458103063618',
     beforeTotal: 658468.10,
     beforeAvailable: 658468.10,
@@ -208,12 +202,11 @@ const tableData = ref([
     afterTotal: 658968.10,
     afterAvailable: 658968.10,
     afterFrozen: 0.00,
-    status: '成功',
     remark: '',
     createTime: '2025-03-29 14:54:37'
   },
   {
-    upstreamName: 'test',
+    upstreamName: '测试账号',
     transactionNo: 'P202503251139114598627655',
     beforeTotal: 101.00,
     beforeAvailable: 101.00,
@@ -225,12 +218,11 @@ const tableData = ref([
     afterTotal: 70.70,
     afterAvailable: 70.70,
     afterFrozen: 0.00,
-    status: '成功',
     remark: '',
     createTime: '2025-03-29 10:44:52'
   },
   {
-    upstreamName: 'test',
+    upstreamName: '商户账号C',
     transactionNo: 'P202503251139114598627655',
     beforeTotal: 0.00,
     beforeAvailable: 0.00,
@@ -242,15 +234,12 @@ const tableData = ref([
     afterTotal: 101.00,
     afterAvailable: 101.00,
     afterFrozen: 0.00,
-    status: '成功',
     remark: '',
     createTime: '2025-03-29 10:44:52'
   }
 ])
 
 const loading = ref(false)
-
-// 分页
 const currentPage = ref(1)
 const pageSize = ref(10)
 const total = ref(50)
@@ -273,15 +262,6 @@ const formatAmount = (amount) => {
   return amount.toFixed(2)
 }
 
-// 获取状态对应的类型
-const getStatusType = (status) => {
-  const typeMap = {
-    '成功': 'success',
-    '失败': 'danger'
-  }
-  return typeMap[status] || 'info'
-}
-
 // 搜索与重置
 const handleSearch = () => {
   currentPage.value = 1
@@ -291,7 +271,7 @@ const handleSearch = () => {
 const handleReset = () => {
   // 重置搜索表单
   Object.keys(searchForm).forEach(key => {
-    if (key === 'dateRange') {
+    if (key === 'dateRange' || key === 'merchantIds') {
       searchForm[key] = []
     } else {
       searchForm[key] = ''

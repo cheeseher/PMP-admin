@@ -116,7 +116,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="120" />
-        <el-table-column prop="createTime" label="时间" min-width="150" />
+        <el-table-column prop="createTime" label="完成时间" min-width="150" />
       </el-table>
       
       <div class="pagination-container">

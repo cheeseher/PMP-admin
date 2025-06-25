@@ -102,7 +102,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="120" />
-        <el-table-column prop="createTime" label="时间" min-width="150" />
+        <el-table-column prop="createTime" label="完成时间" min-width="150" />
       </el-table>
       
       <div class="pagination-container">
@@ -130,7 +130,8 @@ const transactionTypeOptions = [
   { label: '收款', value: 'income' },
   { label: '交易撤销', value: 'cancel' },
   { label: '余额增加', value: 'balance_increase' },
-  { label: '余额扣减', value: 'balance_decrease' }
+  { label: '余额扣减', value: 'balance_decrease' },
+  { label: '修改金额', value: 'amount_change' }
 ]
 
 // 商户选项

@@ -117,7 +117,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="120" />
-        <el-table-column prop="createTime" label="时间" min-width="150" />
+        <el-table-column prop="createTime" label="完成时间" min-width="150" />
       </el-table>
       
       <div class="pagination-container">
@@ -151,11 +151,11 @@ const searchForm = reactive({
 
 // 交易类型选项
 const transactionTypeOptions = [
-  { label: '收款手续费', value: 'collectFee' },
   { label: '收款', value: 'income' },
   { label: '交易撤销', value: 'cancel' },
   { label: '余额增加', value: 'balance_increase' },
-  { label: '余额扣减', value: 'balance_decrease' }
+  { label: '余额扣减', value: 'balance_decrease' },
+  { label: '修改金额', value: 'amount_change' }
 ]
 
 // 渠道选项
@@ -212,7 +212,7 @@ const tableData = ref([
     beforeAvailable: 658468.45,
     beforeFrozen: 500.00,
     transactionAmount: 0.00,
-    transactionType: '收款手续费',
+    transactionType: '修改金额',
     fee: 30.00,
     freezeAmount: 0.00,
     afterTotal: 658938.45,
@@ -248,7 +248,7 @@ const tableData = ref([
     beforeAvailable: 101.00,
     beforeFrozen: 0.00,
     transactionAmount: 0.00,
-    transactionType: '收款手续费',
+    transactionType: '修改金额',
     fee: 30.30,
     freezeAmount: 0.00,
     afterTotal: 70.70,

@@ -259,7 +259,7 @@
         <el-form-item label="渠道名称">
           <el-input v-model="balanceForm.supplier" disabled />
         </el-form-item>
-        <el-form-item label="渠道编码">
+        <el-form-item label="模板">
           <el-input v-model="balanceForm.code" disabled />
         </el-form-item>
         <el-form-item label="当前余额">

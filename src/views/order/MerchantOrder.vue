@@ -71,6 +71,15 @@
           <el-form-item label="上游单号：">
             <el-input v-model="searchForm.upstreamOrderNo" placeholder="请输入上游单号" class="input-large" clearable />
           </el-form-item>
+          
+          <el-form-item label="渠道模板：">
+            <el-select v-model="searchForm.templateType" placeholder="请选择模板" class="input-normal" clearable filterable>
+              <el-option label="全部" value="" />
+              <el-option label="闪电" value="template_flash" />
+              <el-option label="纵横" value="template_zongheng" />
+              <el-option label="熊猫" value="template_panda" />
+            </el-select>
+          </el-form-item>
         </div>
 
         <!-- 第三行筛选项 -->
@@ -287,10 +296,12 @@
             <span v-else>{{ scope.row.upstream }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="upstreamChannelCode" label="渠道编码" width="120">
+        <el-table-column prop="upstreamChannelCode" label="渠道模板" width="120">
           <template #default="scope">
             <span v-if="scope.row.orderStatus === 'created'">-</span>
-            <span v-else>{{ scope.row.upstreamChannelCode }}</span>
+            <el-tag v-else size="small" type="info">
+              {{ getTemplateLabel(scope.row.upstreamChannelCode) }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="upstreamOrderNo" label="上游单号" width="120">
@@ -476,10 +487,43 @@ import {
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 import { channelList } from '@/data/channelData'
-import { supplierList } from '@/data/supplierData'
+import { supplierList, supplierTemplates } from '@/data/supplierData'
 
 // 加载状态
 const loading = ref(false)
+
+// 模板数据
+const templateMap = {
+  'wxpay001': 'template_flash',
+  'wxpay002': 'template_flash',
+  'alipay001': 'template_panda',
+  'alipay003': 'template_panda',
+  'alipay004': 'template_panda',
+  'union002': 'template_zongheng',
+  'union003': 'template_zongheng'
+}
+
+// 获取模板标签
+const getTemplateLabel = (code) => {
+  const templateCode = templateMap[code] || 'template_flash'
+  const template = supplierTemplates.find(item => item.value === templateCode)
+  return template ? template.label : '闪电'
+}
+
+// 获取模板标签类型
+const getTemplateTagType = (code) => {
+  const templateCode = templateMap[code] || 'template_flash'
+  switch(templateCode) {
+    case 'template_flash':
+      return 'success'
+    case 'template_zongheng':
+      return 'warning'
+    case 'template_panda':
+      return 'info'
+    default:
+      return 'info'
+  }
+}
 
 // 根据时间类型获取日期范围
 const getDateRangeByType = (type) => {
@@ -539,6 +583,7 @@ const searchForm = reactive({
   supplier: '',
   supplierChannel: '',
   upstreamChannelCode: '',
+  templateType: '', // 新增渠道模板筛选字段
   orderStatus: '',
   minAmount: null,
   maxAmount: null,
@@ -816,6 +861,7 @@ const handleReset = () => {
     supplier: '',
     supplierChannel: '',
     upstreamChannelCode: '',
+    templateType: '', // 重置模板类型筛选
     orderStatus: '',
     minAmount: null,
     maxAmount: null,

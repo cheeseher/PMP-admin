@@ -71,7 +71,7 @@
         style="width: 100%"
       >
         <el-table-column type="selection" width="50" fixed="left" />
-        <el-table-column prop="upstreamName" label="账户账号" min-width="100" />
+        <el-table-column prop="upstreamName" label="商户账号" min-width="100" />
         <el-table-column prop="transactionNo" label="平台单号" min-width="180" />
         <el-table-column label="交易前" min-width="180">
           <template #default="scope">

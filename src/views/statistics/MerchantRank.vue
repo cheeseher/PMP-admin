@@ -5,28 +5,6 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="时间筛选：">
-            <div class="time-filter-container">
-              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
-                <el-option label="全部" value="all" />
-                <el-option label="自定义时间" value="custom" />
-                <el-option label="今日" value="today" />
-                <el-option label="昨日" value="yesterday" />
-                <el-option label="最近7天" value="last7days" />
-              </el-select>
-              <el-date-picker
-                v-if="searchForm.timeType === 'custom'"
-                v-model="searchForm.dateRange"
-                type="daterange"
-                range-separator="~"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                style="width: 240px; margin-left: 8px;"
-              />
-            </div>
-          </el-form-item>
           <el-form-item label="商户：">
             <el-select
               v-model="searchForm.merchantIds"
@@ -53,49 +31,6 @@
         </div>
       </el-form>
     </el-card>
-
-    <!-- 统计卡片 -->
-    <div class="stat-cards">
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总收款金额</div>
-          <div class="stat-body">
-            <el-icon :size="22"><Money /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalSuccessAmount) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总手续费</div>
-          <div class="stat-body">
-            <el-icon :size="22"><Discount /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalFee) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总入账金额</div>
-          <div class="stat-body">
-            <el-icon :size="22"><Wallet /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalNetAmount) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总成功单数/总笔数</div>
-          <div class="stat-body">
-            <el-icon :size="22"><Document /></el-icon>
-            <span class="stat-value">{{ formatNumber(totalSuccessCount) }}/{{ formatNumber(totalOrderCount) }}笔</span>
-          </div>
-        </div>
-      </el-card>
-    </div>
 
     <!-- 数据表格 -->
     <el-card shadow="never">
@@ -183,25 +118,6 @@ import { Search, Refresh, Download, Money, Discount, Document, Wallet } from '@e
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 
-// 根据时间类型获取日期范围
-const getDateRangeByType = (type) => {
-  const today = dayjs()
-  
-  switch (type) {
-    case 'all':
-      return []
-    case 'today':
-      return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
-    case 'yesterday':
-      const yesterday = today.subtract(1, 'day')
-      return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]
-    case 'last7days':
-      return [today.subtract(6, 'day').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
-    default:
-      return []
-  }
-}
-
 // 商户选项数据
 const merchantOptions = ref([
   { value: '1001', label: '商户A' },
@@ -213,18 +129,7 @@ const merchantOptions = ref([
 
 // 搜索表单数据
 const searchForm = reactive({
-  merchantIds: [],
-  timeType: 'all',
-  dateRange: []
-})
-
-// 监听时间类型变化，自动设置日期范围
-watch(() => searchForm.timeType, (newType) => {
-  if (newType !== 'custom') {
-    searchForm.dateRange = getDateRangeByType(newType)
-  } else {
-    searchForm.dateRange = []
-  }
+  merchantIds: []
 })
 
 // 表格数据
@@ -291,27 +196,6 @@ const tableData = ref([
   }
 ])
 
-// 统计数据计算
-const totalSuccessAmount = computed(() => {
-  return tableData.value.reduce((sum, item) => sum + item.successAmount, 0)
-})
-
-const totalFee = computed(() => {
-  return tableData.value.reduce((sum, item) => sum + item.fee, 0)
-})
-
-const totalNetAmount = computed(() => {
-  return tableData.value.reduce((sum, item) => sum + item.netAmount, 0)
-})
-
-const totalSuccessCount = computed(() => {
-  return tableData.value.reduce((sum, item) => sum + item.successCount, 0)
-})
-
-const totalOrderCount = computed(() => {
-  return tableData.value.reduce((sum, item) => sum + item.orderCount, 0)
-})
-
 // 分页相关
 const currentPage = ref(1)
 const pageSize = ref(10)
@@ -353,8 +237,6 @@ const handleSearch = () => {
 // 重置方法
 const handleReset = () => {
   searchForm.merchantIds = []
-  searchForm.timeType = 'all'
-  searchForm.dateRange = []
   handleSearch()
 }
 
@@ -440,47 +322,7 @@ const formatNumber = (num) => {
   margin-left: 12px;
 }
 
-/* 统计卡片样式 */
-.stat-cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.stat-card {
-  height: auto;
-}
-
-.stat-card :deep(.el-card__body) {
-  padding: 10px;
-}
-
-.compact-card-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-header {
-  font-size: 14px;
-  color: #606266;
-  margin-bottom: 8px;
-}
-
-.stat-body {
-  display: flex;
-  align-items: center;
-}
-
-.stat-body .el-icon {
-  margin-right: 8px;
-}
-
-.stat-value {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-}
+/* 统计卡片样式 - 已移除 */
 
 .table-toolbar {
   display: flex;
@@ -499,47 +341,24 @@ const formatNumber = (num) => {
   font-weight: 500;
 }
 
-.table-toolbar .right .el-button {
-  margin-left: 8px;
+.rank-tag {
+  min-width: 28px;
+  border-radius: 14px;
+  font-weight: bold;
 }
 
 .pagination-container {
+  margin-top: 16px;
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
 }
 
 .amount-cell {
-  font-family: 'Roboto Mono', monospace;
-  font-weight: 500;
-}
-
-.rank-tag {
-  font-weight: bold;
-  width: 30px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .time-filter-container {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-}
-
-/* 媒体查询，适配小屏幕 */
-@media (max-width: 1200px) {
-  .stat-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 768px) {
-  .stat-cards {
-    grid-template-columns: 1fr;
-  }
 }
 </style> 

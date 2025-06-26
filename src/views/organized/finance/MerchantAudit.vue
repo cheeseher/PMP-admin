@@ -9,49 +9,30 @@
           <el-form-item label="流水类型：">
             <el-select v-model="searchForm.type" placeholder="请选择流水类型" style="width: 168px" clearable>
               <el-option label="全部" value="" />
-              <el-option label="支付订单成功" value="PAY_SUCCESS" />
-              <el-option label="提现" value="WITHDRAW" />
-              <el-option label="管理员充值" value="ADMIN_RECHARGE" />
-              <el-option label="管理员扣除" value="ADMIN_DEDUCT" />
-              <el-option label="管理员调额" value="ADMIN_ADJUST" />
-              <el-option label="管理员清零" value="ADMIN_CLEAR" />
-              <el-option label="提现手续费" value="WITHDRAW_FEE" />
-              <el-option label="充值手续费" value="RECHARGE_FEE" />
-              <el-option label="测试清账" value="TEST_CLEAR" />
-              <el-option label="日终结算" value="DAY_END_SETTLE" />
+              <el-option label="收款" value="income" />
+              <el-option label="交易撤销" value="cancel" />
+              <el-option label="余额增加" value="balance_increase" />
+              <el-option label="余额扣减" value="balance_decrease" />
+              <el-option label="修改金额" value="amount_change" />
             </el-select>
           </el-form-item>
-          <el-form-item label="订单号：">
-            <el-input v-model="searchForm.orderId" placeholder="请输入订单号" style="width: 220px" clearable />
+          <el-form-item label="商户订单号：">
+            <el-input v-model="searchForm.merchantOrderId" placeholder="请输入商户订单号" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="开始日期：">
+          <el-form-item label="平台订单号：">
+            <el-input v-model="searchForm.platformOrderId" placeholder="请输入平台订单号" style="width: 220px" clearable />
+          </el-form-item>
+          <el-form-item label="时间筛选：">
             <el-date-picker
-              v-model="searchForm.startDate"
-              type="date"
-              placeholder="选择开始日期"
-              style="width: 168px"
+              v-model="searchForm.dateRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              :shortcuts="dateShortcuts"
+              style="width: 320px"
               value-format="YYYY-MM-DD"
             />
-          </el-form-item>
-          <el-form-item label="结束日期：">
-            <el-date-picker
-              v-model="searchForm.endDate"
-              type="date"
-              placeholder="选择结束日期"
-              style="width: 168px"
-              value-format="YYYY-MM-DD"
-            />
-          </el-form-item>
-          <el-form-item>
-            <el-select v-model="searchForm.dateRange" placeholder="快捷日期" style="width: 120px">
-              <el-option label="今天" value="today" />
-              <el-option label="昨天" value="yesterday" />
-              <el-option label="前天" value="beforeYesterday" />
-              <el-option label="近三天" value="last3days" />
-              <el-option label="近七天" value="last7days" />
-              <el-option label="本周" value="thisWeek" />
-              <el-option label="本月" value="thisMonth" />
-            </el-select>
           </el-form-item>
         </div>
         
@@ -68,9 +49,7 @@
       <!-- 表格工具栏 -->
       <div class="table-toolbar">
         <div class="left">
-          <div class="statistics-info">
-            统计日期：{{ searchForm.startDate || '2025-03-28' }} ~ {{ searchForm.endDate || '2025-03-28' }}
-          </div>
+          <!-- 删除统计日期信息 -->
         </div>
         <div class="right">
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
@@ -80,16 +59,17 @@
         </div>
       </div>
 
-      <el-table
+            <el-table
         v-loading="loading"
         :data="tableData"
         border
         stripe
         style="width: 100%"
-      >
-        <el-table-column prop="flowId" label="流水ID" width="100" />
-        <el-table-column prop="merchantName" label="商户名称" min-width="120" />
-        <el-table-column prop="type" label="流水类型" width="120">
+        >
+          <el-table-column prop="auditId" label="流水订单号" min-width="200" />
+          <el-table-column prop="systemOrderId" label="平台订单号" min-width="200" />
+          <el-table-column prop="merchantOrderId" label="商户订单号" min-width="200" />
+          <el-table-column prop="type" label="流水类型" width="120">
           <template #default="scope">
             <el-tag type="success" size="small" effect="plain">
               {{ scope.row.type }}
@@ -131,10 +111,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="120" />
-        <el-table-column prop="auditId" label="流水订单号" min-width="200" />
-        <el-table-column prop="systemOrderId" label="平台订单号" min-width="200" />
-        <el-table-column prop="merchantOrderId" label="商户订单号" min-width="200" />
-        <el-table-column prop="createTime" label="订单完成时间" width="180" />
+        <el-table-column prop="createTime" label="完成时间" width="180" />
       </el-table>
       
       <!-- 分页 -->
@@ -158,21 +135,56 @@ import { ref, reactive, onMounted } from 'vue'
 import { Search, Refresh, Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
+// 日期快捷选项
+const dateShortcuts = [
+  {
+    text: '今日',
+    value: () => {
+      const today = new Date()
+      return [today, today]
+    }
+  },
+  {
+    text: '昨日',
+    value: () => {
+      const today = new Date()
+      const yesterday = new Date()
+      yesterday.setTime(today.getTime() - 3600 * 1000 * 24)
+      return [yesterday, yesterday]
+    }
+  },
+  {
+    text: '最近7天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 24 * 7)
+      return [start, end]
+    }
+  },
+  {
+    text: '最近一个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 24 * 30)
+      return [start, end]
+    }
+  }
+]
+
 // 搜索表单
 const searchForm = reactive({
   type: '',
-  orderId: '',
-  startDate: '',
-  endDate: '',
-  dateRange: 'today'
+  merchantOrderId: '',
+  platformOrderId: '',
+  dateRange: []
 })
 
 // 表格数据
 const tableData = ref([
   {
-    flowId: '2873469',
-    merchantName: '商户A',
-    type: '支付订单成功',
+    type: '收款',
     beforeAmount: 5000.90,
     changeAmount: 284.10,
     afterAmount: 5285.00,
@@ -180,15 +192,13 @@ const tableData = ref([
     merchantRate: 5.30,
     merchantFee: 15.90,
     remark: '-',
-    auditId: 'AUDIT120250328vlqUNlf',
-    systemOrderId: 'SYS20250328001',
+    auditId: 'MJK202503281223510001',
+    systemOrderId: 'P202503281223510001',
     merchantOrderId: 'M20250328001',
     createTime: '2025/03/28 12:23:51'
   },
   {
-    flowId: '2872140',
-    merchantName: '商户A',
-    type: '支付订单成功',
+    type: '交易撤销',
     beforeAmount: 4519.90,
     changeAmount: 481.00,
     afterAmount: 5000.90,
@@ -196,15 +206,13 @@ const tableData = ref([
     merchantRate: 3.80,
     merchantFee: 19.00,
     remark: '-',
-    auditId: 'AUDIT120250328PdwZM',
-    systemOrderId: 'SYS20250328002',
+    auditId: 'MJK202503281127260002',
+    systemOrderId: 'P202503281127260002',
     merchantOrderId: 'M20250328002',
     createTime: '2025/03/28 11:27:26'
   },
   {
-    flowId: '2870020',
-    merchantName: '商户B',
-    type: '支付订单成功',
+    type: '修改金额',
     beforeAmount: 4235.80,
     changeAmount: 284.10,
     afterAmount: 4519.90,
@@ -212,10 +220,38 @@ const tableData = ref([
     merchantRate: 5.30,
     merchantFee: 15.90,
     remark: '-',
-    auditId: 'AUDIT120250328zhsdbh',
-    systemOrderId: 'SYS20250328003',
+    auditId: 'MJK202503280950500003',
+    systemOrderId: 'P202503280950500003',
     merchantOrderId: 'M20250328003',
     createTime: '2025/03/28 09:50:50'
+  },
+  {
+    type: '余额增加',
+    beforeAmount: 3235.80,
+    changeAmount: 1000.00,
+    afterAmount: 4235.80,
+    transactionAmount: 1000.00,
+    merchantRate: 0,
+    merchantFee: 0,
+    remark: '人工进行余额操作时输入的备注',
+    auditId: 'MJK202503280930120004',
+    systemOrderId: '',
+    merchantOrderId: '',
+    createTime: '2025/03/28 09:30:12'
+  },
+  {
+    type: '余额扣减',
+    beforeAmount: 5235.80,
+    changeAmount: -2000.00,
+    afterAmount: 3235.80,
+    transactionAmount: 2000.00,
+    merchantRate: 0,
+    merchantFee: 0,
+    remark: '人工进行余额操作时输入的备注',
+    auditId: 'MJK202503280925480005',
+    systemOrderId: '',
+    merchantOrderId: '',
+    createTime: '2025/03/28 09:25:48'
   }
 ])
 
@@ -242,7 +278,11 @@ const handleSearch = () => {
 // 重置
 const handleReset = () => {
   Object.keys(searchForm).forEach(key => {
-    searchForm[key] = ''
+    if (Array.isArray(searchForm[key])) {
+      searchForm[key] = []
+    } else {
+      searchForm[key] = ''
+    }
   })
   handleSearch()
 }

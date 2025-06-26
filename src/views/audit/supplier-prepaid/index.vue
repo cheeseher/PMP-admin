@@ -4,8 +4,8 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="交易单号：">
-            <el-input v-model="searchForm.transactionNo" placeholder="请输入交易单号" style="width: 220px" clearable />
+          <el-form-item label="流水单号：">
+            <el-input v-model="searchForm.transactionNo" placeholder="请输入流水单号" style="width: 220px" clearable />
           </el-form-item>
           
           <el-form-item label="交易类型：">
@@ -19,10 +19,10 @@
             </el-select>
           </el-form-item>
           
-          <el-form-item label="渠道名称：">
+          <el-form-item label="供应商名称：">
             <el-select 
               v-model="searchForm.upstreamNames" 
-              placeholder="请选择渠道名称" 
+              placeholder="请选择供应商名称" 
               style="width: 220px" 
               multiple 
               filterable 
@@ -80,8 +80,8 @@
         style="width: 100%"
       >
         <el-table-column type="selection" width="55" fixed="left" />
-        <el-table-column prop="upstream" label="渠道名称" min-width="100" />
-        <el-table-column prop="transactionNo" label="交易单号" min-width="180" />
+        <el-table-column prop="upstream" label="供应商名称" min-width="100" />
+        <el-table-column prop="transactionNo" label="流水单号" min-width="180" />
         <el-table-column label="交易前" min-width="180">
           <template #default="scope">
             <div>余额: {{ formatAmount(scope.row.beforeTotal) }}</div>
@@ -93,11 +93,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="transactionType" label="交易类型" min-width="100" />
-        <el-table-column prop="fee" label="手续费" min-width="100">
-          <template #default="scope">
-            {{ formatAmount(scope.row.fee) }}
-          </template>
-        </el-table-column>
         <el-table-column label="交易后" min-width="180">
           <template #default="scope">
             <div>余额: {{ formatAmount(scope.row.afterTotal) }}</div>
@@ -141,7 +136,7 @@ const transactionTypeOptions = [
   { label: '余额扣减', value: 'reduce' }
 ]
 
-// 渠道选项
+// 供应商选项
 const upstreamOptions = [
   { label: '新闪电', value: 'xsd' },
   { label: '闪付通', value: 'sft' },
@@ -184,20 +179,36 @@ const dateShortcuts = [
 const loading = ref(false)
 const tableData = ref([
   {
-    upstream: '新闪电',
-    transactionNo: 'CJK202502281423597196340106',
-    beforeTotal: 656496.88,
-    beforeAvailable: 656496.88,
+    upstream: '闪付通',
+    transactionNo: 'CJK202502281423597196340107',
+    beforeTotal: 5000.00,
+    beforeAvailable: 5000.00,
     beforeFrozen: 0.00,
-    transactionAmount: 100.00,
+    transactionAmount: 1000.00,
     transactionType: '余额增加',
     fee: 0.00,
     freezeAmount: 0.00,
-    afterTotal: 656596.88,
-    afterAvailable: 656596.88,
+    afterTotal: 6000.00,
+    afterAvailable: 6000.00,
     afterFrozen: 0.00,
-    remark: '测试滴滴滴',
-    createTime: '2025-02-28 14:23:59'
+    remark: '人工进行余额操作时输入的备注',
+    createTime: '2025-02-28 12:34:56'
+  },
+  {
+    upstream: '万通支付',
+    transactionNo: 'CJK202502281423597196340108',
+    beforeTotal: 8500.00,
+    beforeAvailable: 8500.00,
+    beforeFrozen: 0.00,
+    transactionAmount: 2500.00,
+    transactionType: '余额扣减',
+    fee: 0.00,
+    freezeAmount: 0.00,
+    afterTotal: 6000.00,
+    afterAvailable: 6000.00,
+    afterFrozen: 0.00,
+    remark: '人工进行余额操作时输入的备注',
+    createTime: '2025-02-27 09:18:12'
   }
 ])
 

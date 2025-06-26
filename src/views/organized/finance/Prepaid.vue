@@ -13,27 +13,18 @@
             />
           </el-form-item>
           
-          <el-form-item label="时间：">
-            <div class="time-filter-container">
-              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
-                <el-option label="自定义时间" value="custom" />
-                <el-option label="今日" value="today" />
-                <el-option label="昨日" value="yesterday" />
-                <el-option label="最近7天" value="last7days" />
-                <el-option label="本月" value="month" />
-              </el-select>
-              <el-date-picker
-                v-if="searchForm.timeType === 'custom'"
-                v-model="searchForm.timeRange"
-                type="daterange"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                style="width: 240px; margin-left: 8px;"
-              />
-            </div>
+          <el-form-item label="时间筛选：">
+            <el-date-picker
+              v-model="searchForm.dateRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              :shortcuts="dateShortcuts"
+              style="width: 320px"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+            />
           </el-form-item>
           
           <div class="filter-buttons">
@@ -48,7 +39,7 @@
     <el-card shadow="never" class="table-card">
       <div class="table-toolbar">
         <div class="left">
-          <span class="date-display">查询日期: {{ displayDateRange }}</span>
+          <!-- 移除日期显示 -->
         </div>
         <div class="right">
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
@@ -65,8 +56,7 @@
         v-show="tableData.length > 0"
       >
         <el-table-column type="selection" width="55" fixed="left" />
-        <el-table-column prop="merchantId" label="商户ID" min-width="100" />
-        <el-table-column prop="merchantName" label="商户名称" min-width="150" />
+        <el-table-column prop="transactionNo" label="平台单号" min-width="180" />
         <el-table-column prop="prePaidAmount" label="变更前预付" min-width="120" align="right">
           <template #default="scope">
             <span>¥{{ formatAmount(scope.row.prePaidAmount) }}</span>
@@ -102,53 +92,48 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
-// 根据时间类型获取日期范围
-const getDateRangeByType = (type) => {
-  const today = new Date()
-  const year = today.getFullYear()
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const day = String(today.getDate()).padStart(2, '0')
-  const formattedToday = `${year}-${month}-${day}`
-  
-  switch (type) {
-    case 'today':
-      return [formattedToday, formattedToday]
-    case 'yesterday': {
-      const yesterday = new Date(today)
-      yesterday.setDate(today.getDate() - 1)
-      const yYear = yesterday.getFullYear()
-      const yMonth = String(yesterday.getMonth() + 1).padStart(2, '0')
-      const yDay = String(yesterday.getDate()).padStart(2, '0')
-      const formattedYesterday = `${yYear}-${yMonth}-${yDay}`
-      return [formattedYesterday, formattedYesterday]
+// 日期快捷选项
+const dateShortcuts = [
+  {
+    text: '今日',
+    value: () => {
+      const today = new Date()
+      return [today, today]
     }
-    case 'last7days': {
-      const lastWeek = new Date(today)
-      lastWeek.setDate(today.getDate() - 6)
-      const lYear = lastWeek.getFullYear()
-      const lMonth = String(lastWeek.getMonth() + 1).padStart(2, '0')
-      const lDay = String(lastWeek.getDate()).padStart(2, '0')
-      const formattedLastWeek = `${lYear}-${lMonth}-${lDay}`
-      return [formattedLastWeek, formattedToday]
+  },
+  {
+    text: '昨日',
+    value: () => {
+      const today = new Date()
+      const yesterday = new Date()
+      yesterday.setTime(today.getTime() - 3600 * 1000 * 24)
+      return [yesterday, yesterday]
     }
-    case 'month': {
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1)
-      const fYear = firstDay.getFullYear()
-      const fMonth = String(firstDay.getMonth() + 1).padStart(2, '0')
-      const fDay = String(firstDay.getDate()).padStart(2, '0')
-      const formattedFirstDay = `${fYear}-${fMonth}-${fDay}`
-      return [formattedFirstDay, formattedToday]
+  },
+  {
+    text: '最近7天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 24 * 7)
+      return [start, end]
     }
-    default:
-      return ['', '']
+  },
+  {
+    text: '最近一个月',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 24 * 30)
+      return [start, end]
+    }
   }
-}
+]
 
 // 搜索表单
 const searchForm = ref({
   remark: '',
-  timeType: 'today',
-  timeRange: getDateRangeByType('today')
+  dateRange: []
 })
 
 // 加载状态
@@ -157,33 +142,30 @@ const loading = ref(false)
 // 表格数据
 const tableData = ref([
   {
-    merchantId: '1001',
-    merchantName: '商户A',
+    transactionNo: 'MJK202503251415301001',
     prePaidAmount: 5000.00,
     changeAmount: -1000.00,
     afterPaidAmount: 4000.00,
     type: '扣减',
-    remark: '系统预付金额调整',
+    remark: '人工进行余额操作时输入的备注',
     operateTime: '2025-03-25 14:15:30'
   },
   {
-    merchantId: '1002',
-    merchantName: '商户B',
+    transactionNo: 'MJK202503260922151002',
     prePaidAmount: 3000.00,
     changeAmount: 2000.00,
     afterPaidAmount: 5000.00,
     type: '增加',
-    remark: '商户预付金额充值',
+    remark: '人工进行余额操作时输入的备注',
     operateTime: '2025-03-26 09:22:15'
   },
   {
-    merchantId: '1003',
-    merchantName: '商户C',
+    transactionNo: 'MJK202503271635421003',
     prePaidAmount: 10000.00,
     changeAmount: -3000.00,
     afterPaidAmount: 7000.00,
     type: '扣减',
-    remark: '系统预付金额扣减',
+    remark: '人工进行余额操作时输入的备注',
     operateTime: '2025-03-27 16:35:42'
   }
 ])
@@ -195,16 +177,6 @@ const selectedRows = ref([])
 const handleSelectionChange = (rows) => {
   selectedRows.value = rows
 }
-
-// 显示的日期范围
-const displayDateRange = computed(() => {
-  if (searchForm.value.timeType === 'custom' && searchForm.value.timeRange && searchForm.value.timeRange.length === 2) {
-    return `${searchForm.value.timeRange[0]} ~ ${searchForm.value.timeRange[1]}`
-  } else {
-    const dateRange = getDateRangeByType(searchForm.value.timeType)
-    return `${dateRange[0]} ~ ${dateRange[1]}`
-  }
-})
 
 // 格式化金额
 const formatAmount = (amount) => {
@@ -242,8 +214,7 @@ const handleSearch = () => {
 const handleReset = () => {
   searchForm.value = {
     remark: '',
-    timeType: 'today',
-    timeRange: getDateRangeByType('today')
+    dateRange: []
   }
 }
 
@@ -257,17 +228,10 @@ const handleExport = () => {
   // 实际应用中这里应该调用API导出数据
 }
 
-// 监听时间类型变化，自动设置日期范围
-watch(() => searchForm.value.timeType, (newType) => {
-  if (newType !== 'custom') {
-    searchForm.value.timeRange = getDateRangeByType(newType)
-  }
-})
-
 // 页面加载时初始化
 onMounted(() => {
   // 默认今天
-  searchForm.value.timeRange = getDateRangeByType('today')
+  searchForm.value.dateRange = dateShortcuts[0].value()
 })
 </script>
 
@@ -306,13 +270,6 @@ onMounted(() => {
   padding-right: 6px;
 }
 
-/* 时间筛选容器样式 */
-.time-filter-container {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 .filter-buttons {
   display: flex;
   margin-left: auto;
@@ -320,11 +277,6 @@ onMounted(() => {
 
 .filter-buttons .el-button + .el-button {
   margin-left: 12px;
-}
-
-.date-display {
-  font-size: 14px;
-  color: #606266;
 }
 
 .table-card {

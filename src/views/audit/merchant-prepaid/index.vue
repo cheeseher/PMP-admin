@@ -5,8 +5,8 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="平台单号：">
-            <el-input v-model="searchForm.transactionNo" placeholder="平台单号" style="width: 220px" clearable />
+          <el-form-item label="流水单号：">
+            <el-input v-model="searchForm.transactionNo" placeholder="流水单号" style="width: 220px" clearable />
           </el-form-item>
           <el-form-item label="交易类型：">
             <el-select v-model="searchForm.transactionType" placeholder="请选择" style="width: 168px" clearable>
@@ -72,7 +72,7 @@
       >
         <el-table-column type="selection" width="50" fixed="left" />
         <el-table-column prop="upstreamName" label="商户账号" min-width="100" />
-        <el-table-column prop="transactionNo" label="平台单号" min-width="180" />
+        <el-table-column prop="transactionNo" label="流水单号" min-width="180" />
         <el-table-column label="交易前" min-width="180">
           <template #default="scope">
             <div>余额: {{ formatAmount(scope.row.beforeTotal) }}</div>
@@ -84,11 +84,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="transactionType" label="交易类型" min-width="100" />
-        <el-table-column prop="fee" label="手续费" min-width="100">
-          <template #default="scope">
-            {{ formatAmount(scope.row.fee) }}
-          </template>
-        </el-table-column>
         <el-table-column label="交易后" min-width="180">
           <template #default="scope">
             <div>余额: {{ formatAmount(scope.row.afterTotal) }}</div>
@@ -174,24 +169,8 @@ const searchForm = reactive({
 // 表格数据
 const tableData = ref([
   {
-    upstreamName: '商户账号A',
-    transactionNo: 'P202410311552458103063618',
-    beforeTotal: 658968.10,
-    beforeAvailable: 658968.10, 
-    beforeFrozen: 0.00,
-    transactionAmount: 0.00,
-    transactionType: '余额扣减',
-    fee: 30.00,
-    freezeAmount: 0.00,
-    afterTotal: 658938.10,
-    afterAvailable: 658938.10,
-    afterFrozen: 0.00,
-    remark: '',
-    createTime: '2025-03-29 14:54:37'
-  },
-  {
     upstreamName: '商户账号B',
-    transactionNo: 'P202410311552458103063618',
+    transactionNo: 'MJK202410311552458103063619',
     beforeTotal: 658468.10,
     beforeAvailable: 658468.10,
     beforeFrozen: 0.00,
@@ -202,40 +181,24 @@ const tableData = ref([
     afterTotal: 658968.10,
     afterAvailable: 658968.10,
     afterFrozen: 0.00,
-    remark: '',
+    remark: '人工进行余额操作时输入的备注',
     createTime: '2025-03-29 14:54:37'
   },
   {
-    upstreamName: '测试账号',
-    transactionNo: 'P202503251139114598627655',
-    beforeTotal: 101.00,
-    beforeAvailable: 101.00,
+    upstreamName: '商户账号A',
+    transactionNo: 'MJK202410311552458103063618',
+    beforeTotal: 658968.10,
+    beforeAvailable: 658968.10, 
     beforeFrozen: 0.00,
-    transactionAmount: 0.00,
+    transactionAmount: 30.00,
     transactionType: '余额扣减',
-    fee: 30.30,
-    freezeAmount: 0.00,
-    afterTotal: 70.70,
-    afterAvailable: 70.70,
-    afterFrozen: 0.00,
-    remark: '',
-    createTime: '2025-03-29 10:44:52'
-  },
-  {
-    upstreamName: '商户账号C',
-    transactionNo: 'P202503251139114598627655',
-    beforeTotal: 0.00,
-    beforeAvailable: 0.00,
-    beforeFrozen: 0.00,
-    transactionAmount: 101.00,
-    transactionType: '余额增加',
     fee: 0.00,
     freezeAmount: 0.00,
-    afterTotal: 101.00,
-    afterAvailable: 101.00,
+    afterTotal: 658938.10,
+    afterAvailable: 658938.10,
     afterFrozen: 0.00,
-    remark: '',
-    createTime: '2025-03-29 10:44:52'
+    remark: '人工进行余额操作时输入的备注',
+    createTime: '2025-03-28 15:21:33'
   }
 ])
 

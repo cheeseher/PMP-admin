@@ -7,23 +7,16 @@
         <div class="filter-row">
           <el-form-item label="时间筛选：">
             <div class="time-filter-container">
-              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
-                <el-option label="全部" value="all" />
-                <el-option label="自定义时间" value="custom" />
-                <el-option label="今日" value="today" />
-                <el-option label="昨日" value="yesterday" />
-                <el-option label="最近7天" value="last7days" />
-              </el-select>
               <el-date-picker
-                v-if="searchForm.timeType === 'custom'"
                 v-model="searchForm.dateRange"
-                type="daterange"
+                type="datetimerange"
                 range-separator="~"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                style="width: 240px; margin-left: 8px;"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
+                format="YYYY-MM-DD HH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                style="width: 420px"
+                :shortcuts="dateShortcuts"
               />
             </div>
           </el-form-item>
@@ -52,16 +45,6 @@
           <div class="stat-body">
             <el-icon :size="22"><Money /></el-icon>
             <span class="stat-value">{{ formatAmount(totalSuccessAmount) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总金额</div>
-          <div class="stat-body">
-            <el-icon :size="22"><Money /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalOrderAmount) }}</span>
           </div>
         </div>
       </el-card>
@@ -123,11 +106,6 @@
             <span class="amount-cell">{{ formatAmount(row.successAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="orderAmount" label="总金额" width="150" align="right">
-          <template #default="{ row }">
-            <span class="amount-cell">{{ formatAmount(row.orderAmount) }}</span>
-          </template>
-        </el-table-column>
         <el-table-column prop="fee" label="通道成本" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.fee) }}</span>
@@ -171,41 +149,100 @@ import dayjs from 'dayjs'
 // 获取清理工具
 const { safeTimeout } = useCleanup()
 
-// 根据时间类型获取日期范围
-const getDateRangeByType = (type) => {
-  const today = dayjs()
-  
-  switch (type) {
-    case 'all':
-      return []
-    case 'today':
-      return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
-    case 'yesterday':
-      const yesterday = today.subtract(1, 'day')
-      return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]
-    case 'last7days':
-      return [today.subtract(6, 'day').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
-    default:
-      return []
+// 日期快捷选项
+const dateShortcuts = [
+  {
+    text: '今日',
+    value: () => {
+      const today = new Date()
+      const start = new Date(today.setHours(0, 0, 0, 0))
+      const end = new Date()
+      return [start, end]
+    }
+  },
+  {
+    text: '昨日',
+    value: () => {
+      const today = new Date()
+      const yesterday = new Date()
+      yesterday.setDate(today.getDate() - 1)
+      const start = new Date(yesterday.setHours(0, 0, 0, 0))
+      const end = new Date(yesterday.setHours(23, 59, 59, 999))
+      return [start, end]
+    }
+  },
+  {
+    text: '最近7天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 6)
+      start.setHours(0, 0, 0, 0)
+      return [start, end]
+    }
+  },
+  {
+    text: '5分钟',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 60 * 1000 * 5)
+      return [start, end]
+    }
+  },
+  {
+    text: '10分钟',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 60 * 1000 * 10)
+      return [start, end]
+    }
+  },
+  {
+    text: '30分钟',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 60 * 1000 * 30)
+      return [start, end]
+    }
+  },
+  {
+    text: '1小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000)
+      return [start, end]
+    }
+  },
+  {
+    text: '3小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 3)
+      return [start, end]
+    }
+  },
+  {
+    text: '24小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 24)
+      return [start, end]
+    }
   }
-}
+]
 
 // 搜索表单数据
 const searchForm = reactive({
   channelId: '',
   channelName: '',
   payType: '',
-  timeType: 'all',
   dateRange: []
-})
-
-// 监听时间类型变化，自动设置日期范围
-watch(() => searchForm.timeType, (newType) => {
-  if (newType !== 'custom') {
-    searchForm.dateRange = getDateRangeByType(newType)
-  } else {
-    searchForm.dateRange = []
-  }
 })
 
 // 表格数据
@@ -218,7 +255,6 @@ const tableData = ref([
     successCount: 980,
     orderCount: 1000,
     successAmount: 49000.00,
-    orderAmount: 50000.00,
     successRate: 0.98,
     fee: 490.00
   },
@@ -230,7 +266,6 @@ const tableData = ref([
     successCount: 825,
     orderCount: 850,
     successAmount: 41250.00,
-    orderAmount: 42500.00,
     successRate: 0.97,
     fee: 412.50
   },
@@ -242,7 +277,6 @@ const tableData = ref([
     successCount: 485,
     orderCount: 500,
     successAmount: 72750.00,
-    orderAmount: 75000.00,
     successRate: 0.97,
     fee: 727.50
   },
@@ -254,7 +288,6 @@ const tableData = ref([
     successCount: 180,
     orderCount: 200,
     successAmount: 27000.00,
-    orderAmount: 30000.00,
     successRate: 0.90,
     fee: 270.00
   }
@@ -263,10 +296,6 @@ const tableData = ref([
 // 统计数据计算
 const totalSuccessAmount = computed(() => {
   return tableData.value.reduce((sum, item) => sum + item.successAmount, 0)
-})
-
-const totalOrderAmount = computed(() => {
-  return tableData.value.reduce((sum, item) => sum + item.orderAmount, 0)
 })
 
 const totalFee = computed(() => {
@@ -327,7 +356,6 @@ const handleReset = () => {
   searchForm.channelId = ''
   searchForm.channelName = ''
   searchForm.payType = ''
-  searchForm.timeType = 'all'
   searchForm.dateRange = []
   handleSearch()
 }
@@ -417,7 +445,7 @@ const formatNumber = (num) => {
 /* 统计卡片样式 */
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 16px;
 }

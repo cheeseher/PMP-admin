@@ -7,23 +7,16 @@
         <div class="filter-row">
           <el-form-item label="时间筛选：">
             <div class="time-filter-container">
-              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
-                <el-option label="全部" value="all" />
-                <el-option label="自定义时间" value="custom" />
-                <el-option label="今日" value="today" />
-                <el-option label="昨日" value="yesterday" />
-                <el-option label="最近7天" value="last7days" />
-              </el-select>
               <el-date-picker
-                v-if="searchForm.timeType === 'custom'"
                 v-model="searchForm.dateRange"
-                type="daterange"
+                type="datetimerange"
                 range-separator="~"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                style="width: 240px; margin-left: 8px;"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
+                format="YYYY-MM-DD HH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                style="width: 420px"
+                :shortcuts="dateShortcuts"
               />
             </div>
           </el-form-item>
@@ -170,62 +163,118 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { Search, Refresh, Download, Money, Discount, Wallet, Document } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 
-// 根据时间类型获取日期范围
-const getDateRangeByType = (type) => {
-  const today = dayjs()
-  
-  switch (type) {
-    case 'all':
-      return []
-    case 'today':
-      return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
-    case 'yesterday':
-      const yesterday = today.subtract(1, 'day')
-      return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]
-    case 'last7days':
-      return [today.subtract(6, 'day').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
-    default:
-      return []
+// 日期快捷选项
+const dateShortcuts = [
+  {
+    text: '今日',
+    value: () => {
+      const today = new Date()
+      const start = new Date(today.setHours(0, 0, 0, 0))
+      const end = new Date()
+      return [start, end]
+    }
+  },
+  {
+    text: '昨日',
+    value: () => {
+      const today = new Date()
+      const yesterday = new Date()
+      yesterday.setDate(today.getDate() - 1)
+      const start = new Date(yesterday.setHours(0, 0, 0, 0))
+      const end = new Date(yesterday.setHours(23, 59, 59, 999))
+      return [start, end]
+    }
+  },
+  {
+    text: '最近7天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 6)
+      start.setHours(0, 0, 0, 0)
+      return [start, end]
+    }
+  },
+  {
+    text: '5分钟',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 60 * 1000 * 5)
+      return [start, end]
+    }
+  },
+  {
+    text: '10分钟',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 60 * 1000 * 10)
+      return [start, end]
+    }
+  },
+  {
+    text: '30分钟',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 60 * 1000 * 30)
+      return [start, end]
+    }
+  },
+  {
+    text: '1小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000)
+      return [start, end]
+    }
+  },
+  {
+    text: '3小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 3)
+      return [start, end]
+    }
+  },
+  {
+    text: '24小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 24)
+      return [start, end]
+    }
   }
-}
+]
 
 // 商户选项数据
 const merchantOptions = ref([
   { value: '1', label: '商户A' },
   { value: '2', label: '商户B' },
-  { value: '3', label: '商户C' },
-  { value: '4', label: '商户D' },
-  { value: '5', label: '商户E' }
+  { value: '3', label: '商户C' }
 ])
 
 // 搜索表单数据
 const searchForm = reactive({
   upstreamId: '',
   merchantIds: [],
-  timeType: 'all',
   dateRange: []
-})
-
-// 监听时间类型变化，自动设置日期范围
-watch(() => searchForm.timeType, (newType) => {
-  if (newType !== 'custom') {
-    searchForm.dateRange = getDateRangeByType(newType)
-  } else {
-    searchForm.dateRange = []
-  }
 })
 
 // 表格数据
 const tableData = ref([
   {
-    date: '2024-03-14',
     upstreamId: '1',
-    channelName: '上游通道A',
+    channelName: '支付宝通道',
     successCount: 980,
     orderCount: 1000,
     successAmount: 49000.00,
@@ -234,9 +283,8 @@ const tableData = ref([
     netAmount: 48510.00
   },
   {
-    date: '2024-03-14',
     upstreamId: '2',
-    channelName: '上游通道B',
+    channelName: '微信通道',
     successCount: 825,
     orderCount: 850,
     successAmount: 41250.00,
@@ -245,26 +293,14 @@ const tableData = ref([
     netAmount: 40837.50
   },
   {
-    date: '2024-03-14',
     upstreamId: '3',
-    channelName: '上游通道C',
+    channelName: '银联通道',
     successCount: 485,
     orderCount: 500,
     successAmount: 72750.00,
     successRate: 0.97,
     fee: 727.50,
     netAmount: 72022.50
-  },
-  {
-    date: '2024-03-14',
-    upstreamId: '4',
-    channelName: '上游通道D',
-    successCount: 180,
-    orderCount: 200,
-    successAmount: 27000.00,
-    successRate: 0.90,
-    fee: 270.00,
-    netAmount: 26730.00
   }
 ])
 
@@ -295,35 +331,26 @@ const pageSize = ref(10)
 const total = ref(100)
 const loading = ref(false)
 
-// 初始化页面
-onMounted(() => {
-  fetchData()
-})
-
-// 获取数据
-const fetchData = () => {
-  loading.value = true
-  // 这里是模拟请求
-  setTimeout(() => {
-    loading.value = false
-  }, 500)
-}
-
 // 搜索方法
 const handleSearch = () => {
   currentPage.value = 1
   loading.value = true
+  // 模拟异步请求
   setTimeout(() => {
     loading.value = false
     ElMessage.success('查询成功')
-  }, 500)
+  }, 1000)
 }
+
+// 组件挂载时加载数据
+onMounted(() => {
+  handleSearch()
+})
 
 // 重置方法
 const handleReset = () => {
   searchForm.upstreamId = ''
   searchForm.merchantIds = []
-  searchForm.timeType = 'all'
   searchForm.dateRange = []
   handleSearch()
 }
@@ -331,12 +358,12 @@ const handleReset = () => {
 // 分页方法
 const handleSizeChange = (val) => {
   pageSize.value = val
-  fetchData()
+  handleSearch()
 }
 
 const handleCurrentChange = (val) => {
   currentPage.value = val
-  fetchData()
+  handleSearch()
 }
 
 // 导出数据

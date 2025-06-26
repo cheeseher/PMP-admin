@@ -7,23 +7,16 @@
         <div class="filter-row">
           <el-form-item label="时间筛选：">
             <div class="time-filter-container">
-              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
-                <el-option label="全部" value="all" />
-                <el-option label="自定义时间" value="custom" />
-                <el-option label="今日" value="today" />
-                <el-option label="昨日" value="yesterday" />
-                <el-option label="最近7天" value="last7days" />
-              </el-select>
               <el-date-picker
-                v-if="searchForm.timeType === 'custom'"
                 v-model="searchForm.dateRange"
-                type="daterange"
+                type="datetimerange"
                 range-separator="~"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                format="YYYY-MM-DD"
-                value-format="YYYY-MM-DD"
-                style="width: 240px; margin-left: 8px;"
+                start-placeholder="开始时间"
+                end-placeholder="结束时间"
+                format="YYYY-MM-DD HH:mm:ss"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                style="width: 420px"
+                :shortcuts="dateShortcuts"
               />
             </div>
           </el-form-item>
@@ -165,7 +158,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { Search, Refresh, Download, Money, Discount, Wallet, Document } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
@@ -177,54 +170,99 @@ const merchantOptions = [
   { label: '商户C', value: '3' }
 ]
 
-// 根据时间类型获取日期范围
-const getDateRangeByType = (type) => {
-  const today = dayjs()
-  
-  switch (type) {
-    case 'all':
-      return []
-    case 'today':
-      return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
-    case 'yesterday':
-      const yesterday = today.subtract(1, 'day')
-      return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]
-    case 'thisWeek':
-      return [today.startOf('week').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
-    case 'lastWeek':
-      const lastWeekStart = today.subtract(1, 'week').startOf('week')
-      const lastWeekEnd = lastWeekStart.endOf('week')
-      return [lastWeekStart.format('YYYY-MM-DD'), lastWeekEnd.format('YYYY-MM-DD')]
-    case 'thisMonth':
-      return [today.startOf('month').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
-    case 'lastMonth':
-      const lastMonthStart = today.subtract(1, 'month').startOf('month')
-      const lastMonthEnd = lastMonthStart.endOf('month')
-      return [lastMonthStart.format('YYYY-MM-DD'), lastMonthEnd.format('YYYY-MM-DD')]
-    case 'last7days':
-      return [today.subtract(6, 'day').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
-    case 'last30days':
-      return [today.subtract(29, 'day').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
-    default:
-      return []
+// 日期快捷选项
+const dateShortcuts = [
+  {
+    text: '今日',
+    value: () => {
+      const today = new Date()
+      const start = new Date(today.setHours(0, 0, 0, 0))
+      const end = new Date()
+      return [start, end]
+    }
+  },
+  {
+    text: '昨日',
+    value: () => {
+      const today = new Date()
+      const yesterday = new Date()
+      yesterday.setDate(today.getDate() - 1)
+      const start = new Date(yesterday.setHours(0, 0, 0, 0))
+      const end = new Date(yesterday.setHours(23, 59, 59, 999))
+      return [start, end]
+    }
+  },
+  {
+    text: '最近7天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setDate(start.getDate() - 6)
+      start.setHours(0, 0, 0, 0)
+      return [start, end]
+    }
+  },
+  {
+    text: '5分钟',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 60 * 1000 * 5)
+      return [start, end]
+    }
+  },
+  {
+    text: '10分钟',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 60 * 1000 * 10)
+      return [start, end]
+    }
+  },
+  {
+    text: '30分钟',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 60 * 1000 * 30)
+      return [start, end]
+    }
+  },
+  {
+    text: '1小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000)
+      return [start, end]
+    }
+  },
+  {
+    text: '3小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 3)
+      return [start, end]
+    }
+  },
+  {
+    text: '24小时',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(end.getTime() - 3600 * 1000 * 24)
+      return [start, end]
+    }
   }
-}
+]
 
 // 搜索表单数据
 const searchForm = reactive({
   productName: '',
   merchantIds: [],
-  timeType: 'all',  // 默认为全部
   dateRange: [] // 初始化为空
-})
-
-// 监听时间类型变化，自动设置日期范围
-watch(() => searchForm.timeType, (newType) => {
-  if (newType !== 'custom') {
-    searchForm.dateRange = getDateRangeByType(newType)
-  } else {
-    searchForm.dateRange = []
-  }
 })
 
 // 表格数据
@@ -270,34 +308,6 @@ const tableData = ref([
     feeAmount: 727.50,
     netAmount: 72022.50,
     remark: ''
-  },
-  {
-    date: '2024-03-14',
-    productId: '4',
-    productName: '支付产品D',
-    merchantName: '商户C',
-    orderCount: 200,
-    orderAmount: 30000.00,
-    successCount: 180,
-    successAmount: 27000.00,
-    successRate: 0.90,
-    feeAmount: 270.00,
-    netAmount: 26730.00,
-    remark: ''
-  },
-  {
-    date: '2024-03-13',
-    productId: '1',
-    productName: '支付产品A',
-    merchantName: '商户A',
-    orderCount: 950,
-    orderAmount: 47500.00,
-    successCount: 920,
-    successAmount: 46000.00,
-    successRate: 0.97,
-    feeAmount: 460.00,
-    netAmount: 45540.00,
-    remark: ''
   }
 ])
 
@@ -314,12 +324,12 @@ const totalNetAmount = computed(() => {
   return tableData.value.reduce((sum, item) => sum + item.netAmount, 0)
 })
 
-const totalSuccessCount = computed(() => {
-  return tableData.value.reduce((sum, item) => sum + item.successCount, 0)
-})
-
 const totalOrderCount = computed(() => {
   return tableData.value.reduce((sum, item) => sum + item.orderCount, 0)
+})
+
+const totalSuccessCount = computed(() => {
+  return tableData.value.reduce((sum, item) => sum + item.successCount, 0)
 })
 
 // 分页相关
@@ -328,46 +338,25 @@ const pageSize = ref(10)
 const total = ref(100)
 const loading = ref(false)
 
-// 初始化页面
-onMounted(() => {
-  fetchData()
-})
-
-// 获取数据
-const fetchData = () => {
-  loading.value = true
-  // 这里是模拟请求
-  setTimeout(() => {
-    loading.value = false
-    
-    // 在实际项目中，这里应该发送请求获取数据
-    console.log('查询参数：', {
-      ...searchForm,
-      pageSize: pageSize.value,
-      pageNum: currentPage.value,
-      startDate: searchForm.dateRange && searchForm.dateRange[0],
-      endDate: searchForm.dateRange && searchForm.dateRange[1]
-    })
-    
-  }, 500)
-}
-
 // 搜索方法
 const handleSearch = () => {
   currentPage.value = 1
   loading.value = true
-  // TODO: 调用接口获取数据
   setTimeout(() => {
     loading.value = false
     ElMessage.success('查询成功')
-  }, 500)
+  }, 1000)
 }
+
+// 组件挂载时加载数据
+onMounted(() => {
+  handleSearch()
+})
 
 // 重置方法
 const handleReset = () => {
   searchForm.productName = ''
   searchForm.merchantIds = []
-  searchForm.timeType = 'all'
   searchForm.dateRange = []
   handleSearch()
 }
@@ -375,12 +364,12 @@ const handleReset = () => {
 // 分页方法
 const handleSizeChange = (val) => {
   pageSize.value = val
-  fetchData()
+  handleSearch()
 }
 
 const handleCurrentChange = (val) => {
   currentPage.value = val
-  fetchData()
+  handleSearch()
 }
 
 // 导出数据
@@ -416,13 +405,6 @@ const formatAmount = (amount) => {
 // 格式化数字
 const formatNumber = (num) => {
   return num.toLocaleString('zh-CN')
-}
-
-// 获取成功率类型
-const getSuccessRateType = (rate) => {
-  if (rate >= 0.95) return 'success'
-  if (rate >= 0.9) return 'warning'
-  return 'danger'
 }
 </script>
 

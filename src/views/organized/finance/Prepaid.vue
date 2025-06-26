@@ -78,7 +78,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="remark" label="备注" min-width="200" />
-        <el-table-column prop="operateTime" label="操作时间" min-width="150" />
+        <el-table-column prop="operateTime" label="完成时间" min-width="150" />
       </el-table>
       
       <!-- 无数据显示 -->

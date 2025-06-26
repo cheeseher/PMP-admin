@@ -42,10 +42,6 @@
         style="width: 100%"
       >
         <el-table-column type="index" label="序号" width="80" />
-        <el-table-column prop="merchantId" label="商户ID" min-width="100" />
-        <el-table-column prop="merchantName" label="商户名称" min-width="120" />
-        <el-table-column prop="loginAccount" label="商户账号" min-width="120" />
-        <el-table-column prop="verifyCode" label="谷歌验证码" width="120" />
         <el-table-column prop="loginTime" label="登录时间" min-width="180" />
         <el-table-column prop="loginIp" label="登录IP" min-width="140" />
         <el-table-column prop="loginStatus" label="登录状态" width="100">
@@ -55,7 +51,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="loginInfo" label="登录信息" min-width="180" show-overflow-tooltip />
         <el-table-column prop="deviceInfo" label="设备信息" min-width="280" show-overflow-tooltip />
       </el-table>
       
@@ -110,6 +105,17 @@ const tableData = ref([
     loginStatus: 'success',
     loginInfo: '登录成功',
     deviceInfo: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+  },
+  {
+    merchantId: '1096',
+    merchantName: '新闪电',
+    loginAccount: 'xsdzf',
+    verifyCode: '-',
+    loginTime: '2025/03/26 15:48:21',
+    loginIp: '139.5.159.237',
+    loginStatus: 'failed',
+    loginInfo: '密码错误，登录失败',
+    deviceInfo: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
   }
 ])
 
@@ -117,7 +123,7 @@ const tableData = ref([
 const pagination = reactive({
   currentPage: 1,
   pageSize: 10,
-  total: 2
+  total: 3
 })
 
 // 查询操作

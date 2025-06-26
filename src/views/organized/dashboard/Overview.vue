@@ -1,60 +1,90 @@
 <!-- 商户后台/主页 - 商户数据概览 -->
 <template>
   <div class="dashboard-container">
-    <!-- 资金情况卡片 -->
-    <el-row :gutter="16">
-      <el-col :span="16">
-        <el-card shadow="never" class="dashboard-card">
+    <!-- 统计卡片 -->
+    <el-row :gutter="20" class="statistic-cards-row">
+      <!-- 商户余额 -->
+      <el-col :span="6">
+        <div class="statistic-card border-primary">
           <div class="card-header">
-            <span class="card-title">资金情况</span>
+            <div class="card-title">商户余额</div>
           </div>
-          
-          <!-- 资金数据展示 -->
-          <el-row :gutter="20" class="fund-row">
-            <el-col :span="8">
-              <div class="fund-item">
-                <div class="fund-label">人民币账户余额</div>
-                <div class="fund-amount positive">¥{{ accountData.balance.toFixed(2) }}</div>
-              </div>
-            </el-col>
-            <el-col :span="8">
-              <div class="fund-item">
-                <div class="fund-label">人民币预付</div>
-                <div class="fund-amount positive">¥{{ accountData.prepaid.toFixed(2) }}</div>
-              </div>
-            </el-col>
-            <el-col :span="8">
-              <div class="fund-item">
-                <div class="fund-label">人民币净预付</div>
-                <div class="fund-amount negative">¥{{ accountData.netPaid.toFixed(2) }}</div>
-              </div>
-            </el-col>
-          </el-row>
-          
-          <!-- 饼图展示 -->
-          <el-row>
-            <el-col :span="12">
-              <div ref="chartRef" class="chart-container"></div>
-            </el-col>
-            <el-col :span="12">
-              <div class="chart-legend">
-                <div class="legend-item">
-                  <span class="legend-dot account-balance"></span>
-                  <span class="legend-label">账户余额: ¥{{ accountData.balance.toFixed(2) }}</span>
-                </div>
-                <div class="legend-item">
-                  <span class="legend-dot prepaid"></span>
-                  <span class="legend-label">预付: ¥{{ accountData.prepaid.toFixed(2) }}</span>
-                </div>
-              </div>
-            </el-col>
-          </el-row>
-        </el-card>
+          <div class="card-content">
+            <div class="statistic-value">¥{{ balanceData.toFixed(2) }}</div>
+          </div>
+        </div>
       </el-col>
       
+      <!-- 收款总额 -->
+      <el-col :span="6">
+        <div class="statistic-card border-success">
+          <div class="card-header">
+            <div class="card-title">收款总额</div>
+            <div class="statistic-tabs">
+              <el-radio-group v-model="paymentTimeRange" size="small">
+                <el-radio-button label="today">今日</el-radio-button>
+                <el-radio-button label="yesterday">昨日</el-radio-button>
+                <el-radio-button label="total">总计</el-radio-button>
+              </el-radio-group>
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="statistic-value">¥{{ formatAmount(paymentAmount) }}</div>
+            <div class="card-info">成功率：<span class="text-success">{{ formatSuccessRate(paymentSuccessCount, paymentTotalCount) }}</span></div>
+          </div>
+        </div>
+      </el-col>
+      
+      <!-- 入账金额 -->
+      <el-col :span="6">
+        <div class="statistic-card border-warning">
+          <div class="card-header">
+            <div class="card-title">入账金额</div>
+            <div class="statistic-tabs">
+              <el-radio-group v-model="incomeTimeRange" size="small">
+                <el-radio-button label="today">今日</el-radio-button>
+                <el-radio-button label="yesterday">昨日</el-radio-button>
+                <el-radio-button label="total">总计</el-radio-button>
+              </el-radio-group>
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="statistic-value">¥{{ formatAmount(incomeAmount) }}</div>
+            <div class="card-info">
+              较{{ incomeTimeRange === 'today' ? '昨日' : incomeTimeRange === 'yesterday' ? '前日' : '上月' }}: 
+              <span :class="incomeChange >= 0 ? 'text-increase' : 'text-decrease'">
+                {{ incomeChange >= 0 ? '+' : '' }}{{ incomeChange }}%
+              </span>
+            </div>
+          </div>
+        </div>
+      </el-col>
+      
+      <!-- 手续费 -->
+      <el-col :span="6">
+        <div class="statistic-card border-info">
+          <div class="card-header">
+            <div class="card-title">手续费</div>
+            <div class="statistic-tabs">
+              <el-radio-group v-model="feeTimeRange" size="small">
+                <el-radio-button label="today">今日</el-radio-button>
+                <el-radio-button label="yesterday">昨日</el-radio-button>
+                <el-radio-button label="total">总计</el-radio-button>
+              </el-radio-group>
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="statistic-value">¥{{ formatAmount(feeAmount) }}</div>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
+
+    <!-- 账户信息和最近登录卡片 -->
+    <el-row :gutter="20">
       <!-- 账户信息卡片 -->
-      <el-col :span="8">
-        <el-card shadow="never" class="dashboard-card">
+      <el-col :span="12">
+        <el-card shadow="hover" class="dashboard-card">
           <div class="card-header">
             <span class="card-title">账户信息</span>
           </div>
@@ -79,10 +109,17 @@
               <div class="info-value">{{ merchantInfo.registerTime }}</div>
             </div>
           </div>
+        </el-card>
+      </el-col>
+      
+      <!-- 最近登录卡片 -->
+      <el-col :span="12">
+        <el-card shadow="hover" class="dashboard-card">
+          <div class="card-header">
+            <span class="card-title">最近登录</span>
+          </div>
           
-          <!-- 最近登录信息 -->
-          <div class="login-info-section">
-            <div class="section-title">最近登录</div>
+          <div class="login-info">
             <div class="info-item">
               <div class="info-label">登录账号:</div>
               <div class="info-value">{{ loginInfo.username }}</div>
@@ -103,17 +140,69 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import * as echarts from 'echarts'
+import { ref, onMounted, computed } from 'vue'
 import { CopyDocument } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
-// 数据
-const accountData = ref({
-  balance: 5280.50,
-  prepaid: 1420.75,
-  netPaid: -3860.25
+// 商户余额数据
+const balanceData = ref(10526.89)
+
+// 收款总额数据
+const paymentTimeRange = ref('today')
+const paymentData = {
+  today: { amount: 5689.50, successCount: 58, totalCount: 72 },
+  yesterday: { amount: 4892.30, successCount: 47, totalCount: 65 },
+  total: { amount: 235689.75, successCount: 2356, totalCount: 2850 }
+}
+const paymentAmount = computed(() => {
+  return paymentData[paymentTimeRange.value].amount
 })
+const paymentSuccessCount = computed(() => {
+  return paymentData[paymentTimeRange.value].successCount
+})
+const paymentTotalCount = computed(() => {
+  return paymentData[paymentTimeRange.value].totalCount
+})
+
+// 入账金额数据
+const incomeTimeRange = ref('today')
+const incomeData = {
+  today: { amount: 5420.75, change: 5.2 },
+  yesterday: { amount: 5152.80, change: -3.1 },
+  total: { amount: 225140.25, change: 12.5 }
+}
+const incomeAmount = computed(() => {
+  return incomeData[incomeTimeRange.value].amount
+})
+const incomeChange = computed(() => {
+  return incomeData[incomeTimeRange.value].change
+})
+
+// 手续费数据
+const feeTimeRange = ref('today')
+const feeData = {
+  today: { amount: 268.75, rate: 4.96 },
+  yesterday: { amount: 239.50, rate: 4.65 },
+  total: { amount: 10549.50, rate: 4.86 }
+}
+const feeAmount = computed(() => {
+  return feeData[feeTimeRange.value].amount
+})
+const averageFeeRate = computed(() => {
+  return feeData[feeTimeRange.value].rate
+})
+
+// 格式化金额
+const formatAmount = (amount) => {
+  return amount.toFixed(2)
+}
+
+// 格式化成功率
+const formatSuccessRate = (successCount, totalCount) => {
+  if (totalCount === 0) return '0%（0/0）'
+  const rate = Math.round((successCount / totalCount) * 100)
+  return `${rate}%（${successCount}/${totalCount}）`
+}
 
 // 商户信息
 const merchantInfo = ref({
@@ -130,10 +219,6 @@ const loginInfo = ref({
   location: '中国上海电信'
 })
 
-// 图表引用
-const chartRef = ref(null)
-let chart = null
-
 // 复制ID
 const copyMerchantId = () => {
   navigator.clipboard.writeText(merchantInfo.value.id).then(() => {
@@ -141,60 +226,9 @@ const copyMerchantId = () => {
   })
 }
 
-// 初始化图表
-const initChart = () => {
-  if (!chartRef.value) return
-  
-  chart = echarts.init(chartRef.value)
-  
-  // 数据准备
-  const data = [
-    { name: '账户余额', value: Math.abs(accountData.value.balance), itemStyle: { color: '#4B9DFF' } },
-    { name: '预付', value: Math.abs(accountData.value.prepaid), itemStyle: { color: '#36D1BC' } }
-  ]
-  
-  // 图表配置项
-  const option = {
-    series: [
-      {
-        type: 'pie',
-        radius: ['60%', '80%'],
-        avoidLabelOverlap: false,
-        silent: true,
-        label: {
-          show: false
-        },
-        emphasis: {
-          scale: false
-        },
-        data: data
-      }
-    ]
-  }
-  
-  chart.setOption(option)
-}
-
-// 监听窗口大小变化，调整图表大小
-const handleResize = () => {
-  if (chart) {
-    chart.resize()
-  }
-}
-
 onMounted(() => {
-  initChart()
-  window.addEventListener('resize', handleResize)
+  // 页面初始化
 })
-
-// 组件卸载时取消事件监听
-const onBeforeUnmount = () => {
-  window.removeEventListener('resize', handleResize)
-  if (chart) {
-    chart.dispose()
-    chart = null
-  }
-}
 </script>
 
 <style scoped>
@@ -202,107 +236,110 @@ const onBeforeUnmount = () => {
   padding: 20px;
 }
 
-.dashboard-card {
-  margin-bottom: 16px;
-  height: 100%;
+.statistic-cards-row {
+  margin-bottom: 20px;
+}
+
+.statistic-card {
+  height: 140px;
+  background-color: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  position: relative;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.statistic-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px);
+}
+
+.border-primary {
+  border-left-color: #409EFF;
+}
+
+.border-success {
+  border-left-color: #67C23A;
+}
+
+.border-warning {
+  border-left-color: #E6A23C;
+}
+
+.border-info {
+  border-left-color: #909399;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-}
-
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.fund-row {
-  margin-bottom: 20px;
-}
-
-.fund-item {
-  display: flex;
-  flex-direction: column;
-  padding: 0 8px;
-}
-
-.fund-label {
-  font-size: 14px;
-  color: #606266;
-  margin-bottom: 8px;
-}
-
-.fund-amount {
-  font-size: 24px;
-  font-weight: 600;
-}
-
-.positive {
-  color: #FF9900;
-}
-
-.negative {
-  color: #F56C6C;
-}
-
-.chart-container {
-  height: 200px;
-  width: 100%;
-}
-
-.chart-legend {
-  height: 200px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
   margin-bottom: 12px;
 }
 
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 8px;
-}
-
-.account-balance {
-  background-color: #4B9DFF;
-}
-
-.prepaid {
-  background-color: #36D1BC;
-}
-
-.legend-label {
-  font-size: 14px;
+.card-title {
+  font-size: 15px;
+  font-weight: 500;
   color: #606266;
 }
 
-.account-info {
-  margin-bottom: 24px;
+.card-content {
+  height: calc(100% - 32px);
+  display: flex;
+  flex-direction: column;
 }
 
-.login-info-section {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #EBEEF5;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 500;
+.statistic-value {
+  font-size: 24px;
+  font-weight: 600;
   color: #303133;
+  margin: 8px 0;
+  flex-grow: 1;
+}
+
+.card-info {
+  font-size: 13px;
+  color: #909399;
+  margin-top: auto;
+}
+
+.text-increase {
+  color: #67C23A;
+  font-weight: 500;
+}
+
+.text-decrease {
+  color: #F56C6C;
+  font-weight: 500;
+}
+
+.text-success {
+  color: #409EFF;
+  font-weight: 500;
+}
+
+.statistic-tabs {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.statistic-tabs .el-radio-button__inner {
+  padding: 4px 8px;
+  font-size: 12px;
+  height: 24px;
+  line-height: 1;
+}
+
+.dashboard-card {
   margin-bottom: 16px;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.account-info, .login-info {
+  margin-bottom: 0;
 }
 
 .info-item {

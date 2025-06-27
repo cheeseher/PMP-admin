@@ -51,6 +51,7 @@
             </el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="loginInfo" label="登录信息" min-width="150" />
         <el-table-column prop="deviceInfo" label="设备信息" min-width="280" show-overflow-tooltip />
       </el-table>
       
@@ -92,7 +93,7 @@ const tableData = ref([
     loginTime: '2025/03/28 10:10:32',
     loginIp: '171.102.195.196',
     loginStatus: 'success',
-    loginInfo: '登录成功',
+    loginInfo: '',
     deviceInfo: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
   },
   {
@@ -103,7 +104,7 @@ const tableData = ref([
     loginTime: '2025/03/27 20:17:13',
     loginIp: '139.5.159.237',
     loginStatus: 'success',
-    loginInfo: '登录成功',
+    loginInfo: '',
     deviceInfo: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
   },
   {
@@ -114,8 +115,41 @@ const tableData = ref([
     loginTime: '2025/03/26 15:48:21',
     loginIp: '139.5.159.237',
     loginStatus: 'failed',
-    loginInfo: '密码错误，登录失败',
+    loginInfo: '密码不匹配',
     deviceInfo: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+  },
+  {
+    merchantId: '1097',
+    merchantName: '闪付通',
+    loginAccount: 'sft001',
+    verifyCode: '-',
+    loginTime: '2025/03/25 09:30:15',
+    loginIp: '122.114.56.78',
+    loginStatus: 'failed',
+    loginInfo: '账号被禁用',
+    deviceInfo: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1'
+  },
+  {
+    merchantId: '1098',
+    merchantName: '快捷支付',
+    loginAccount: 'kjzf',
+    verifyCode: '-',
+    loginTime: '2025/03/24 14:22:45',
+    loginIp: '58.246.120.33',
+    loginStatus: 'failed',
+    loginInfo: '不支持该IP',
+    deviceInfo: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+  },
+  {
+    merchantId: '1099',
+    merchantName: '易支付',
+    loginAccount: 'yzf888',
+    verifyCode: '123456',
+    loginTime: '2025/03/23 16:05:38',
+    loginIp: '183.14.132.99',
+    loginStatus: 'failed',
+    loginInfo: '验证码错误',
+    deviceInfo: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
   }
 ])
 
@@ -123,7 +157,7 @@ const tableData = ref([
 const pagination = reactive({
   currentPage: 1,
   pageSize: 10,
-  total: 3
+  total: 6
 })
 
 // 查询操作

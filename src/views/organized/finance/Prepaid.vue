@@ -56,7 +56,7 @@
         v-show="tableData.length > 0"
       >
         <el-table-column type="selection" width="55" fixed="left" />
-        <el-table-column prop="transactionNo" label="平台单号" min-width="180" />
+        <el-table-column prop="transactionNo" label="流水单号" min-width="180" />
         <el-table-column prop="prePaidAmount" label="变更前预付" min-width="120" align="right">
           <template #default="scope">
             <span>¥{{ formatAmount(scope.row.prePaidAmount) }}</span>

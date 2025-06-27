@@ -58,16 +58,6 @@
     <div class="stat-cards">
       <el-card shadow="hover" class="stat-card">
         <div class="compact-card-content">
-          <div class="stat-header">总订单金额</div>
-          <div class="stat-body">
-            <el-icon :size="22"><Money /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalSuccessAmount) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
           <div class="stat-header">总补单金额</div>
           <div class="stat-body">
             <el-icon :size="22"><Plus /></el-icon>
@@ -155,7 +145,7 @@
             <span class="amount-cell">{{ formatAmount(row.supplementAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="totalAmount" label="总订单金额" width="150" align="right">
+        <el-table-column prop="totalAmount" label="总出款金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.totalAmount) }}</span>
           </template>
@@ -251,7 +241,7 @@ const tableData = ref([
     date: '2024-03-14',
     successAmount: 50000.00,
     supplementAmount: 1000.00,
-    totalAmount: 51000.00,
+    totalAmount: 50000.00,
     fee: 255.00,
     afterTaxAmount: 50745.00,
     successCount: 980
@@ -263,7 +253,7 @@ const tableData = ref([
     date: '2024-03-14',
     successAmount: 48000.00,
     supplementAmount: 800.00,
-    totalAmount: 48800.00,
+    totalAmount: 48000.00,
     fee: 244.00,
     afterTaxAmount: 48556.00,
     successCount: 940
@@ -275,7 +265,7 @@ const tableData = ref([
     date: '2024-03-14',
     successAmount: 45000.00,
     supplementAmount: 500.00,
-    totalAmount: 45500.00,
+    totalAmount: 45000.00,
     fee: 227.50,
     afterTaxAmount: 45272.50,
     successCount: 880
@@ -433,7 +423,7 @@ const formatNumber = (num) => {
 /* 统计卡片样式 */
 .stat-cards {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   margin-bottom: 16px;
 }

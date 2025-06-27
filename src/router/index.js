@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import MerchantLayout from '@/layouts/MerchantLayout.vue'
 import MultiMerchantLayout from '@/layouts/MultiMerchantLayout.vue'
+import OperationLog from '@/views/bot/OperationLog.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -115,6 +116,52 @@ const router = createRouter({
               name: 'PaymentSetting',
               component: () => import('@/views/payment/Setting.vue'),
               meta: { title: '支付设置' }
+            }
+          ]
+        },
+        
+        // 机器人管理
+        {
+          path: '/bot',
+          name: 'Bot',
+          redirect: '/bot/management',
+          meta: { title: '机器人管理' },
+          children: [
+            {
+              path: 'management',
+              name: 'BotManagement',
+              component: () => import('@/views/bot/BotManagement.vue'),
+              meta: { title: '机器人列表' }
+            },
+            {
+              path: 'command',
+              name: 'CommandManagement',
+              component: () => import('@/views/bot/CommandManagement.vue'),
+              meta: { title: '指令管理' }
+            },
+            {
+              path: 'role',
+              name: 'BotRoleManagement',
+              component: () => import('@/views/bot/RoleManagement.vue'),
+              meta: { title: '机器人角色管理' }
+            },
+            {
+              path: 'group',
+              name: 'GroupManagement',
+              component: () => import('@/views/bot/GroupManagement.vue'),
+              meta: { title: '群组管理' }
+            },
+            {
+              path: 'merchant-binding',
+              name: 'MerchantBinding',
+              component: () => import('@/views/bot/MerchantBinding.vue'),
+              meta: { title: '商户绑定管理' }
+            },
+            {
+              path: 'operation-log',
+              name: 'BotOperationLog',
+              component: OperationLog,
+              meta: { title: '操作记录' }
             }
           ]
         },

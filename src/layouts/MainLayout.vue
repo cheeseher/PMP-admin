@@ -87,6 +87,20 @@
             <el-menu-item index="/payment/setting">支付设置</el-menu-item>
           </el-sub-menu>
 
+          <!-- 机器人管理 -->
+          <el-sub-menu index="/bot">
+            <template #title>
+              <el-icon><ChatLineRound /></el-icon>
+              <span>机器人管理</span>
+            </template>
+            <el-menu-item index="/bot/management">机器人列表</el-menu-item>
+            <el-menu-item index="/bot/command">指令管理</el-menu-item>
+            <el-menu-item index="/bot/role">机器人角色管理</el-menu-item>
+            <el-menu-item index="/bot/group">群组管理</el-menu-item>
+            <el-menu-item index="/bot/merchant-binding">商户绑定管理</el-menu-item>
+            <el-menu-item index="/bot/operation-log">操作记录</el-menu-item>
+          </el-sub-menu>
+
           <!-- 系统管理 -->
           <el-sub-menu index="/system">
             <template #title>
@@ -218,7 +232,8 @@ import {
   ShoppingCart,
   Setting,
   DataLine,
-  Histogram
+  Histogram,
+  ChatLineRound
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

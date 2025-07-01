@@ -1,6 +1,8 @@
 <!-- 机器人管理/机器人管理 - 管理系统机器人配置 -->
 <template>
   <div class="bot-management-container">
+
+
     <!-- 筛选表单 -->
     <el-card shadow="never" class="filter-container">
       <el-form :model="filterForm" inline class="filter-form">
@@ -13,18 +15,11 @@
               style="width: 220px" 
             />
           </el-form-item>
-          <el-form-item label="机器人角色：">
-            <el-select v-model="filterForm.role" placeholder="请选择角色" clearable style="width: 168px">
-              <el-option label="全部" value="" />
-              <el-option label="上游群角色" value="upstream" />
-              <el-option label="商户群角色" value="merchant" />
-            </el-select>
-          </el-form-item>
           <el-form-item label="状态：">
             <el-select v-model="filterForm.status" placeholder="请选择状态" clearable style="width: 168px">
               <el-option label="全部" value="" />
-              <el-option label="启用" value="enabled" />
-              <el-option label="停用" value="disabled" />
+              <el-option label="开启" value="enabled" />
+              <el-option label="关闭" value="disabled" />
             </el-select>
           </el-form-item>
         </div>
@@ -61,23 +56,11 @@
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="botName" label="机器人名称" min-width="180" />
         <el-table-column prop="botUsername" label="Bot-Username" min-width="180" />
-        <el-table-column prop="role" label="机器人角色" width="150" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.role === 'upstream' ? 'success' : 'primary'">
-              {{ row.role === 'upstream' ? '上游群角色' : '商户群角色' }}
-            </el-tag>
-          </template>
-        </el-table-column>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'danger'">
-              {{ row.status === 'active' ? '在线' : '离线' }}
+            <el-tag :type="row.status === 'enabled' ? 'success' : 'danger'">
+              {{ row.status === 'enabled' ? '开启' : '关闭' }}
             </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="欢迎语状态" width="120" align="center">
-          <template #default="{ row }">
-            <el-switch v-model="row.welcomeMessageEnabled" disabled />
           </template>
         </el-table-column>
         <el-table-column prop="creator" label="创建人" width="120" />
@@ -91,9 +74,8 @@
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item command="edit">编辑</el-dropdown-item>
-                  <el-dropdown-item command="test">测试连接</el-dropdown-item>
                   <el-dropdown-item :command="row.status === 'enabled' ? 'disable' : 'enable'">
-                    {{ row.status === 'enabled' ? '停用' : '启用' }}
+                    {{ row.status === 'enabled' ? '关闭' : '开启' }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -148,35 +130,11 @@
             :disabled="dialogType === 'edit'" 
           />
         </el-form-item>
-        <el-form-item label="机器人角色" prop="role">
-          <el-select v-model="botForm.role" placeholder="请选择机器人角色" style="width: 100%;">
-            <el-option label="上游群角色" value="upstream"></el-option>
-            <el-option label="商户群角色" value="merchant"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="欢迎语开关" prop="welcomeMessageEnabled">
-           <el-switch v-model="botForm.welcomeMessageEnabled" />
-        </el-form-item>
-        <el-form-item v-if="botForm.welcomeMessageEnabled" label="欢迎语内容" prop="welcomeMessage">
-          <el-input
-            v-model="botForm.welcomeMessage"
-            type="textarea"
-            :rows="4"
-            placeholder="请输入欢迎语内容"
-          />
-        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="botDialogVisible = false">取消</el-button>
           <el-button type="primary" @click="submitBotForm">确认</el-button>
-          <el-button 
-            v-if="dialogType === 'edit'" 
-            type="success" 
-            @click="setupWebhook"
-          >
-            {{ botForm.statusEnabled ? '更新 Webhook' : '启用 Webhook' }}
-          </el-button>
         </div>
       </template>
     </el-dialog>
@@ -189,12 +147,11 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, Plus, ArrowDown } from '@element-plus/icons-vue'
 
 // 指引说明展示状态
-const isInstructionVisible = ref(true)
+// 移除了说明卡片
 
 // 筛选表单
 const filterForm = reactive({
   botName: '',
-  role: '',
   status: ''
 })
 
@@ -202,25 +159,19 @@ const filterForm = reactive({
 const tableData = ref([
   {
     id: 1,
-    botName: '官方支付机器人',
+    botName: '机器人A',
     botUsername: '@sifang_pay_bot',
     token: '6895029194:AAE...',
-    role: 'upstream',
-    status: 'active',
-    welcomeMessageEnabled: true,
-    welcomeMessage: '欢迎使用官方支付机器人！',
+    status: 'enabled',
     creator: 'admin',
     createdAt: '2023-10-01 12:00:00'
   },
   {
     id: 2,
-    botName: '业务通知机器人',
+    botName: '机器人B',
     botUsername: '@sifang_notify_bot',
     token: '5983472156:BBE...',
-    role: 'merchant',
-    status: 'offline',
-    welcomeMessageEnabled: false,
-    welcomeMessage: '',
+    status: 'disabled',
     creator: 'admin',
     createdAt: '2023-09-15 10:30:00'
   }
@@ -241,9 +192,7 @@ const botForm = reactive({
   botName: '',
   botUsername: '',
   token: '',
-  role: '', // 'upstream' or 'merchant'
-  welcomeMessageEnabled: false,
-  welcomeMessage: ''
+  status: 'enabled' // 默认为开启状态
 })
 
 // 表单验证规则
@@ -258,18 +207,6 @@ const botRules = {
   botUsername: [
     { required: true, message: '请输入机器人用户名', trigger: 'blur' },
     { pattern: /^[A-Za-z0-9_]+bot$/, message: '用户名必须以 bot 结尾', trigger: 'blur' }
-  ],
-  role: [
-    { required: true, message: '请选择机器人角色', trigger: 'change' }
-  ],
-  welcomeMessage: [
-    { validator: (rule, value, callback) => {
-      if (botForm.welcomeMessageEnabled && !value) {
-        callback(new Error('开启欢迎语后，内容不能为空'))
-      } else {
-        callback()
-      }
-    }, trigger: 'blur' }
   ]
 }
 
@@ -285,7 +222,6 @@ const handleSearch = () => {
 // 重置筛选条件
 const resetFilter = () => {
   filterForm.botName = ''
-  filterForm.role = ''
   filterForm.status = ''
   handleSearch()
 }
@@ -307,9 +243,6 @@ const handleCommand = (command, row) => {
     case 'edit':
       openBotDialog('edit', row)
       break
-    case 'test':
-      testConnection(row)
-      break
     case 'enable':
     case 'disable':
       toggleBotStatus(row)
@@ -325,17 +258,13 @@ const openBotDialog = (type, row) => {
   nextTick(() => {
     botFormRef.value.resetFields()
     botForm.id = null
-    botForm.welcomeMessageEnabled = false
-    botForm.welcomeMessage = ''
     
     if (type === 'edit' && row) {
       botForm.id = row.id
       botForm.botName = row.botName
       botForm.botUsername = row.botUsername
       botForm.token = row.token
-      botForm.role = row.role
-      botForm.welcomeMessageEnabled = row.welcomeMessageEnabled
-      botForm.welcomeMessage = row.welcomeMessage
+      botForm.status = row.status
     }
   })
 }
@@ -374,27 +303,9 @@ const submitBotForm = () => {
   })
 }
 
-// 设置 Webhook
-const setupWebhook = () => {
-  loading.value = true
-  setTimeout(() => {
-    ElMessage.success(botForm.statusEnabled ? 'Webhook 更新成功' : 'Webhook 启用成功')
-    botForm.statusEnabled = true
-    loading.value = false
-  }, 1000)
-}
-
-// 测试连接
-const testConnection = (row) => {
-  ElMessage.info('正在测试连接...')
-  setTimeout(() => {
-    ElMessage.success('连接测试成功')
-  }, 1000)
-}
-
 // 切换机器人状态
 const toggleBotStatus = (row) => {
-  const action = row.status === 'enabled' ? '停用' : '启用'
+  const action = row.status === 'enabled' ? '关闭' : '开启'
   ElMessageBox.confirm(`确认${action}该机器人?`, '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -492,6 +403,21 @@ onMounted(() => {
 .step-content p {
   margin: 0;
   color: #606266;
+}
+
+.principle-list {
+  margin-top: 10px;
+  padding-left: 20px;
+  color: #606266;
+}
+
+.principle-list li {
+  margin-bottom: 5px;
+  line-height: 1.5;
+}
+
+.principle-list li strong {
+  color: #409EFF;
 }
 
 .table-toolbar {

@@ -95,9 +95,8 @@
             </template>
             <el-menu-item index="/bot/management">机器人列表</el-menu-item>
             <el-menu-item index="/bot/command">指令管理</el-menu-item>
-            <el-menu-item index="/bot/role">机器人角色管理</el-menu-item>
+            <el-menu-item index="/bot/role">角色权限管理</el-menu-item>
             <el-menu-item index="/bot/group">群组管理</el-menu-item>
-            <el-menu-item index="/bot/merchant-binding">商户绑定管理</el-menu-item>
             <el-menu-item index="/bot/operation-log">操作记录</el-menu-item>
           </el-sub-menu>
 

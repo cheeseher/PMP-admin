@@ -1,6 +1,8 @@
-<!-- 机器人管理/群组管理 - 管理机器人所在的所有群组 -->
+<!-- 机器人管理/群组管理 - 管理机器人所在的所有群组及其权限 -->
 <template>
   <div class="group-management-container">
+
+
     <!-- 筛选表单 -->
     <el-card shadow="never" class="filter-container">
       <el-form :model="filterForm" inline class="filter-form">
@@ -44,6 +46,9 @@
     <el-card shadow="never">
       <!-- 表格工具栏 -->
       <div class="table-toolbar">
+        <div class="left">
+          <el-button type="primary" @click="openDefaultRoleDialog">群组默认权限设置</el-button>
+        </div>
         <div class="right">
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="handleSearch" />
@@ -73,6 +78,13 @@
             </el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="roleId" label="群组角色" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.roleId ? 'success' : 'danger'" effect="plain">
+              {{ row.roleName || '未分配' }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column prop="memberCount" label="群组人数" width="100" align="center">
           <template #default="{ row }">
             <el-button type="primary" link @click="openMemberListDialog(row)">{{ row.memberCount }}</el-button>
@@ -86,11 +98,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="associatedBot" label="关联机器人" min-width="150" />
-        <el-table-column fixed="right" label="操作" width="120" align="center">
-          <template #default="{ row }">
-            <el-button type="primary" link @click="openBindSupplierDialog(row)">绑定供应商</el-button>
-          </template>
-        </el-table-column>
       </el-table>
 
       <!-- 分页器 -->
@@ -119,7 +126,25 @@
       </div>
       <el-table :data="memberListData" border stripe v-loading="memberListLoading">
         <el-table-column prop="userTgId" label="用户TGID" />
-        <el-table-column prop="userNickname" label="用户昵称" />
+        <el-table-column prop="userTgName" label="用户TG名称" />
+        <el-table-column prop="isMerchantBound" label="是否绑定商户" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.isMerchantBound ? 'success' : 'info'">
+              {{ row.isMerchantBound ? '已绑定' : '未绑定' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="merchantName" label="商户名称" width="150">
+          <template #default="{ row }">
+            {{ row.merchantName || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="role" label="成员权限" width="150" align="center">
+          <template #default="{ row }">
+            <el-tag type="info" effect="plain" v-if="row.role">{{ row.role }}</el-tag>
+            <el-tag type="danger" effect="plain" v-else>默认继承群组</el-tag>
+          </template>
+        </el-table-column>
       </el-table>
       <template #footer>
         <el-button @click="memberListDialogVisible = false">关闭</el-button>
@@ -186,13 +211,262 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 设置群组角色对话框 -->
+    <el-dialog
+      v-model="setRoleDialogVisible"
+      title="设置群组角色"
+      width="600px"
+      destroy-on-close
+    >
+      <div v-if="currentGroupForRole" style="margin-bottom: 20px;">
+        <p><strong>群组名称:</strong> {{ currentGroupForRole.groupName }}</p>
+        <p><strong>群组ID:</strong> {{ currentGroupForRole.groupId }}</p>
+        <p><strong>当前角色:</strong> {{ currentGroupForRole.roleName || '未分配' }}</p>
+      </div>
+      <el-alert
+        title="角色将决定该群组可以使用的指令范围，群组内所有成员权限不能超出群组角色的权限范围"
+        type="warning"
+        show-icon
+        :closable="false"
+        style="margin-bottom: 20px"
+      />
+      <el-form ref="setRoleFormRef" :model="setRoleForm" label-width="100px">
+        <el-form-item label="选择角色" prop="roleId">
+          <el-select
+            v-model="setRoleForm.roleId"
+            filterable
+            placeholder="请选择要分配的角色"
+            style="width: 100%;"
+          >
+            <el-option
+              v-for="role in roleOptions"
+              :key="role.id"
+              :label="role.roleName"
+              :value="role.id"
+            >
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <span>{{ role.roleName }}</span>
+                <span style="color: #999; font-size: 12px">可用指令: {{ role.commandCount || 0 }}个</span>
+              </div>
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="setRoleDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitRoleSetting">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 查看权限详情对话框 -->
+    <el-dialog
+      v-model="viewPermissionsDialogVisible"
+      title="群组权限详情"
+      width="700px"
+      destroy-on-close
+    >
+      <div v-if="currentGroupForPermissions" style="margin-bottom: 16px;">
+        <p><strong>群组名称:</strong> {{ currentGroupForPermissions.groupName }}</p>
+        <p><strong>群组角色:</strong> {{ currentGroupForPermissions.roleName || '未分配角色' }}</p>
+      </div>
+      
+      <template v-if="currentGroupForPermissions && currentGroupForPermissions.roleId">
+        <h4>可用指令列表：</h4>
+        <el-table :data="permissionCommandList" border stripe>
+          <el-table-column prop="id" label="指令ID" width="80" />
+          <el-table-column prop="keyword" label="指令关键词" width="150" />
+          <el-table-column prop="format" label="示例格式" min-width="200" />
+        </el-table>
+      </template>
+      <el-empty v-else description="该群组未分配角色，无可用指令" />
+      
+      <template #footer>
+        <el-button @click="viewPermissionsDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 成员权限管理对话框 -->
+    <el-dialog
+      v-model="memberPermissionsDialogVisible"
+      title="成员权限管理"
+      width="800px"
+      destroy-on-close
+    >
+      <div v-if="currentGroupForMemberPermissions" style="margin-bottom: 16px;">
+        <p><strong>群组:</strong> {{ currentGroupForMemberPermissions.groupName }}</p>
+        <p><strong>群组角色:</strong> {{ currentGroupForMemberPermissions.roleName || '未分配角色' }}</p>
+        <el-alert
+          title="成员的权限只能在群组角色权限范围内进行细化，无法超出群组角色的权限范围"
+          type="warning"
+          show-icon
+          :closable="false"
+          style="margin: 10px 0"
+        />
+      </div>
+
+      <el-table :data="memberPermissionsList" border stripe v-loading="memberPermissionsLoading">
+        <el-table-column prop="userTgId" label="用户ID" width="120" />
+        <el-table-column prop="userNickname" label="用户昵称" min-width="150" />
+        <el-table-column prop="customRole" label="自定义权限" width="150" align="center">
+          <template #default="{ row }">
+            <el-tag type="success" effect="plain" v-if="row.customRole">已设置</el-tag>
+            <el-tag type="info" effect="plain" v-else>继承群组</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="allowedCommands" label="允许的指令" min-width="180">
+          <template #default="{ row }">
+            <el-tag 
+              v-for="cmd in row.allowedCommands" 
+              :key="cmd.id" 
+              size="small" 
+              style="margin: 2px"
+            >
+              {{ cmd.keyword }}
+            </el-tag>
+            <span v-if="!row.allowedCommands || row.allowedCommands.length === 0">继承群组权限</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="120" align="center">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="configMemberPermission(row)">设置权限</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      
+      <template #footer>
+        <el-button @click="memberPermissionsDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 成员权限配置对话框 -->
+    <el-dialog
+      v-model="memberPermissionConfigDialogVisible"
+      title="设置成员权限"
+      width="600px"
+      destroy-on-close
+    >
+      <div v-if="currentMemberForPermission" style="margin-bottom: 16px;">
+        <p><strong>用户:</strong> {{ currentMemberForPermission.userNickname }} ({{ currentMemberForPermission.userTgId }})</p>
+        <p><strong>所属群组:</strong> {{ currentGroupForMemberPermissions?.groupName }}</p>
+        <p><strong>群组角色:</strong> {{ currentGroupForMemberPermissions?.roleName || '未分配角色' }}</p>
+      </div>
+
+      <el-form ref="memberPermissionFormRef" :model="memberPermissionForm" label-width="120px">
+        <el-form-item label="权限设置方式">
+          <el-radio-group v-model="memberPermissionForm.useCustomPermissions">
+            <el-radio :label="false">继承群组权限</el-radio>
+            <el-radio :label="true">自定义权限</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <template v-if="memberPermissionForm.useCustomPermissions">
+          <el-divider content-position="left">可选指令列表（群组权限范围内）</el-divider>
+          
+          <el-form-item label="选择允许的指令">
+            <el-checkbox-group v-model="memberPermissionForm.selectedCommandIds">
+              <el-checkbox 
+                v-for="cmd in availableCommandsForMember" 
+                :key="cmd.id" 
+                :label="cmd.id"
+              >
+                {{ cmd.keyword }} <span class="command-format">({{ cmd.format }})</span>
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+
+          <el-alert
+            v-if="!currentGroupForMemberPermissions?.roleId"
+            title="当前群组未分配角色，无可用指令可选"
+            type="error"
+            show-icon
+            :closable="false"
+            style="margin-top: 10px"
+          />
+        </template>
+      </el-form>
+      
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="memberPermissionConfigDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitMemberPermission">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+          <!-- 群组默认权限设置对话框 -->
+    <el-dialog
+      v-model="defaultRoleDialogVisible"
+      title="群组默认权限设置"
+      width="700px"
+      destroy-on-close
+    >
+      <el-alert
+        title="此处设置的角色将作为新建群组的默认权限，已有群组不受影响"
+        type="info"
+        show-icon
+        :closable="false"
+        style="margin-bottom: 20px"
+      />
+      <el-form ref="defaultRoleFormRef" :model="defaultRoleForm" label-width="120px">
+        <el-form-item label="上游群" prop="upstreamCascaderValue">
+          <el-cascader
+            v-model="defaultRoleForm.upstreamCascaderValue"
+            :options="cascaderCommandOptions"
+            placeholder="请选择上游群可用指令"
+            style="width: 100%;"
+            clearable
+            @change="handleUpstreamCascaderChange"
+            :props="{ 
+              multiple: true,
+              checkStrictly: true,
+              emitPath: true,
+              expandTrigger: 'hover',
+              value: 'value',
+              label: 'label'
+            }"
+          />
+          <div class="form-tip">分配给新建上游群的默认可用指令</div>
+        </el-form-item>
+        <el-form-item label="商户群" prop="merchantCascaderValue">
+          <el-cascader
+            v-model="defaultRoleForm.merchantCascaderValue"
+            :options="cascaderCommandOptions"
+            placeholder="请选择商户群可用指令"
+            style="width: 100%;"
+            clearable
+            @change="handleMerchantCascaderChange"
+            :props="{ 
+              multiple: true,
+              checkStrictly: true,
+              emitPath: true,
+              expandTrigger: 'hover',
+              value: 'value',
+              label: 'label'
+            }"
+          />
+          <div class="form-tip">分配给新建商户群的默认可用指令</div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="defaultRoleDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitDefaultRole">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Search, Refresh } from '@element-plus/icons-vue';
+import { Search, Refresh, ArrowDown, Setting, Lock } from '@element-plus/icons-vue';
+
+// 显示信息卡片
+// 移除了说明卡片
 
 // 筛选表单
 const filterForm = reactive({
@@ -207,12 +481,109 @@ const botOptions = ref([
   { id: 2, name: '业务通知机器人' },
 ]);
 
+// 模拟角色选项
+const roleOptions = ref([
+  { id: 1, roleName: '上游群角色', description: '用于上游供应商群组', commandCount: 2 },
+  { id: 2, roleName: '商户群角色', description: '用于普通商户群组', commandCount: 3 },
+  { id: 3, roleName: '游客角色', description: '未绑定商户的游客', commandCount: 1 },
+]);
+
+// 级联选择器的指令数据（按类型分类）
+const cascaderCommandOptions = ref([
+  {
+    value: 'default',
+    label: '预设指令',
+    children: [
+      { value: 1, label: '产品 (产品)' },
+      { value: 2, label: '余额 (余额)' },
+      { value: 3, label: '绑定 (绑定#商户号#商户密钥)' },
+      { value: 4, label: '订单 (订单#订单号)' },
+      { value: 5, label: '帮助 (帮助)' }
+    ]
+  },
+  {
+    value: 'other',
+    label: '自定义指令',
+    children: [
+      { value: 6, label: '查询 (查询#参数)' },
+      { value: 7, label: '支付 (支付#金额)' },
+      { value: 8, label: '统计 (统计)' }
+    ]
+  }
+]);
+
+// 模拟指令数据
+const commandsData = {
+  1: [
+    { id: 1, keyword: '产品', format: '产品' },
+    { id: 2, keyword: '余额', format: '余额' },
+  ],
+  2: [
+    { id: 3, keyword: '绑定', format: '绑定#商户号#商户密钥' },
+    { id: 4, keyword: '订单', format: '订单#订单号' },
+    { id: 5, keyword: '帮助', format: '帮助' },
+  ],
+  3: [
+    { id: 5, keyword: '帮助', format: '帮助' },
+  ],
+};
+
 // 表格数据
 const loading = ref(false);
-const tableData = ref([]);
+const tableData = ref([
+  {
+    groupId: '-100123456789',
+    groupName: '支付宝渠道供应商群',
+    groupLink: 'https://t.me/alipay_supplier',
+    groupType: 'upstream',
+    roleId: 1,
+    roleName: '上游群角色',
+    memberCount: 58,
+    associatedBot: '官方支付机器人',
+    boundSuppliers: [
+      { id: 'S001', name: '供应商A', template: '模板A' },
+      { id: 'S002', name: '供应商B', template: '模板B' },
+    ]
+  },
+  {
+    groupId: '-100223456789',
+    groupName: '微信支付商户群',
+    groupLink: 'https://t.me/wxpay_merchant',
+    groupType: 'merchant',
+    roleId: 2,
+    roleName: '商户群角色',
+    memberCount: 125,
+    associatedBot: '业务通知机器人',
+    boundSuppliers: []
+  },
+  {
+    groupId: '-100323456789',
+    groupName: '银联渠道供应商群',
+    groupLink: 'https://t.me/unionpay_supplier',
+    groupType: 'upstream',
+    roleId: 1,
+    roleName: '上游群角色',
+    memberCount: 42,
+    associatedBot: '官方支付机器人',
+    boundSuppliers: [
+      { id: 'S003', name: '供应商C', template: '模板C' },
+    ]
+  },
+  {
+    groupId: '-100423456789',
+    groupName: '新商户测试群',
+    groupLink: 'https://t.me/test_merchant',
+    groupType: 'merchant',
+    roleId: null,
+    roleName: null,
+    memberCount: 15,
+    associatedBot: '业务通知机器人',
+    boundSuppliers: []
+  }
+]);
 const currentPage = ref(1);
 const pageSize = ref(10);
-const total = ref(0);
+const total = ref(4);
 
 // 群组成员列表对话框
 const memberListDialogVisible = ref(false);
@@ -222,15 +593,44 @@ const memberListData = ref([]);
 
 // 已绑定供应商列表对话框
 const boundSuppliersDialogVisible = ref(false);
+const currentGroupForBinding = ref(null);
 
 // 绑定供应商对话框
 const bindSupplierDialogVisible = ref(false);
 const bindSupplierLoading = ref(false);
-const currentGroupForBinding = ref(null);
 const bindSupplierFormRef = ref(null);
 const bindSupplierForm = reactive({
   supplierIds: [],
 });
+
+// 设置群组角色对话框
+const setRoleDialogVisible = ref(false);
+const currentGroupForRole = ref(null);
+const setRoleFormRef = ref(null);
+const setRoleForm = reactive({
+  roleId: null,
+});
+
+// 查看权限详情对话框
+const viewPermissionsDialogVisible = ref(false);
+const currentGroupForPermissions = ref(null);
+const permissionCommandList = ref([]);
+
+// 成员权限管理对话框
+const memberPermissionsDialogVisible = ref(false);
+const memberPermissionsLoading = ref(false);
+const currentGroupForMemberPermissions = ref(null);
+const memberPermissionsList = ref([]);
+
+// 成员权限配置对话框
+const memberPermissionConfigDialogVisible = ref(false);
+const currentMemberForPermission = ref(null);
+const memberPermissionFormRef = ref(null);
+const memberPermissionForm = reactive({
+  useCustomPermissions: false,
+  selectedCommandIds: []
+});
+const availableCommandsForMember = ref([]);
 
 // 模拟供应商选项
 const supplierOptions = ref([
@@ -242,41 +642,139 @@ const supplierOptions = ref([
 
 // 模拟成员数据
 const mockMemberData = {
-    '-1001234567890': [
-        { userTgId: '123456789', userNickname: '张三' },
-        { userTgId: '987654321', userNickname: '李四' },
+    '-100123456789': [
+        { userTgId: '123456789', userTgName: '张三', isMerchantBound: true, merchantName: '供应商A', role: '管理员' },
+        { userTgId: '987654321', userTgName: '李四', isMerchantBound: false, role: null },
     ],
-    '-1009876543211': [
-        { userTgId: '112233445', userNickname: '王五' },
+    '-100223456789': [
+        { userTgId: '112233445', userTgName: '王五', isMerchantBound: false, role: null },
+        { userTgId: '556677889', userTgName: '赵六', isMerchantBound: true, merchantName: '供应商B', role: '商户代表' },
     ],
+    '-100323456789': [
+        { userTgId: '998877665', userTgName: '钱七', isMerchantBound: true, merchantName: '供应商C', role: '供应商管理员' },
+    ],
+    '-100423456789': [
+        { userTgId: '102938475', userTgName: '孙八', isMerchantBound: false, role: null },
+    ]
 };
 
-// 模拟数据加载
-const loadTableData = () => {
-  loading.value = true;
+// 模拟成员权限数据
+const mockMemberPermissionsData = {
+  '-100123456789': [
+    { 
+      userTgId: '123456789', 
+      userTgName: '张三', 
+      customRole: true,
+      allowedCommands: [
+        { id: 1, keyword: '产品' },
+        { id: 2, keyword: '余额' }
+      ]
+    },
+    { 
+      userTgId: '987654321', 
+      userTgName: '李四',
+      customRole: false,
+      allowedCommands: []
+    },
+  ],
+  '-100223456789': [
+    { 
+      userTgId: '112233445', 
+      userTgName: '王五',
+      customRole: false,
+      allowedCommands: []
+    },
+    { 
+      userTgId: '556677889', 
+      userTgName: '赵六',
+      customRole: true,
+      allowedCommands: [
+        { id: 3, keyword: '绑定' },
+        { id: 4, keyword: '订单' }
+      ]
+    },
+  ],
+};
+
+// 添加默认权限对话框相关变量
+const defaultRoleDialogVisible = ref(false);
+const defaultRoleForm = reactive({
+  upstreamCascaderValue: [],
+  merchantCascaderValue: []
+});
+const defaultRoleFormRef = ref(null);
+
+// 添加打开默认权限对话框的方法
+const openDefaultRoleDialog = () => {
+  // 重置表单
+  defaultRoleForm.upstreamCascaderValue = [];
+  defaultRoleForm.merchantCascaderValue = [];
+  defaultRoleDialogVisible.value = true;
+};
+
+// 处理级联选择器选择变化
+const handleUpstreamCascaderChange = (value) => {
+  console.log('上游群选择变化:', value);
+  // 多选模式下，value是一个数组，每个元素是一个路径数组
+  defaultRoleForm.upstreamCascaderValue = value;
+};
+
+const handleMerchantCascaderChange = (value) => {
+  console.log('商户群选择变化:', value);
+  // 多选模式下，value是一个数组，每个元素是一个路径数组
+  defaultRoleForm.merchantCascaderValue = value;
+};
+
+// 添加提交默认权限设置的方法
+const submitDefaultRole = () => {
+  if (!defaultRoleForm.upstreamCascaderValue.length && !defaultRoleForm.merchantCascaderValue.length) {
+    ElMessage.warning('请至少设置一种群组的默认指令');
+    return;
+  }
+  
+  // 提取所选指令ID
+  const getSelectedCommandIds = (cascaderValues) => {
+    const commandIds = [];
+    if (cascaderValues && cascaderValues.length) {
+      cascaderValues.forEach(path => {
+        // 如果选择的是具体指令而不是分类
+        if (path.length > 1 && typeof path[path.length - 1] === 'number') {
+          commandIds.push(path[path.length - 1]);
+        }
+      });
+    }
+    return commandIds;
+  };
+  
+  const upstreamCommandIds = getSelectedCommandIds(defaultRoleForm.upstreamCascaderValue);
+  const merchantCommandIds = getSelectedCommandIds(defaultRoleForm.merchantCascaderValue);
+  
+  // 模拟API调用
   setTimeout(() => {
-    const mockData = [
-      { id: 1, groupId: '-1001234567890', groupName: '官方支付一群', groupLink: 'https://t.me/group1', groupType: 'upstream', memberCount: 1024, associatedBot: '官方支付机器人', associatedRole: '上游群角色', boundSuppliers: [
-          { id: 'S001', name: '供应商A', template: '熊猫' },
-          { id: 'S002', name: '供应商B', template: '纵横' },
-      ]},
-      { id: 2, groupId: '-1009876543211', groupName: 'VIP商户对接群', groupLink: 'https://t.me/group2', groupType: 'merchant', memberCount: 50, associatedBot: '业务通知机器人', associatedRole: '商户群角色', boundSuppliers: [
-          { id: 'S003', name: '供应商C', template: '闪电' },
-      ]},
-      { id: 3, groupId: '-1001122334455', groupName: '内部测试反馈群', groupLink: 'https://t.me/group3', groupType: 'merchant', memberCount: 23, associatedBot: '官方支付机器人', associatedRole: '管理员角色', boundSuppliers: []},
-    ];
-    tableData.value = mockData;
-    total.value = mockData.length;
+    let successMessage = '';
+    
+    if (upstreamCommandIds.length && merchantCommandIds.length) {
+      successMessage = `已成功设置上游群默认指令(${upstreamCommandIds.length}个)和商户群默认指令(${merchantCommandIds.length}个)`;
+    } else if (upstreamCommandIds.length) {
+      successMessage = `已成功设置上游群默认指令(${upstreamCommandIds.length}个)`;
+    } else {
+      successMessage = `已成功设置商户群默认指令(${merchantCommandIds.length}个)`;
+    }
+    
+    ElMessage.success(successMessage);
+    defaultRoleDialogVisible.value = false;
+  }, 500);
+};
+
+// 操作函数
+const handleSearch = () => {
+  loading.value = true;
+  // 模拟API调用
+  setTimeout(() => {
     loading.value = false;
   }, 500);
 };
 
-// 搜索
-const handleSearch = () => {
-  loadTableData();
-};
-
-// 重置筛选
 const resetFilter = () => {
   filterForm.groupName = '';
   filterForm.groupType = '';
@@ -284,65 +782,164 @@ const resetFilter = () => {
   handleSearch();
 };
 
-// 分页
 const handleSizeChange = (val) => {
   pageSize.value = val;
-  loadTableData();
+  handleSearch();
 };
+
 const handleCurrentChange = (val) => {
   currentPage.value = val;
-  loadTableData();
+  handleSearch();
 };
 
-// 打开成员列表弹窗
 const openMemberListDialog = (row) => {
-    currentGroupForMembers.value = row;
-    memberListDialogVisible.value = true;
-    memberListLoading.value = true;
-    setTimeout(() => {
-        memberListData.value = mockMemberData[row.groupId] || [];
-        memberListLoading.value = false;
-    }, 500);
+  currentGroupForMembers.value = row;
+  memberListLoading.value = true;
+  // 模拟API调用
+  setTimeout(() => {
+    memberListData.value = mockMemberData[row.groupId] || [];
+    memberListLoading.value = false;
+  }, 500);
+  memberListDialogVisible.value = true;
 };
 
-// 打开已绑定供应商列表弹窗
 const openBoundSuppliersDialog = (row) => {
-    currentGroupForBinding.value = row;
-    boundSuppliersDialogVisible.value = true;
+  currentGroupForBinding.value = row;
+  boundSuppliersDialogVisible.value = true;
 };
 
-// 打开绑定供应商弹窗
 const openBindSupplierDialog = (row) => {
-    currentGroupForBinding.value = row;
-    // 从包含完整对象的数组中提取 ID
-    bindSupplierForm.supplierIds = row.boundSuppliers ? row.boundSuppliers.map(s => s.id) : [];
-    bindSupplierDialogVisible.value = true;
+  currentGroupForBinding.value = row;
+  bindSupplierForm.supplierIds = row.boundSuppliers ? row.boundSuppliers.map(s => s.id) : [];
+  bindSupplierDialogVisible.value = true;
 };
 
-// 提交供应商绑定
 const submitSupplierBinding = () => {
-    bindSupplierLoading.value = true;
-    setTimeout(() => {
-        const group = tableData.value.find(g => g.id === currentGroupForBinding.value.id);
-        if (group) {
-            // 根据选中的 ID 从总选项中找到完整的供应商对象
-            const templates = ['熊猫', '纵横', '闪电'];
-            let templateIndex = 0;
-            group.boundSuppliers = supplierOptions.value
-                .filter(option => bindSupplierForm.supplierIds.includes(option.id))
-                .map(option => ({
-                    ...option,
-                    template: templates[templateIndex++ % templates.length] // 绑定时随机分配一个模板
-                }));
-        }
-        ElMessage.success('供应商绑定成功');
-        bindSupplierDialogVisible.value = false;
-        bindSupplierLoading.value = false;
-    }, 500);
+  bindSupplierLoading.value = true;
+  // 模拟API调用
+  setTimeout(() => {
+    ElMessage.success('供应商绑定成功');
+    // 更新本地数据
+    if (currentGroupForBinding.value) {
+      const index = tableData.value.findIndex(item => item.groupId === currentGroupForBinding.value.groupId);
+      if (index !== -1) {
+        const selectedSuppliers = supplierOptions.value.filter(s => bindSupplierForm.supplierIds.includes(s.id));
+        tableData.value[index].boundSuppliers = selectedSuppliers.map(s => ({
+          id: s.id,
+          name: s.name,
+          template: `模板${s.id.slice(-1)}`
+        }));
+      }
+    }
+    bindSupplierLoading.value = false;
+    bindSupplierDialogVisible.value = false;
+  }, 1000);
 };
 
+const openSetRoleDialog = (row) => {
+  currentGroupForRole.value = row;
+  setRoleForm.roleId = row.roleId || null;
+  setRoleDialogVisible.value = true;
+};
+
+const submitRoleSetting = () => {
+  // 模拟API调用
+  setTimeout(() => {
+    // 更新本地数据
+    if (currentGroupForRole.value) {
+      const index = tableData.value.findIndex(item => item.groupId === currentGroupForRole.value.groupId);
+      if (index !== -1) {
+        const selectedRole = roleOptions.value.find(r => r.id === setRoleForm.roleId);
+        tableData.value[index].roleId = setRoleForm.roleId;
+        tableData.value[index].roleName = selectedRole ? selectedRole.roleName : null;
+      }
+    }
+    ElMessage.success('群组角色设置成功');
+    setRoleDialogVisible.value = false;
+  }, 1000);
+};
+
+const openPermissionsDialog = (row) => {
+  currentGroupForPermissions.value = row;
+  if (row.roleId) {
+    permissionCommandList.value = commandsData[row.roleId] || [];
+  } else {
+    permissionCommandList.value = [];
+  }
+  viewPermissionsDialogVisible.value = true;
+};
+
+const openMemberPermissionsDialog = (row) => {
+  currentGroupForMemberPermissions.value = row;
+  memberPermissionsLoading.value = true;
+  // 模拟API调用
+  setTimeout(() => {
+    memberPermissionsList.value = mockMemberPermissionsData[row.groupId] || [];
+    memberPermissionsLoading.value = false;
+  }, 500);
+  memberPermissionsDialogVisible.value = true;
+};
+
+const configMemberPermission = (member) => {
+  currentMemberForPermission.value = member;
+  
+  // 设置初始表单值
+  memberPermissionForm.useCustomPermissions = member.customRole || false;
+  memberPermissionForm.selectedCommandIds = member.allowedCommands?.map(cmd => cmd.id) || [];
+  
+  // 获取当前群组可用的指令列表（群组权限范围内）
+  if (currentGroupForMemberPermissions.value && currentGroupForMemberPermissions.value.roleId) {
+    availableCommandsForMember.value = commandsData[currentGroupForMemberPermissions.value.roleId] || [];
+  } else {
+    availableCommandsForMember.value = [];
+  }
+  
+  memberPermissionConfigDialogVisible.value = true;
+};
+
+const submitMemberPermission = () => {
+  // 模拟API调用
+  setTimeout(() => {
+    // 更新本地数据
+    if (currentMemberForPermission.value) {
+      const memberIndex = memberPermissionsList.value.findIndex(
+        m => m.userTgId === currentMemberForPermission.value.userTgId
+      );
+      
+      if (memberIndex !== -1) {
+        // 更新成员权限数据
+        memberPermissionsList.value[memberIndex].customRole = memberPermissionForm.useCustomPermissions;
+        
+        if (memberPermissionForm.useCustomPermissions) {
+          // 如果使用自定义权限，则根据选择的指令ID更新允许的指令
+          const selectedCommands = [];
+          
+          memberPermissionForm.selectedCommandIds.forEach(cmdId => {
+            const command = availableCommandsForMember.value.find(c => c.id === cmdId);
+            if (command) {
+              selectedCommands.push({
+                id: command.id,
+                keyword: command.keyword
+              });
+            }
+          });
+          
+          memberPermissionsList.value[memberIndex].allowedCommands = selectedCommands;
+        } else {
+          // 如果继承群组权限，则清空允许的指令
+          memberPermissionsList.value[memberIndex].allowedCommands = [];
+        }
+      }
+    }
+    
+    ElMessage.success('成员权限设置成功');
+    memberPermissionConfigDialogVisible.value = false;
+  }, 500);
+};
+
+// 页面加载时执行
 onMounted(() => {
-  loadTableData();
+  handleSearch();
 });
 </script>
 
@@ -350,31 +947,87 @@ onMounted(() => {
 .group-management-container {
   padding: 20px;
 }
+
 .filter-container {
   margin-bottom: 16px;
 }
+
 .filter-form {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
 }
+
 .filter-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  align-items: center;
 }
-.table-toolbar {
+
+.filter-row .el-form-item {
+  margin-bottom: 0;
+  margin-right: 20px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
+}
+
+.info-card {
   margin-bottom: 16px;
-  display: flex;
-  justify-content: flex-end;
+  background-color: #f8f8f8;
 }
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.info-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #409EFF;
+}
+
+.info-content {
+  line-height: 1.6;
+}
+
+.info-content p {
+  margin: 8px 0;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
 .pagination-container {
-  margin-top: 20px;
+  margin-top: 16px;
   display: flex;
   justify-content: flex-end;
 }
+
 .dialog-footer {
-    text-align: right;
+  text-align: right;
+}
+
+.command-format {
+  color: #909399;
+  font-size: 12px;
+}
+
+.form-tip {
+  color: #909399;
+  font-size: 12px;
+  margin-top: 5px;
 }
 </style> 

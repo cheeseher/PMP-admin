@@ -143,19 +143,13 @@ const router = createRouter({
               path: 'role',
               name: 'BotRoleManagement',
               component: () => import('@/views/bot/RoleManagement.vue'),
-              meta: { title: '机器人角色管理' }
+              meta: { title: '角色权限管理' }
             },
             {
               path: 'group',
               name: 'GroupManagement',
               component: () => import('@/views/bot/GroupManagement.vue'),
               meta: { title: '群组管理' }
-            },
-            {
-              path: 'merchant-binding',
-              name: 'MerchantBinding',
-              component: () => import('@/views/bot/MerchantBinding.vue'),
-              meta: { title: '商户绑定管理' }
             },
             {
               path: 'operation-log',

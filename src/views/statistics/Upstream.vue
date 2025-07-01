@@ -23,25 +23,6 @@
           <el-form-item label="供应商ID：">
             <el-input v-model="searchForm.upstreamId" placeholder="请输入供应商ID" style="width: 168px" clearable />
           </el-form-item>
-          <el-form-item label="商户：">
-            <el-select
-              v-model="searchForm.merchantIds"
-              multiple
-              collapse-tags
-              collapse-tags-tooltip
-              placeholder="请选择商户"
-              style="width: 220px"
-              clearable
-              filterable
-            >
-              <el-option
-                v-for="item in merchantOptions"
-                :key="item.value"
-                :label="item.label"
-                :value="item.value"
-              />
-            </el-select>
-          </el-form-item>
         </div>
         <div class="filter-buttons">
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -256,17 +237,11 @@ const dateShortcuts = [
   }
 ]
 
-// 商户选项数据
-const merchantOptions = ref([
-  { value: '1', label: '商户A' },
-  { value: '2', label: '商户B' },
-  { value: '3', label: '商户C' }
-])
+// 商户选项数据已删除
 
 // 搜索表单数据
 const searchForm = reactive({
   upstreamId: '',
-  merchantIds: [],
   dateRange: []
 })
 
@@ -350,7 +325,6 @@ onMounted(() => {
 // 重置方法
 const handleReset = () => {
   searchForm.upstreamId = ''
-  searchForm.merchantIds = []
   searchForm.dateRange = []
   handleSearch()
 }

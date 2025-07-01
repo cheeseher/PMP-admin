@@ -145,7 +145,7 @@
             <span class="amount-cell">{{ formatAmount(row.supplementAmount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="totalAmount" label="总出款金额" width="150" align="right">
+        <el-table-column prop="totalAmount" label="总收款金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.totalAmount) }}</span>
           </template>

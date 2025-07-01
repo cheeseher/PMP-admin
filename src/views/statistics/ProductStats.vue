@@ -23,20 +23,6 @@
           <el-form-item label="支付产品名称：">
             <el-input v-model="searchForm.productName" placeholder="请输入支付产品名称" style="width: 220px" clearable />
           </el-form-item>
-          <el-form-item label="商户：">
-            <el-select 
-              v-model="searchForm.merchantIds" 
-              placeholder="请选择商户" 
-              style="width: 168px;"
-              clearable 
-              multiple 
-              collapse-tags 
-              collapse-tags-tooltip
-              filterable
-            >
-              <el-option v-for="item in merchantOptions" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
         </div>
         <div class="filter-buttons">
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -163,12 +149,7 @@ import { Search, Refresh, Download, Money, Discount, Wallet, Document } from '@e
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 
-// 商户选项
-const merchantOptions = [
-  { label: '商户A', value: '1' },
-  { label: '商户B', value: '2' },
-  { label: '商户C', value: '3' }
-]
+// 商户相关选项已删除
 
 // 日期快捷选项
 const dateShortcuts = [
@@ -261,7 +242,6 @@ const dateShortcuts = [
 // 搜索表单数据
 const searchForm = reactive({
   productName: '',
-  merchantIds: [],
   dateRange: [] // 初始化为空
 })
 
@@ -356,7 +336,6 @@ onMounted(() => {
 // 重置方法
 const handleReset = () => {
   searchForm.productName = ''
-  searchForm.merchantIds = []
   searchForm.dateRange = []
   handleSearch()
 }

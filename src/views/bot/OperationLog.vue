@@ -75,9 +75,36 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="specificAction" label="用户发送指令" min-width="200" />
+        <el-table-column label="用户发送指令" min-width="200">
+          <template #default="{ row }">
+            <div class="command-content">
+              <div 
+                v-if="row.imageUrl" 
+                class="image-placeholder"
+                style="width: 60px; height: 60px; margin-right: 10px; cursor: pointer;"
+                @click="previewImage(row.imageUrl)"
+              >图片</div>
+              <span>{{ row.specificAction }}</span>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column prop="botInvolved" label="关联机器人" width="150" />
-        <el-table-column prop="groupInvolved" label="所属群组" width="150" />
+        <el-table-column label="所属群组" width="180">
+          <template #default="{ row }">
+            <div v-if="row.groupInvolved !== '多个群组'" class="group-info">
+              <div>{{ row.groupInvolved }}</div>
+              <div class="text-secondary">ID: {{ row.groupId }}</div>
+              <el-tag 
+                :type="row.groupType === 'upstream' ? 'success' : 'primary'"
+                size="small"
+                class="group-tag"
+              >
+                {{ row.groupType === 'upstream' ? '上游群' : '商户群' }}
+              </el-tag>
+            </div>
+            <span v-else>{{ row.groupInvolved }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="机器人反馈" min-width="200">
           <template #default="{ row }">
             <div class="feedback-cell">
@@ -118,12 +145,22 @@
     >
       <div class="feedback-detail">{{ currentFeedback }}</div>
     </el-dialog>
+    
+    <!-- 图片预览 -->
+    <div v-if="showImageViewer">
+      <el-image-viewer
+        :url-list="[previewImageUrl]"
+        :hide-on-click-modal="true"
+        @close="showImageViewer = false"
+      />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { Search, Refresh } from '@element-plus/icons-vue';
+import { ElImageViewer } from 'element-plus';
 
 // 筛选表单
 const filterForm = reactive({
@@ -160,6 +197,16 @@ const pagination = reactive({
 const feedbackDialogVisible = ref(false);
 const currentFeedback = ref('');
 
+// 图片预览相关
+const showImageViewer = ref(false);
+const previewImageUrl = ref('');
+
+// 预览图片
+const previewImage = (url) => {
+  previewImageUrl.value = url;
+  showImageViewer.value = true;
+};
+
 // 截断反馈内容
 const truncateFeedback = (feedback) => {
   if (!feedback) return '';
@@ -174,12 +221,11 @@ const showFullFeedback = (feedback) => {
 
 // 模拟数据
 const mockLogData = [
-  { userTgName: 'AdminUser', userTgId: '123456789', specificAction: '/create_bot 支付机器人', botInvolved: '机器人A', groupInvolved: 'N/A', botFeedback: '机器人创建成功', operationTime: '2023-10-27 10:00:00' },
-  { userTgName: 'AdminUser', userTgId: '123456789', specificAction: '/bind_supplier 供应商A 供应商B', botInvolved: '机器人A', groupInvolved: '闪电', botFeedback: '供应商 [供应商A, 供应商B] 绑定成功', operationTime: '2023-10-27 10:05:00' },
-  { userTgName: 'EditorUser', userTgId: '987654321', specificAction: '/edit_command start', botInvolved: '机器人B', groupInvolved: 'N/A', botFeedback: '指令 /start 更新成功', operationTime: '2023-10-27 10:10:00' },
-  { userTgName: 'AdminUser', userTgId: '123456789', specificAction: '/delete_role 测试角色', botInvolved: 'N/A', groupInvolved: 'N/A', botFeedback: '角色 [测试角色] 已被删除', operationTime: '2023-10-27 10:15:00' },
-  { userTgName: 'AdminUser', userTgId: '123456789', specificAction: '/edit_group 商户A', botInvolved: '机器人A', groupInvolved: '商户A', botFeedback: '群组信息更新完毕', operationTime: '2023-10-27 10:20:00' },
-  { userTgName: 'AdminUser', userTgId: '123456789', specificAction: '/batch_update 配置 --all-groups', botInvolved: '机器人A', groupInvolved: '多个群组', botFeedback: '更新成功。共处理了27个群组的配置信息，其中25个更新成功，2个因权限不足更新失败。失败的群组ID为：-10023456789和-10098765432。请检查机器人在这些群组中的权限并重试。', operationTime: '2023-10-27 11:20:00' },
+  { userTgName: '张三', userTgId: '123456789', specificAction: 'ZF20231027001', imageUrl: 'https://via.placeholder.com/300/409EFF/FFFFFF?text=支付图片', botInvolved: '机器人A', groupInvolved: '闪电', groupType: 'upstream', groupId: '-100123456789', botFeedback: '此处转发上游群回复的内容', operationTime: '2023-10-27 10:00:00' },
+  { userTgName: '张三', userTgId: '123456789', specificAction: 'jcbdqd#闪电', botInvolved: '机器人A', groupInvolved: '闪电', groupType: 'upstream', groupId: '-100123456789', botFeedback: '解除绑定【闪电】渠道成功！', operationTime: '2023-10-27 10:05:00' },
+  { userTgName: '李四', userTgId: '987654321', specificAction: '渠道余额#纵横#+0.01', botInvolved: '机器人A', groupInvolved: '纵横', groupType: 'upstream', groupId: '-100323456789', botFeedback: '========渠道【纵横】设置预付========\n变动前：0.00\n变动金额：0.01\n变动后：0.01\n供应商余额：0.01\n【渠道余额#纵横#+0.01】操作人TG：李四 @lisi\n========设置预付完毕========', operationTime: '2023-10-27 10:10:00' },
+  { userTgName: '王五', userTgId: '123456789', specificAction: '商户费率', botInvolved: '机器人A', groupInvolved: '商户B', groupType: 'merchant', groupId: '-100423456789', botFeedback: '商户【商户B】支付产品费率: \n支付产品名称：微信支付,支付产品编码：WXPAY,商户费率：0.6%\n支付产品名称：支付宝,支付产品编码：ALIPAY,商户费率：0.7%', operationTime: '2023-10-27 10:15:00' },
+  { userTgName: '赵六', userTgId: '123456789', specificAction: '商户余额#商户A#-0.01', botInvolved: '机器人A', groupInvolved: '商户A', groupType: 'merchant', groupId: '-100223456789', botFeedback: '========商户【测测】设置预付========\n变动前：0.01\n变动金额：0.01\n变动后：0.00\n商户余额：0.00\n【余额#测测#-0.01】操作人TG：TG 用户名 @用户名\n========设置预付完毕========', operationTime: '2023-10-27 10:20:00' },
 ];
 
 const loadTableData = () => {
@@ -250,5 +296,27 @@ onMounted(() => {
   line-height: 1.6;
   max-height: 400px;
   overflow-y: auto;
+}
+.command-content {
+  display: flex;
+  align-items: center;
+}
+.image-placeholder {
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 12px;
+  background-color: #409EFF;
+}
+.group-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.group-tag {
+  width: fit-content;
+  margin-top: 3px;
 }
 </style> 

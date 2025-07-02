@@ -12,15 +12,14 @@
       <!-- 表格 -->
       <el-table :data="tableData" border stripe v-loading="tableLoading" style="width: 100%">
         <el-table-column prop="title" label="标题" min-width="120" />
-        <el-table-column label="图片" width="100" align="center">
+        <el-table-column label="图片" width="80">
           <template #default="{ row }">
-            <el-image 
+            <div 
               v-if="row.imageUrl" 
-              :src="row.imageUrl" 
-              fit="cover" 
-              style="width: 60px; height: 60px;"
-              :preview-src-list="[row.imageUrl]"
-            />
+              class="image-placeholder"
+              style="width: 60px; height: 60px; cursor: pointer;"
+              @click="previewImage(row.imageUrl)"
+            >图片</div>
             <span v-else>-</span>
           </template>
         </el-table-column>
@@ -149,13 +148,22 @@
         <el-table-column prop="name" label="群组名称" min-width="180" />
       </el-table>
     </el-dialog>
+
+    <!-- 图片预览 -->
+    <div v-if="showImageViewer">
+      <el-image-viewer
+        :url-list="[previewImageUrl]"
+        :hide-on-click-modal="true"
+        @close="showImageViewer = false"
+      />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue';
 import { Plus } from '@element-plus/icons-vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage, ElMessageBox, ElImageViewer } from 'element-plus';
 
 // 表格数据
 const tableData = ref([
@@ -365,13 +373,23 @@ const currentGroupDetails = ref([]);
 // 显示群组详情
 const showGroupDetails = (row, type) => {
   if (type === 'merchant') {
-    groupDetailTitle.value = `【${row.title}】商户群详情`;
     currentGroupDetails.value = row.merchantGroupDetails;
-  } else if (type === 'channel') {
-    groupDetailTitle.value = `【${row.title}】上游群详情`;
+    groupDetailTitle.value = '商户群详情';
+  } else {
     currentGroupDetails.value = row.channelGroupDetails;
+    groupDetailTitle.value = '上游群详情';
   }
   groupDetailVisible.value = true;
+};
+
+// 图片预览相关
+const showImageViewer = ref(false);
+const previewImageUrl = ref('');
+
+// 预览图片
+const previewImage = (url) => {
+  previewImageUrl.value = url;
+  showImageViewer.value = true;
 };
 
 onMounted(() => {
@@ -384,23 +402,37 @@ onMounted(() => {
 .mass-send-message-container {
   padding: 20px;
 }
+
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .pagination-container {
   margin-top: 20px;
   display: flex;
   justify-content: flex-end;
 }
+
 .upload-tip {
-  color: #909399;
   font-size: 12px;
-  margin-top: 5px;
+  color: #909399;
+  margin-top: 4px;
 }
+
 .group-select-container {
   display: flex;
   align-items: center;
+}
+
+.image-placeholder {
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 12px;
+  background-color: #409EFF;
 }
 </style> 

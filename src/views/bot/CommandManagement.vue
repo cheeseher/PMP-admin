@@ -256,7 +256,7 @@ const allCommands = ref([
   {
     id: 1,
     keyword: '查询商户余额',
-    format: '查询商户余额#商户ID',
+    format: 'ye',
     responseTemplate: '商户 {{merchantName}} 的当前余额为：¥{{balance}}',
     requiresBinding: true,
     status: 'enabled',
@@ -265,7 +265,7 @@ const allCommands = ref([
   {
     id: 2,
     keyword: '查单',
-    format: '查单#订单号',
+    format: '截图+商户单号',
     responseTemplate: '订单号：{{orderId}}\n订单状态：{{orderStatus}}\n订单金额：¥{{amount}}\n创建时间：{{createTime}}\n完成时间：{{completeTime}}',
     requiresBinding: true,
     status: 'enabled',
@@ -274,7 +274,7 @@ const allCommands = ref([
   {
     id: 3,
     keyword: '绑定商户',
-    format: '绑定商户#商户ID#密钥',
+    format: 'bdsh#商户名称',
     responseTemplate: '商户 {{merchantName}} 绑定成功！',
     requiresBinding: false,
     status: 'enabled',
@@ -283,7 +283,7 @@ const allCommands = ref([
   {
     id: 4,
     keyword: '解绑商户',
-    format: '解绑商户#商户ID',
+    format: 'jcbdsh#商户名称',
     responseTemplate: '商户 {{merchantName}} 解绑成功！',
     requiresBinding: true,
     status: 'enabled',
@@ -292,7 +292,7 @@ const allCommands = ref([
   {
     id: 5,
     keyword: '商户余额增加',
-    format: '商户余额增加#商户ID#金额',
+    format: '商户余额#商户名称#+金额',
     responseTemplate: '商户 {{merchantName}} 余额已增加 ¥{{amount}}，当前余额：¥{{balance}}',
     requiresBinding: true,
     status: 'enabled',
@@ -301,7 +301,7 @@ const allCommands = ref([
   {
     id: 6,
     keyword: '商户余额扣减',
-    format: '商户余额扣减#商户ID#金额',
+    format: '商户余额#商户名称#-金额',
     responseTemplate: '商户 {{merchantName}} 余额已扣减 ¥{{amount}}，当前余额：¥{{balance}}',
     requiresBinding: true,
     status: 'enabled',
@@ -310,7 +310,7 @@ const allCommands = ref([
   {
     id: 7,
     keyword: '加白',
-    format: '加白#IP地址#备注',
+    format: '加白#商户名称#IP1,IP2,...',
     responseTemplate: 'IP {{ip}} 已添加到白名单',
     requiresBinding: false,
     status: 'enabled',
@@ -319,7 +319,7 @@ const allCommands = ref([
   {
     id: 8,
     keyword: '商户费率',
-    format: '商户费率#商户ID#产品类型',
+    format: '商户费率',
     responseTemplate: '商户 {{merchantName}} 的 {{productType}} 费率为：{{rate}}%',
     requiresBinding: true,
     status: 'enabled',
@@ -328,7 +328,7 @@ const allCommands = ref([
   {
     id: 9,
     keyword: '通道费率',
-    format: '通道费率#通道ID#产品类型',
+    format: '通道费率',
     responseTemplate: '通道 {{channelName}} 的 {{productType}} 费率为：{{rate}}%',
     requiresBinding: false,
     status: 'enabled',
@@ -337,7 +337,7 @@ const allCommands = ref([
   {
     id: 10,
     keyword: '绑定渠道',
-    format: '绑定渠道#渠道ID#密钥',
+    format: 'bdqd#渠道名称',
     responseTemplate: '渠道 {{channelName}} 绑定成功！',
     requiresBinding: false,
     status: 'enabled',
@@ -346,7 +346,7 @@ const allCommands = ref([
   {
     id: 11,
     keyword: '解绑渠道',
-    format: '解绑渠道#渠道ID',
+    format: 'jcbdqd#渠道名称',
     responseTemplate: '渠道 {{channelName}} 解绑成功！',
     requiresBinding: true,
     status: 'enabled',
@@ -355,7 +355,7 @@ const allCommands = ref([
   {
     id: 12,
     keyword: '查询ID',
-    format: '查询ID#用户名',
+    format: 'id',
     responseTemplate: '用户 {{username}} 的ID为：{{userId}}',
     requiresBinding: false,
     status: 'enabled',
@@ -364,7 +364,7 @@ const allCommands = ref([
   {
     id: 13,
     keyword: '查询群ID',
-    format: '查询群ID',
+    format: '群ID/chat_id',
     responseTemplate: '当前群ID为：{{groupId}}',
     requiresBinding: false,
     status: 'enabled',
@@ -373,7 +373,7 @@ const allCommands = ref([
   {
     id: 14,
     keyword: '渠道余额增加',
-    format: '渠道余额增加#渠道ID#金额',
+    format: '渠道余额#渠道名称#+金额',
     responseTemplate: '渠道 {{channelName}} 余额已增加 ¥{{amount}}，当前余额：¥{{balance}}',
     requiresBinding: true,
     status: 'enabled',
@@ -382,7 +382,7 @@ const allCommands = ref([
   {
     id: 15,
     keyword: '渠道余额扣减',
-    format: '渠道余额扣减#渠道ID#金额',
+    format: '渠道余额#渠道名称#-金额',
     responseTemplate: '渠道 {{channelName}} 余额已扣减 ¥{{amount}}，当前余额：¥{{balance}}',
     requiresBinding: true,
     status: 'enabled',

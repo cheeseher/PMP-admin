@@ -152,6 +152,12 @@ const router = createRouter({
               meta: { title: '群组管理' }
             },
             {
+              path: 'mass-message',
+              name: 'MassSendMessage',
+              component: () => import('@/views/bot/MassSendMessage.vue'),
+              meta: { title: '群发消息' }
+            },
+            {
               path: 'operation-log',
               name: 'BotOperationLog',
               component: OperationLog,

@@ -67,19 +67,12 @@
         <el-table-column prop="createdAt" label="创建时间" width="180" />
         <el-table-column fixed="right" label="操作" width="120" align="center">
           <template #default="{ row }">
-            <el-dropdown @command="(command) => handleCommand(command, row)">
-              <el-button type="primary" link class="operation-button">
-                操作<el-icon class="el-icon--right"><arrow-down /></el-icon>
-              </el-button>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item command="edit">编辑</el-dropdown-item>
-                  <el-dropdown-item :command="row.status === 'enabled' ? 'disable' : 'enable'">
-                    {{ row.status === 'enabled' ? '关闭' : '开启' }}
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
+            <el-button type="primary" link @click="openBotDialog('edit', row)">
+              编辑
+            </el-button>
+            <el-button type="danger" link @click="confirmDelete(row)">
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -248,6 +241,26 @@ const handleCommand = (command, row) => {
       toggleBotStatus(row)
       break
   }
+}
+
+// 确认删除
+const confirmDelete = (row) => {
+  ElMessageBox.confirm(`确认删除机器人"${row.botName}"?`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    loading.value = true
+    setTimeout(() => {
+      const index = tableData.value.findIndex(item => item.id === row.id)
+      if (index !== -1) {
+        tableData.value.splice(index, 1)
+        total.value--
+        ElMessage.success('机器人删除成功')
+      }
+      loading.value = false
+    }, 500)
+  }).catch(() => {})
 }
 
 // 打开机器人表单对话框

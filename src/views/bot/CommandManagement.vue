@@ -7,14 +7,31 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="filterForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="关键词：">
-            <el-input 
-              v-model="filterForm.keyword" 
-              placeholder="请输入指令关键词" 
-              clearable 
-              style="width: 180px"
-            />
-          </el-form-item>
+          <!-- 预设指令tab显示的筛选字段 -->
+          <template v-if="activeTab === 'default'">
+            <el-form-item label="指令名称：">
+              <el-input 
+                v-model="filterForm.keyword" 
+                placeholder="请输入指令名称" 
+                clearable 
+                style="width: 180px"
+              />
+            </el-form-item>
+          </template>
+          
+          <!-- 自定义指令tab显示的筛选字段 -->
+          <template v-else>
+            <el-form-item label="指令名称：">
+              <el-input 
+                v-model="filterForm.keyword" 
+                placeholder="请输入指令名称" 
+                clearable 
+                style="width: 180px"
+              />
+            </el-form-item>
+          </template>
+          
+          <!-- 两个tab页共用的筛选字段 -->
           <el-form-item label="状态：">
             <el-select 
               v-model="filterForm.status" 
@@ -70,8 +87,8 @@
             style="width: 100%"
           >
             <el-table-column type="index" label="序号" width="60" align="center" />
-            <el-table-column prop="keyword" label="指令关键词" min-width="120" />
-            <el-table-column prop="format" label="示例格式" min-width="160" show-overflow-tooltip />
+            <el-table-column prop="keyword" label="指令名称" min-width="120" />
+            <el-table-column prop="format" label="指令格式" min-width="160" show-overflow-tooltip />
             <el-table-column prop="status" label="状态" width="100" align="center">
               <template #default="{ row }">
                 <el-tag :type="row.status === 'enabled' ? 'success' : 'danger'" effect="plain">
@@ -81,20 +98,12 @@
             </el-table-column>
             <el-table-column fixed="right" label="操作" width="180" align="center">
               <template #default="{ row }">
-                <el-dropdown @command="(command) => handleCommand(command, row)">
-                  <el-button type="primary" link class="operation-button">
-                    操作<el-icon class="el-icon--right"><arrow-down /></el-icon>
-                  </el-button>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item command="edit">编辑</el-dropdown-item>
-                      <el-dropdown-item :command="row.status === 'enabled' ? 'disable' : 'enable'">
-                        {{ row.status === 'enabled' ? '停用' : '启用' }}
-                      </el-dropdown-item>
-                      <el-dropdown-item command="delete" style="color: red;">删除</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
+                <el-button type="primary" link @click="openCommandDialog('edit', row.type, row)">
+                  编辑
+                </el-button>
+                <el-button type="danger" link @click="handleDelete(row)">
+                  删除
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -122,8 +131,8 @@
             style="width: 100%"
           >
             <el-table-column type="index" label="序号" width="60" align="center" />
-            <el-table-column prop="keyword" label="指令关键词" min-width="120" />
-            <el-table-column prop="format" label="示例格式" min-width="160" show-overflow-tooltip />
+            <el-table-column prop="keyword" label="指令名称" min-width="120" />
+            <el-table-column prop="responseTemplate" label="回复内容" min-width="200" show-overflow-tooltip />
             <el-table-column prop="status" label="状态" width="100" align="center">
               <template #default="{ row }">
                 <el-tag :type="row.status === 'enabled' ? 'success' : 'danger'" effect="plain">
@@ -133,20 +142,12 @@
             </el-table-column>
             <el-table-column fixed="right" label="操作" width="180" align="center">
               <template #default="{ row }">
-                <el-dropdown @command="(command) => handleCommand(command, row)">
-                  <el-button type="primary" link class="operation-button">
-                    操作<el-icon class="el-icon--right"><arrow-down /></el-icon>
-                  </el-button>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item command="edit">编辑</el-dropdown-item>
-                      <el-dropdown-item :command="row.status === 'enabled' ? 'disable' : 'enable'">
-                        {{ row.status === 'enabled' ? '停用' : '启用' }}
-                      </el-dropdown-item>
-                      <el-dropdown-item command="delete" style="color: red;">删除</el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
+                <el-button type="primary" link @click="openCommandDialog('edit', row.type, row)">
+                  编辑
+                </el-button>
+                <el-button type="danger" link @click="handleDelete(row)">
+                  删除
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -201,7 +202,7 @@
             placeholder="请输入示例格式，如：ye#商户名"
           />
         </el-form-item>
-        <el-form-item label="响应模板" prop="responseTemplate">
+        <el-form-item label="响应模板" prop="responseTemplate" v-if="!(dialogType === 'edit' && commandForm.type === 'default')">
           <el-input 
             v-model="commandForm.responseTemplate"
             type="textarea"
@@ -245,6 +246,8 @@ const activeTab = ref('default');
 // 筛选表单
 const filterForm = reactive({
   keyword: '',
+  format: '',
+  responseContent: '',
   status: ''
 })
 
@@ -252,48 +255,156 @@ const filterForm = reactive({
 const allCommands = ref([
   {
     id: 1,
-    keyword: '产品',
-    format: '产品',
-    responseTemplate: '您当前配置的支付产品如下：\n{{#each products}}\n- {{name}}（{{code}}）\n{{/each}}',
-    requiresBinding: true,
-    status: 'enabled',
-    type: 'default' // 预设指令
-  },
-  {
-    id: 2,
-    keyword: '余额',
-    format: '余额',
+    keyword: '查询商户余额',
+    format: '查询商户余额#商户ID',
     responseTemplate: '商户 {{merchantName}} 的当前余额为：¥{{balance}}',
     requiresBinding: true,
     status: 'enabled',
     type: 'default' // 预设指令
   },
   {
+    id: 2,
+    keyword: '查单',
+    format: '查单#订单号',
+    responseTemplate: '订单号：{{orderId}}\n订单状态：{{orderStatus}}\n订单金额：¥{{amount}}\n创建时间：{{createTime}}\n完成时间：{{completeTime}}',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
     id: 3,
-    keyword: '绑定',
-    format: '绑定#商户号#商户密钥',
+    keyword: '绑定商户',
+    format: '绑定商户#商户ID#密钥',
     responseTemplate: '商户 {{merchantName}} 绑定成功！',
     requiresBinding: false,
     status: 'enabled',
-    type: 'other' // 自定义指令
+    type: 'default' // 预设指令
   },
   {
     id: 4,
-    keyword: '订单',
-    format: '订单#订单号',
-    responseTemplate: '订单 {{orderId}} 的状态为：{{orderStatus}}',
+    keyword: '解绑商户',
+    format: '解绑商户#商户ID',
+    responseTemplate: '商户 {{merchantName}} 解绑成功！',
     requiresBinding: true,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 5,
+    keyword: '商户余额增加',
+    format: '商户余额增加#商户ID#金额',
+    responseTemplate: '商户 {{merchantName}} 余额已增加 ¥{{amount}}，当前余额：¥{{balance}}',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 6,
+    keyword: '商户余额扣减',
+    format: '商户余额扣减#商户ID#金额',
+    responseTemplate: '商户 {{merchantName}} 余额已扣减 ¥{{amount}}，当前余额：¥{{balance}}',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 7,
+    keyword: '加白',
+    format: '加白#IP地址#备注',
+    responseTemplate: 'IP {{ip}} 已添加到白名单',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 8,
+    keyword: '商户费率',
+    format: '商户费率#商户ID#产品类型',
+    responseTemplate: '商户 {{merchantName}} 的 {{productType}} 费率为：{{rate}}%',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 9,
+    keyword: '通道费率',
+    format: '通道费率#通道ID#产品类型',
+    responseTemplate: '通道 {{channelName}} 的 {{productType}} 费率为：{{rate}}%',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 10,
+    keyword: '绑定渠道',
+    format: '绑定渠道#渠道ID#密钥',
+    responseTemplate: '渠道 {{channelName}} 绑定成功！',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 11,
+    keyword: '解绑渠道',
+    format: '解绑渠道#渠道ID',
+    responseTemplate: '渠道 {{channelName}} 解绑成功！',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 12,
+    keyword: '查询ID',
+    format: '查询ID#用户名',
+    responseTemplate: '用户 {{username}} 的ID为：{{userId}}',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 13,
+    keyword: '查询群ID',
+    format: '查询群ID',
+    responseTemplate: '当前群ID为：{{groupId}}',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 14,
+    keyword: '渠道余额增加',
+    format: '渠道余额增加#渠道ID#金额',
+    responseTemplate: '渠道 {{channelName}} 余额已增加 ¥{{amount}}，当前余额：¥{{balance}}',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 15,
+    keyword: '渠道余额扣减',
+    format: '渠道余额扣减#渠道ID#金额',
+    responseTemplate: '渠道 {{channelName}} 余额已扣减 ¥{{amount}}，当前余额：¥{{balance}}',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
+  {
+    id: 16,
+    keyword: '商户使用说明',
+    format: '商户使用说明',
+    responseTemplate: '使用说明：\n1. 绑定商户：输入"绑定商户#商户ID#密钥"\n2. 查询余额：输入"查询商户余额#商户ID"\n3. 查单：输入"查单#订单号"\n4. 如需帮助请联系客服',
+    requiresBinding: false,
     status: 'enabled',
     type: 'other' // 自定义指令
   },
   {
-    id: 5,
-    keyword: '帮助',
-    format: '帮助',
-    responseTemplate: '可用指令列表：\n{{#each commands}}\n- {{keyword}}：{{description}}\n{{/each}}',
+    id: 17,
+    keyword: '210规则',
+    format: '210规则',
+    responseTemplate: '210规则说明：\n1. 充值2万，赠送1万，共3万\n2. 充值5万，赠送3万，共8万\n3. 充值10万，赠送8万，共18万\n4. 活动时间：2023年10月1日-2023年12月31日',
     requiresBinding: false,
     status: 'enabled',
-    type: 'default' // 预设指令
+    type: 'other' // 自定义指令
   }
 ])
 
@@ -315,8 +426,10 @@ const filterCommands = (commands) => {
   return commands.filter(cmd => {
     const matchKeyword = !filterForm.keyword || 
       cmd.keyword.toLowerCase().includes(filterForm.keyword.toLowerCase());
+    
     const matchStatus = !filterForm.status || cmd.status === filterForm.status;
     
+    // 所有指令只检查关键词和状态
     return matchKeyword && matchStatus;
   });
 }
@@ -376,6 +489,8 @@ const handleSearch = () => {
 // 重置筛选条件
 const resetFilter = () => {
   filterForm.keyword = ''
+  filterForm.format = ''
+  filterForm.responseContent = ''
   filterForm.status = ''
   handleSearch()
 }

@@ -75,13 +75,7 @@
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column prop="groupTypePermission" label="群组类型权限" width="120" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.groupTypePermission ? 'success' : 'info'">
-              {{ row.groupTypePermission ? '已开启' : '已关闭' }}
-            </el-tag>
-          </template>
-        </el-table-column>
+
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 'enabled' ? 'success' : 'danger'">
@@ -183,12 +177,7 @@
           <div class="form-tip">关联人员将在所有群组中拥有此角色权限，点击人员标签可编辑信息</div>
         </el-form-item>
         
-        <el-form-item label="群组类型权限" prop="groupTypePermission">
-          <el-switch
-            v-model="dialogForm.groupTypePermission"
-          />
-          <div class="form-tip">开启后，可以按群组类型分配不同的权限</div>
-        </el-form-item>
+
         
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="dialogForm.status">
@@ -241,9 +230,14 @@
           <p>该角色下的人员将可以使用以下指令：</p>
       </div>
       <el-table :data="commandListData" border stripe>
-        <el-table-column prop="id" label="指令ID" width="100" />
-        <el-table-column prop="keyword" label="指令关键词" />
-        <el-table-column prop="format" label="示例格式" />
+        <el-table-column prop="keyword" label="指令名称" min-width="200" />
+        <el-table-column prop="type" label="指令类型" width="120">
+          <template #default="{ row }">
+            <el-tag :type="row.type === 'default' ? 'primary' : 'success'">
+              {{ row.type === 'default' ? '预设指令' : '自定义指令' }}
+            </el-tag>
+          </template>
+        </el-table-column>
       </el-table>
       <template #footer>
         <el-button @click="commandListDialogVisible = false">关闭</el-button>
@@ -256,6 +250,174 @@
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Search, Refresh, Plus, InfoFilled, Delete } from '@element-plus/icons-vue';
+
+// 从指令管理页面获取预设指令和自定义指令数据
+// 预设指令数据
+const presetCommands = [
+  {
+    id: 1,
+    keyword: '查询商户余额',
+    format: '查询商户余额#商户ID',
+    responseTemplate: '商户 {{merchantName}} 的当前余额为：¥{{balance}}',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 2,
+    keyword: '查单',
+    format: '查单#订单号',
+    responseTemplate: '订单号：{{orderId}}\n订单状态：{{orderStatus}}\n订单金额：¥{{amount}}\n创建时间：{{createTime}}\n完成时间：{{completeTime}}',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 3,
+    keyword: '绑定商户',
+    format: '绑定商户#商户ID#密钥',
+    responseTemplate: '商户 {{merchantName}} 绑定成功！',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 4,
+    keyword: '解绑商户',
+    format: '解绑商户#商户ID',
+    responseTemplate: '商户 {{merchantName}} 解绑成功！',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 5,
+    keyword: '商户余额增加',
+    format: '商户余额增加#商户ID#金额',
+    responseTemplate: '商户 {{merchantName}} 余额已增加 ¥{{amount}}，当前余额：¥{{balance}}',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 6,
+    keyword: '商户余额扣减',
+    format: '商户余额扣减#商户ID#金额',
+    responseTemplate: '商户 {{merchantName}} 余额已扣减 ¥{{amount}}，当前余额：¥{{balance}}',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 7,
+    keyword: '加白',
+    format: '加白#IP地址#备注',
+    responseTemplate: 'IP {{ip}} 已添加到白名单',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 8,
+    keyword: '商户费率',
+    format: '商户费率#商户ID#产品类型',
+    responseTemplate: '商户 {{merchantName}} 的 {{productType}} 费率为：{{rate}}%',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 9,
+    keyword: '通道费率',
+    format: '通道费率#通道ID#产品类型',
+    responseTemplate: '通道 {{channelName}} 的 {{productType}} 费率为：{{rate}}%',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 10,
+    keyword: '绑定渠道',
+    format: '绑定渠道#渠道ID#密钥',
+    responseTemplate: '渠道 {{channelName}} 绑定成功！',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 11,
+    keyword: '解绑渠道',
+    format: '解绑渠道#渠道ID',
+    responseTemplate: '渠道 {{channelName}} 解绑成功！',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 12,
+    keyword: '查询ID',
+    format: '查询ID#用户名',
+    responseTemplate: '用户 {{username}} 的ID为：{{userId}}',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 13,
+    keyword: '查询群ID',
+    format: '查询群ID',
+    responseTemplate: '当前群ID为：{{groupId}}',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 14,
+    keyword: '渠道余额增加',
+    format: '渠道余额增加#渠道ID#金额',
+    responseTemplate: '渠道 {{channelName}} 余额已增加 ¥{{amount}}，当前余额：¥{{balance}}',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default'
+  },
+  {
+    id: 15,
+    keyword: '渠道余额扣减',
+    format: '渠道余额扣减#渠道ID#金额',
+    responseTemplate: '渠道 {{channelName}} 余额已扣减 ¥{{amount}}，当前余额：¥{{balance}}',
+    requiresBinding: true,
+    status: 'enabled',
+    type: 'default'
+  }
+];
+
+// 自定义指令数据
+const customCommands = [
+  {
+    id: 16,
+    keyword: '商户使用说明',
+    format: '商户使用说明',
+    responseTemplate: '使用说明：\n1. 绑定商户：输入"绑定商户#商户ID#密钥"\n2. 查询余额：输入"查询商户余额#商户ID"\n3. 查单：输入"查单#订单号"\n4. 如需帮助请联系客服',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'other'
+  },
+  {
+    id: 17,
+    keyword: '210规则',
+    format: '210规则',
+    responseTemplate: '210规则说明：\n1. 充值2万，赠送1万，共3万\n2. 充值5万，赠送3万，共8万\n3. 充值10万，赠送8万，共18万\n4. 活动时间：2023年10月1日-2023年12月31日',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'other'
+  }
+];
+
+// 模拟指令选项
+const commandOptions = ref([
+  ...presetCommands,
+  ...customCommands
+]);
 
 // 筛选表单
 const filterForm = reactive({
@@ -344,39 +506,23 @@ const getAssociatedMembers = (roleId) => {
   return mockGroupsData[roleId] || [];
 };
 
-// 模拟指令选项
-const commandOptions = ref([
-    { id: 1, keyword: '产品', format: '产品' },
-    { id: 2, keyword: '余额', format: '余额' },
-    { id: 3, keyword: '绑定', format: '绑定#商户号#商户密钥' },
-    { id: 4, keyword: '订单', format: '订单#订单号' },
-    { id: 5, keyword: '帮助', format: '帮助' },
-]);
-
-// 级联选择器的指令数据（按功能分类）
+// 级联选择器的指令数据（按照预设指令和自定义指令分类）
 const cascaderCommandOptions = ref([
   {
-    value: 'query',
-    label: '查询类指令',
-    children: [
-      { value: 1, label: '产品 (产品)' },
-      { value: 2, label: '余额 (余额)' },
-      { value: 4, label: '订单 (订单#订单号)' },
-    ]
+    value: 'default',
+    label: '预设指令',
+    children: presetCommands.map(cmd => ({
+      value: cmd.id,
+      label: `${cmd.keyword} (${cmd.format})`
+    }))
   },
   {
-    value: 'operate',
-    label: '操作类指令',
-    children: [
-      { value: 3, label: '绑定 (绑定#商户号#商户密钥)' },
-    ]
-  },
-  {
-    value: 'utility',
-    label: '辅助类指令',
-    children: [
-      { value: 5, label: '帮助 (帮助)' },
-    ]
+    value: 'other',
+    label: '自定义指令',
+    children: customCommands.map(cmd => ({
+      value: cmd.id,
+      label: `${cmd.keyword}`
+    }))
   }
 ]);
 
@@ -386,15 +532,18 @@ const getSelectedCascaderValues = (commandIds) => {
   
   if (!commandIds || !commandIds.length) return result;
   
-  // 遍历所有的分类
-  cascaderCommandOptions.value.forEach(category => {
-    // 找出该分类下被选中的指令
-    const selectedCommands = category.children.filter(cmd => commandIds.includes(cmd.value));
-    
-    // 如果有选中的指令，则添加相应的级联路径
-    selectedCommands.forEach(cmd => {
-      result.push([category.value, cmd.value]);
-    });
+  // 遍历所有预设指令
+  presetCommands.forEach(cmd => {
+    if (commandIds.includes(cmd.id)) {
+      result.push(['default', cmd.id]);
+    }
+  });
+  
+  // 遍历所有自定义指令
+  customCommands.forEach(cmd => {
+    if (commandIds.includes(cmd.id)) {
+      result.push(['other', cmd.id]);
+    }
   });
   
   return result;
@@ -444,7 +593,7 @@ const dialogForm = reactive({
   cascaderCommands: [], // 级联选择器使用的格式
   tgids: '', // 旧的TGID字段（用于兼容）
   members: [], // 新增关联人员列表
-  groupTypePermission: false // 群组类型分配权限
+
 });
 
 // 人员对话框相关
@@ -592,7 +741,7 @@ const openDialog = (type, row) => {
     dialogForm.cascaderCommands = getSelectedCascaderValues(row.commands); // 转换为级联选择器格式
     dialogForm.tgids = row.tgids || ''; // 保留旧的TGID字段
     dialogForm.members = tgidsToMembers(row.tgids, row.id); // 从旧的TGID字段转换成员数组
-    dialogForm.groupTypePermission = row.groupTypePermission || false; // 群组类型分配权限
+
   } else {
     dialogForm.id = null;
     dialogForm.roleName = '';
@@ -602,7 +751,7 @@ const openDialog = (type, row) => {
     dialogForm.cascaderCommands = [];
     dialogForm.tgids = '';
     dialogForm.members = [];
-    dialogForm.groupTypePermission = false; // 重置群组类型分配权限
+
   }
   dialogVisible.value = true;
 };
@@ -644,7 +793,7 @@ const submitForm = () => {
       status: dialogForm.status,
       commands: commandIds,
       tgids: tgids,
-      groupTypePermission: dialogForm.groupTypePermission // 保存群组类型分配权限
+    
     };
     
     // 保存到mockGroupsData

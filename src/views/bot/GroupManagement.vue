@@ -47,7 +47,7 @@
       <!-- 表格工具栏 -->
       <div class="table-toolbar">
         <div class="left">
-          <el-button type="primary" @click="openDefaultRoleDialog">群组默认权限设置</el-button>
+          <el-button type="primary" @click="openDefaultRoleDialog">群组普通用户权限设置</el-button>
         </div>
         <div class="right">
           <el-tooltip content="刷新数据">
@@ -78,13 +78,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="roleId" label="群组角色" width="120" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.roleId ? 'success' : 'danger'" effect="plain">
-              {{ row.roleName || '未分配' }}
-            </el-tag>
-          </template>
-        </el-table-column>
         <el-table-column prop="memberCount" label="群组人数" width="100" align="center">
           <template #default="{ row }">
             <el-button type="primary" link @click="openMemberListDialog(row)">{{ row.memberCount }}</el-button>
@@ -97,7 +90,15 @@
             </el-button>
           </template>
         </el-table-column>
+        <el-table-column label="商户绑定" width="120" align="center">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="openBoundMerchantsDialog(row)">
+              {{ row.boundMerchants ? row.boundMerchants.length : 0 }}
+            </el-button>
+          </template>
+        </el-table-column>
         <el-table-column prop="associatedBot" label="关联机器人" min-width="150" />
+        <el-table-column prop="createTime" label="创建时间" min-width="180" />
       </el-table>
 
       <!-- 分页器 -->
@@ -123,29 +124,18 @@
     >
       <div v-if="currentGroupForMembers" style="margin-bottom: 16px;">
           <strong>群组: {{ currentGroupForMembers.groupName }} ({{ currentGroupForMembers.groupId }})</strong>
+          <p>群组类型: {{ currentGroupForMembers.groupType === 'upstream' ? '上游群' : '商户群' }}</p>
       </div>
       <el-table :data="memberListData" border stripe v-loading="memberListLoading">
-        <el-table-column prop="userTgId" label="用户TGID" />
-        <el-table-column prop="userTgName" label="用户TG名称" />
-        <el-table-column prop="isMerchantBound" label="是否绑定商户" width="120" align="center">
+        <el-table-column prop="userTgId" label="用户TGID" width="120" />
+        <el-table-column prop="userTgName" label="用户TG名称" min-width="150" />
+        <el-table-column label="成员权限" width="150" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.isMerchantBound ? 'success' : 'info'">
-              {{ row.isMerchantBound ? '已绑定' : '未绑定' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="merchantName" label="商户名称" width="150">
-          <template #default="{ row }">
-            {{ row.merchantName || '-' }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="role" label="成员权限" width="150" align="center">
-          <template #default="{ row }">
-            <el-tag type="info" effect="plain" v-if="row.role">{{ row.role }}</el-tag>
-            <el-tag type="danger" effect="plain" v-else>默认继承群组</el-tag>
+            <el-tag :type="getRoleTagType(row.role)" effect="plain">{{ row.role || '未设置' }}</el-tag>
           </template>
         </el-table-column>
       </el-table>
+      <el-empty v-if="!memberListData || memberListData.length === 0" description="暂无符合条件的成员" />
       <template #footer>
         <el-button @click="memberListDialogVisible = false">关闭</el-button>
       </template>
@@ -396,15 +386,15 @@
       </template>
     </el-dialog>
 
-          <!-- 群组默认权限设置对话框 -->
+          <!-- 群组普通用户权限设置对话框 -->
     <el-dialog
       v-model="defaultRoleDialogVisible"
-      title="群组默认权限设置"
+      title="群组普通用户权限设置"
       width="700px"
       destroy-on-close
     >
       <el-alert
-        title="此处设置的角色将作为新建群组的默认权限，已有群组不受影响"
+        title="此处设置的权限将作为群组中普通用户的默认权限，已有群组不受影响"
         type="info"
         show-icon
         :closable="false"
@@ -455,7 +445,26 @@
           <el-button @click="defaultRoleDialogVisible = false">取消</el-button>
           <el-button type="primary" @click="submitDefaultRole">确认</el-button>
         </div>
-      </template>
+              </template>
+    </el-dialog>
+
+    <!-- 已绑定商户列表对话框 -->
+    <el-dialog
+      v-model="boundMerchantsDialogVisible"
+      title="已绑定商户列表"
+      width="700px"
+      destroy-on-close
+    >
+        <div v-if="currentGroupForMerchantBinding" style="margin-bottom: 16px;">
+            <strong>群组: {{ currentGroupForMerchantBinding.groupName }} ({{ currentGroupForMerchantBinding.groupId }})</strong>
+        </div>
+        <el-table :data="currentGroupForMerchantBinding ? currentGroupForMerchantBinding.boundMerchants : []" border stripe>
+            <el-table-column prop="id" label="商户ID" width="80" align="center" />
+            <el-table-column prop="name" label="商户名称" min-width="150" />
+        </el-table>
+        <template #footer>
+            <el-button @click="boundMerchantsDialogVisible = false">关闭</el-button>
+        </template>
     </el-dialog>
   </div>
 </template>
@@ -477,8 +486,8 @@ const filterForm = reactive({
 
 // 模拟机器人选项
 const botOptions = ref([
-  { id: 1, name: '官方支付机器人' },
-  { id: 2, name: '业务通知机器人' },
+  { id: 1, name: '机器人A' },
+  { id: 2, name: '机器人B' },
 ]);
 
 // 模拟角色选项
@@ -533,52 +542,66 @@ const loading = ref(false);
 const tableData = ref([
   {
     groupId: '-100123456789',
-    groupName: '支付宝渠道供应商群',
+    groupName: '闪电',
     groupLink: 'https://t.me/alipay_supplier',
     groupType: 'upstream',
     roleId: 1,
     roleName: '上游群角色',
     memberCount: 58,
-    associatedBot: '官方支付机器人',
+    associatedBot: '机器人A',
+    createTime: '2023-05-15 10:30:45',
     boundSuppliers: [
-      { id: 'S001', name: '供应商A', template: '模板A' },
-      { id: 'S002', name: '供应商B', template: '模板B' },
-    ]
+      { id: 1, name: '供应商A', template: '闪电' },
+      { id: 2, name: '供应商B', template: '纵横' },
+    ],
+    boundMerchants: []
   },
   {
     groupId: '-100223456789',
-    groupName: '微信支付商户群',
+    groupName: '商户A',
     groupLink: 'https://t.me/wxpay_merchant',
     groupType: 'merchant',
     roleId: 2,
     roleName: '商户群角色',
     memberCount: 125,
-    associatedBot: '业务通知机器人',
-    boundSuppliers: []
+    associatedBot: '机器人B',
+    createTime: '2023-07-22 14:15:30',
+    boundSuppliers: [],
+    boundMerchants: [
+      { id: 1001, name: '商户A' },
+      { id: 1002, name: '商户B' },
+      { id: 1003, name: '商户C' }
+    ]
   },
   {
     groupId: '-100323456789',
-    groupName: '银联渠道供应商群',
+    groupName: '纵横',
     groupLink: 'https://t.me/unionpay_supplier',
     groupType: 'upstream',
     roleId: 1,
     roleName: '上游群角色',
     memberCount: 42,
-    associatedBot: '官方支付机器人',
+    associatedBot: '机器人A',
+    createTime: '2023-09-08 09:45:12',
     boundSuppliers: [
-      { id: 'S003', name: '供应商C', template: '模板C' },
-    ]
+      { id: 3, name: '供应商C', template: '熊猫' },
+    ],
+    boundMerchants: []
   },
   {
     groupId: '-100423456789',
-    groupName: '新商户测试群',
+    groupName: '商户B',
     groupLink: 'https://t.me/test_merchant',
     groupType: 'merchant',
     roleId: null,
     roleName: null,
     memberCount: 15,
-    associatedBot: '业务通知机器人',
-    boundSuppliers: []
+    associatedBot: '机器人B',
+    createTime: '2023-11-30 16:20:05',
+    boundSuppliers: [],
+    boundMerchants: [
+      { id: 1004, name: '商户D' }
+    ]
   }
 ]);
 const currentPage = ref(1);
@@ -594,6 +617,10 @@ const memberListData = ref([]);
 // 已绑定供应商列表对话框
 const boundSuppliersDialogVisible = ref(false);
 const currentGroupForBinding = ref(null);
+
+// 已绑定商户列表对话框
+const boundMerchantsDialogVisible = ref(false);
+const currentGroupForMerchantBinding = ref(null);
 
 // 绑定供应商对话框
 const bindSupplierDialogVisible = ref(false);
@@ -634,28 +661,63 @@ const availableCommandsForMember = ref([]);
 
 // 模拟供应商选项
 const supplierOptions = ref([
-    { id: 'S001', name: '供应商A' },
-    { id: 'S002', name: '供应商B' },
-    { id: 'S003', name: '供应商C' },
-    { id: 'S004', name: '供应商D' },
+    { id: 1, name: '供应商A' },
+    { id: 2, name: '供应商B' },
+    { id: 3, name: '供应商C' },
+    { id: 4, name: '供应商D' },
+]);
+
+// 模拟商户选项
+const merchantOptions = ref([
+    { id: 1001, name: '商户A' },
+    { id: 1002, name: '商户B' },
+    { id: 1003, name: '商户C' },
+    { id: 1004, name: '商户D' },
+    { id: 1005, name: '商户E' },
 ]);
 
 // 模拟成员数据
 const mockMemberData = {
     '-100123456789': [
-        { userTgId: '123456789', userTgName: '张三', isMerchantBound: true, merchantName: '供应商A', role: '管理员' },
-        { userTgId: '987654321', userTgName: '李四', isMerchantBound: false, role: null },
+        { userTgId: '123456789', userTgName: '张三', role: '上游群普通权限' },
+        { userTgId: '987654321', userTgName: '李四', role: '运营' },
+        { userTgId: '555666777', userTgName: '刘大', role: '超级管理员' },
+        { userTgId: '111222333', userTgName: '孙一', role: '财务' },
     ],
     '-100223456789': [
-        { userTgId: '112233445', userTgName: '王五', isMerchantBound: false, role: null },
-        { userTgId: '556677889', userTgName: '赵六', isMerchantBound: true, merchantName: '供应商B', role: '商户代表' },
+        { userTgId: '112233445', userTgName: '王五', role: '商户群普通权限' },
+        { userTgId: '556677889', userTgName: '赵六', role: '客服' },
+        { userTgId: '778899001', userTgName: '马七', role: '运营' },
     ],
     '-100323456789': [
-        { userTgId: '998877665', userTgName: '钱七', isMerchantBound: true, merchantName: '供应商C', role: '供应商管理员' },
+        { userTgId: '998877665', userTgName: '钱七', role: '上游群普通权限' },
+        { userTgId: '445566778', userTgName: '周十', role: '超级管理员' },
     ],
     '-100423456789': [
-        { userTgId: '102938475', userTgName: '孙八', isMerchantBound: false, role: null },
+        { userTgId: '102938475', userTgName: '孙八', role: '商户群普通权限' },
+        { userTgId: '102938476', userTgName: '杨九', role: '客服' },
     ]
+};
+
+// 根据角色获取标签类型
+const getRoleTagType = (role) => {
+  if (!role) return 'danger';
+  
+  switch (role) {
+    case '超级管理员':
+      return 'danger';
+    case '财务':
+      return 'warning';
+    case '运营':
+      return 'success';
+    case '客服':
+      return 'primary';
+    case '上游群普通权限':
+    case '商户群普通权限':
+      return 'info';
+    default:
+      return 'info';
+  }
 };
 
 // 模拟成员权限数据
@@ -793,19 +855,45 @@ const handleCurrentChange = (val) => {
 };
 
 const openMemberListDialog = (row) => {
+  console.log('打开成员列表弹窗:', row);
   currentGroupForMembers.value = row;
   memberListLoading.value = true;
+  
   // 模拟API调用
   setTimeout(() => {
-    memberListData.value = mockMemberData[row.groupId] || [];
+    // 获取原始数据
+    const members = mockMemberData[row.groupId] || [];
+    console.log('原始成员数据:', members);
+    
+    // 根据群组类型过滤成员权限
+    if (row.groupType === 'upstream') {
+      // 上游群不显示"商户群普通权限"的成员
+      memberListData.value = members.filter(m => m.role !== '商户群普通权限');
+      console.log('过滤后的上游群成员:', memberListData.value);
+    } else if (row.groupType === 'merchant') {
+      // 商户群不显示"上游群普通权限"的成员
+      memberListData.value = members.filter(m => m.role !== '上游群普通权限');
+      console.log('过滤后的商户群成员:', memberListData.value);
+    } else {
+      memberListData.value = members;
+    }
+    
     memberListLoading.value = false;
   }, 500);
+  
   memberListDialogVisible.value = true;
 };
 
 const openBoundSuppliersDialog = (row) => {
   currentGroupForBinding.value = row;
   boundSuppliersDialogVisible.value = true;
+};
+
+const openBoundMerchantsDialog = (row) => {
+  console.log('打开商户绑定弹窗:', row);
+  console.log('绑定商户列表:', row.boundMerchants);
+  currentGroupForMerchantBinding.value = row;
+  boundMerchantsDialogVisible.value = true;
 };
 
 const openBindSupplierDialog = (row) => {
@@ -824,11 +912,18 @@ const submitSupplierBinding = () => {
       const index = tableData.value.findIndex(item => item.groupId === currentGroupForBinding.value.groupId);
       if (index !== -1) {
         const selectedSuppliers = supplierOptions.value.filter(s => bindSupplierForm.supplierIds.includes(s.id));
-        tableData.value[index].boundSuppliers = selectedSuppliers.map(s => ({
-          id: s.id,
-          name: s.name,
-          template: `模板${s.id.slice(-1)}`
-        }));
+        tableData.value[index].boundSuppliers = selectedSuppliers.map(s => {
+          let template = '闪电';
+          if (s.id === 2) template = '纵横';
+          if (s.id === 3) template = '熊猫';
+          if (s.id === 4) template = '闪电';
+          
+          return {
+            id: s.id,
+            name: s.name,
+            template: template
+          };
+        });
       }
     }
     bindSupplierLoading.value = false;

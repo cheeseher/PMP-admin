@@ -83,21 +83,12 @@
         </el-table-column>
         <el-table-column prop="changeAmount" label="变更金额" width="120" align="right">
           <template #default="scope">
-            <span :style="{ color: scope.row.changeAmount >= 0 ? '#f56c6c' : '#67c23a' }">
-              ¥{{ formatAmount(scope.row.changeAmount) }}
-            </span>
+            <span>¥{{ formatAmount(scope.row.changeAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="afterAmount" label="变更后余额" width="120" align="right">
           <template #default="scope">
-            <span :style="{ color: '#f56c6c' }">
-              ¥{{ formatAmount(scope.row.afterAmount) }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="transactionAmount" label="交易金额" width="120" align="right">
-          <template #default="scope">
-            <span>¥{{ formatAmount(scope.row.transactionAmount) }}</span>
+            <span>¥{{ formatAmount(scope.row.afterAmount) }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="merchantRate" label="商户费率" width="100" align="right">

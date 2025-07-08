@@ -81,7 +81,9 @@
         </el-table-column>
         <el-table-column prop="transactionAmount" label="交易金额" min-width="100">
           <template #default="scope">
-            {{ formatAmount(scope.row.transactionAmount) }}
+            <span :style="{ color: scope.row.transactionAmount >= 0 ? '#67c23a' : '#f56c6c' }">
+              {{ scope.row.transactionAmount >= 0 ? '+' : '' }}{{ formatAmount(scope.row.transactionAmount) }}
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="transactionType" label="交易类型" min-width="100" />
@@ -125,7 +127,8 @@ const transactionTypeOptions = [
   { label: '交易撤销', value: 'cancel' },
   { label: '余额增加', value: 'balance_increase' },
   { label: '余额扣减', value: 'balance_decrease' },
-  { label: '修改金额', value: 'amount_change' }
+  { label: '修改金额', value: 'amount_change' },
+  { label: '修改金额冲账', value: 'amount_change_reverse' }
 ]
 
 // 商户选项
@@ -180,87 +183,138 @@ const searchForm = reactive({
 const tableData = ref([
   {
     merchantName: '测试商户A',
-    transactionNo: 'P202503251139111459862767',
-    beforeTotal: 741564.00,
-    beforeAvailable: 741564.00,
+    transactionNo: 'P202503301425001234',
+    beforeTotal: 856.00,
+    beforeAvailable: 856.00,
+    beforeFrozen: 0.00,
+    transactionAmount: 120.00,
+    transactionType: '修改金额',
+    fee: 2.40,
+    freezeAmount: 0.00,
+    afterTotal: 976.00,
+    afterAvailable: 976.00,
+    afterFrozen: 0.00,
+    remark: '订单金额修改',
+    flowNo: 'MJK202503301425001001',
+    createTime: '2025-03-30 14:25:00'
+  },
+  {
+    merchantName: '测试商户A',
+    transactionNo: 'P202503301424001234',
+    beforeTotal: 956.00,
+    beforeAvailable: 956.00,
+    beforeFrozen: 0.00,
+    transactionAmount: -100.00,
+    transactionType: '修改金额冲账',
+    fee: 0.00,
+    freezeAmount: 0.00,
+    afterTotal: 856.00,
+    afterAvailable: 856.00,
+    afterFrozen: 0.00,
+    remark: '原订单金额冲账',
+    flowNo: 'MJK202503301424001000',
+    createTime: '2025-03-30 14:24:00'
+  },
+  {
+    merchantName: '测试商户A',
+    transactionNo: 'P202503291044001234',
+    beforeTotal: 865.10,
+    beforeAvailable: 865.10,
     beforeFrozen: 0.00,
     transactionAmount: 90.90,
     transactionType: '收款',
     fee: 1.82,
     freezeAmount: 0.00,
-    afterTotal: 741655.00,
-    afterAvailable: 741655.00,
+    afterTotal: 956.00,
+    afterAvailable: 956.00,
     afterFrozen: 0.00,
     remark: '',
-    flowNo: 'MJK202503251139111459862001',
+    flowNo: 'MJK202503291044001001',
     createTime: '2025-03-29 10:44:52'
   },
   {
     merchantName: '商户C账号',
-    transactionNo: 'P202503251139111459862767',
-    beforeTotal: 741654.00,
-    beforeAvailable: 741654.00,
+    transactionNo: 'P202503291030001235',
+    beforeTotal: 965.10,
+    beforeAvailable: 965.10,
     beforeFrozen: 0.00,
-    transactionAmount: 90.90,
+    transactionAmount: -100.00,
     transactionType: '交易撤销',
-    fee: 0.91,
+    fee: 0.00,
     freezeAmount: 0.00,
-    afterTotal: 741564.00,
-    afterAvailable: 741564.00,
+    afterTotal: 865.10,
+    afterAvailable: 865.10,
     afterFrozen: 0.00,
     remark: '',
-    flowNo: 'MJK202503251139111459862002',
-    createTime: '2025-03-29 10:44:52'
+    flowNo: 'MJK202503291030001002',
+    createTime: '2025-03-29 10:30:00'
+  },
+  {
+    merchantName: '商户C账号',
+    transactionNo: 'P202503291000001235',
+    beforeTotal: 865.10,
+    beforeAvailable: 865.10,
+    beforeFrozen: 0.00,
+    transactionAmount: 100.00,
+    transactionType: '收款',
+    fee: 1.00,
+    freezeAmount: 0.00,
+    afterTotal: 965.10,
+    afterAvailable: 965.10,
+    afterFrozen: 0.00,
+    remark: '',
+    flowNo: 'MJK202503291000001003',
+    createTime: '2025-03-29 10:00:00'
   },
   {
     merchantName: '商户D账号',
-    transactionNo: 'P202410311552555619957777',
-    beforeTotal: 741204.00,
-    beforeAvailable: 741204.00,
+    transactionNo: 'P202503281533001236',
+    beforeTotal: 415.10,
+    beforeAvailable: 415.10,
     beforeFrozen: 0.00,
     transactionAmount: 450.00,
     transactionType: '修改金额',
     fee: 4.50,
     freezeAmount: 0.00,
-    afterTotal: 741654.00,
-    afterAvailable: 741654.00,
+    afterTotal: 865.10,
+    afterAvailable: 865.10,
     afterFrozen: 0.00,
     remark: '',
-    flowNo: 'MJK202410311552555619957003',
-    createTime: '2025-03-29 10:33:45'
+    flowNo: 'MJK202503281533001004',
+    createTime: '2025-03-28 15:33:45'
   },
   {
     merchantName: '测试商户B',
     transactionNo: '',
-    beforeTotal: 5000.00,
-    beforeAvailable: 5000.00,
+    beforeTotal: 315.10,
+    beforeAvailable: 315.10,
     beforeFrozen: 0.00,
-    transactionAmount: 1000.00,
+    transactionAmount: 100.00,
     transactionType: '余额增加',
     fee: 0.00,
     freezeAmount: 0.00,
-    afterTotal: 6000.00,
-    afterAvailable: 6000.00,
+    afterTotal: 415.10,
+    afterAvailable: 415.10,
     afterFrozen: 0.00,
     remark: '人工进行余额操作时输入的备注',
-    flowNo: 'MJK202410291245638921547004',
+    flowNo: 'MJK202503281521001005',
     createTime: '2025-03-28 15:21:33'
   },
   {
     merchantName: '商户E账号',
     transactionNo: '',
-    beforeTotal: 8500.00,
-    beforeAvailable: 8500.00,
+    beforeTotal: 100.00,
+    beforeAvailable: 100.00,
     beforeFrozen: 0.00,
-    transactionAmount: 2500.00,
-    transactionType: '余额扣减',
+    transactionAmount: 215.10,
+    transactionType: '余额增加',
     fee: 0.00,
     freezeAmount: 0.00,
-    afterTotal: 6000.00,
-    afterAvailable: 6000.00,
+    afterTotal: 315.10,
+    afterAvailable: 315.10,
     afterFrozen: 0.00,
     remark: '人工进行余额操作时输入的备注',
-    flowNo: 'MJK202410281332974856132005',
+    flowNo: 'MJK202503270918001006',
     createTime: '2025-03-27 09:18:12'
   }
 ])

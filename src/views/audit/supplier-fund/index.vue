@@ -90,7 +90,9 @@
         </el-table-column>
         <el-table-column prop="transactionAmount" label="交易金额" min-width="100">
           <template #default="scope">
-            {{ formatAmount(scope.row.transactionAmount) }}
+            <span :style="{ color: scope.row.transactionAmount >= 0 ? '#67c23a' : '#f56c6c' }">
+              {{ scope.row.transactionAmount >= 0 ? '+' : '' }}{{ formatAmount(scope.row.transactionAmount) }}
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="transactionType" label="交易类型" min-width="100" />
@@ -142,7 +144,8 @@ const transactionTypeOptions = [
   { label: '交易撤销', value: 'cancel' },
   { label: '余额增加', value: 'balance_increase' },
   { label: '余额扣减', value: 'balance_decrease' },
-  { label: '修改金额', value: 'amount_change' }
+  { label: '修改金额', value: 'amount_change' },
+  { label: '修改金额冲账', value: 'amount_change_reverse' }
 ]
 
 // 供应商选项
@@ -189,51 +192,85 @@ const loading = ref(false)
 const tableData = ref([
   {
     upstream: '新闪电',
-    transactionNo: 'P202410311552458103036361',
-    flowNo: 'CJK202410311552458103036',
-    beforeTotal: 658968.45,
-    beforeAvailable: 658468.45,
-    beforeFrozen: 500.00,
-    transactionAmount: 450.00,
+    transactionNo: 'P202503301430001234',
+    flowNo: 'CJK202503301430001001',
+    beforeTotal: 558.00,
+    beforeAvailable: 458.00,
+    beforeFrozen: 100.00,
+    transactionAmount: 120.00,
     transactionType: '修改金额',
-    fee: 4.50,
+    fee: 1.20,
     freezeAmount: 0.00,
-    afterTotal: 658938.45,
-    afterAvailable: 658438.45,
-    afterFrozen: 500.00,
+    afterTotal: 678.00,
+    afterAvailable: 578.00,
+    afterFrozen: 100.00,
+    remark: '订单金额修改',
+    createTime: '2025-03-30 14:30:00'
+  },
+  {
+    upstream: '新闪电',
+    transactionNo: 'P202503301429001234',
+    flowNo: 'CJK202503301429001000',
+    beforeTotal: 658.00,
+    beforeAvailable: 558.00,
+    beforeFrozen: 100.00,
+    transactionAmount: -100.00,
+    transactionType: '修改金额冲账',
+    fee: 0.00,
+    freezeAmount: 0.00,
+    afterTotal: 558.00,
+    afterAvailable: 458.00,
+    afterFrozen: 100.00,
+    remark: '原订单金额冲账',
+    createTime: '2025-03-30 14:29:00'
+  },
+  {
+    upstream: '新闪电',
+    transactionNo: 'P202503301342001234',
+    flowNo: 'CJK202503301342001002',
+    beforeTotal: 588.00,
+    beforeAvailable: 488.00,
+    beforeFrozen: 100.00,
+    transactionAmount: 70.00,
+    transactionType: '收款',
+    fee: 0.70,
+    freezeAmount: 0.00,
+    afterTotal: 658.00,
+    afterAvailable: 558.00,
+    afterFrozen: 100.00,
     remark: '',
-    createTime: '2025-03-29 14:54:37'
+    createTime: '2025-03-30 13:42:00'
   },
   {
     upstream: '闪付通',
-    transactionNo: 'P202410311552458103036361',
-    flowNo: 'CJK202410311552458103037',
-    beforeTotal: 658468.45,
-    beforeAvailable: 657968.45,
-    beforeFrozen: 500.00,
+    transactionNo: 'P202503291454001235',
+    flowNo: 'CJK202503291454001003',
+    beforeTotal: 88.00,
+    beforeAvailable: 88.00,
+    beforeFrozen: 0.00,
     transactionAmount: 500.00,
     transactionType: '收款',
     fee: 10.00,
-    freezeAmount: 0.00,
-    afterTotal: 658968.45,
-    afterAvailable: 658468.45,
-    afterFrozen: 500.00,
+    freezeAmount: 100.00,
+    afterTotal: 588.00,
+    afterAvailable: 488.00,
+    afterFrozen: 100.00,
     remark: '',
     createTime: '2025-03-29 14:54:37'
   },
   {
     upstream: '万通支付',
-    transactionNo: 'P202503251139111459862760',
-    flowNo: 'CJK202503251139111459862',
-    beforeTotal: 101.00,
-    beforeAvailable: 101.00,
+    transactionNo: 'P202503291044001236',
+    flowNo: 'CJK202503291044001004',
+    beforeTotal: 178.90,
+    beforeAvailable: 178.90,
     beforeFrozen: 0.00,
-    transactionAmount: 90.90,
+    transactionAmount: -90.90,
     transactionType: '交易撤销',
     fee: 0.91,
     freezeAmount: 0.00,
-    afterTotal: 70.70,
-    afterAvailable: 70.70,
+    afterTotal: 88.00,
+    afterAvailable: 88.00,
     afterFrozen: 0.00,
     remark: '',
     createTime: '2025-03-29 10:44:52'
@@ -241,16 +278,16 @@ const tableData = ref([
   {
     upstream: '快速通道',
     transactionNo: '',
-    flowNo: 'CJK202410291245638921547004',
-    beforeTotal: 5000.00,
-    beforeAvailable: 5000.00,
+    flowNo: 'CJK202503281521001005',
+    beforeTotal: 78.90,
+    beforeAvailable: 78.90,
     beforeFrozen: 0.00,
-    transactionAmount: 1000.00,
+    transactionAmount: 100.00,
     transactionType: '余额增加',
     fee: 0.00,
     freezeAmount: 0.00,
-    afterTotal: 6000.00,
-    afterAvailable: 6000.00,
+    afterTotal: 178.90,
+    afterAvailable: 178.90,
     afterFrozen: 0.00,
     remark: '人工进行余额操作时输入的备注',
     createTime: '2025-03-28 15:21:33'
@@ -258,16 +295,16 @@ const tableData = ref([
   {
     upstream: 'test',
     transactionNo: '',
-    flowNo: 'CJK202410281332974856132005',
-    beforeTotal: 8500.00,
-    beforeAvailable: 8500.00,
+    flowNo: 'CJK202503270918001006',
+    beforeTotal: 100.00,
+    beforeAvailable: 100.00,
     beforeFrozen: 0.00,
-    transactionAmount: 2500.00,
+    transactionAmount: -21.10,
     transactionType: '余额扣减',
     fee: 0.00,
     freezeAmount: 0.00,
-    afterTotal: 6000.00,
-    afterAvailable: 6000.00,
+    afterTotal: 78.90,
+    afterAvailable: 78.90,
     afterFrozen: 0.00,
     remark: '人工进行余额操作时输入的备注',
     createTime: '2025-03-27 09:18:12'

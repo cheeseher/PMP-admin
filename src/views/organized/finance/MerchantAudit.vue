@@ -14,6 +14,7 @@
               <el-option label="余额增加" value="balance_increase" />
               <el-option label="余额扣减" value="balance_decrease" />
               <el-option label="修改金额" value="amount_change" />
+              <el-option label="修改金额冲账" value="amount_change_reverse" />
             </el-select>
           </el-form-item>
           <el-form-item label="商户订单号：">
@@ -83,7 +84,9 @@
         </el-table-column>
         <el-table-column prop="changeAmount" label="变更金额" width="120" align="right">
           <template #default="scope">
-            <span>¥{{ formatAmount(scope.row.changeAmount) }}</span>
+            <span :style="{ color: scope.row.changeAmount >= 0 ? '#67c23a' : '#f56c6c' }">
+              ¥{{ scope.row.changeAmount >= 0 ? '+' : '' }}{{ formatAmount(scope.row.changeAmount) }}
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="afterAmount" label="变更后余额" width="120" align="right">
@@ -175,27 +178,55 @@ const searchForm = reactive({
 // 表格数据
 const tableData = ref([
   {
+    type: '修改金额',
+    beforeAmount: 205.00,
+    changeAmount: 120.00,
+    afterAmount: 325.00,
+    transactionAmount: 120.00,
+    merchantRate: 2.00,
+    merchantFee: 2.40,
+    remark: '订单金额修改',
+    auditId: 'MJK202503301425001001',
+    systemOrderId: 'P202503301425001234',
+    merchantOrderId: 'M20250330001',
+    createTime: '2025/03/30 14:25:00'
+  },
+  {
+    type: '修改金额冲账',
+    beforeAmount: 305.00,
+    changeAmount: -100.00,
+    afterAmount: 205.00,
+    transactionAmount: 100.00,
+    merchantRate: 0.00,
+    merchantFee: 0.00,
+    remark: '原订单金额冲账',
+    auditId: 'MJK202503301424001000',
+    systemOrderId: 'P202503301424001234',
+    merchantOrderId: 'M20250330001',
+    createTime: '2025/03/30 14:24:00'
+  },
+  {
     type: '收款',
-    beforeAmount: 5000.90,
-    changeAmount: 284.10,
-    afterAmount: 5285.00,
-    transactionAmount: 300.00,
-    merchantRate: 5.30,
-    merchantFee: 15.90,
+    beforeAmount: 235.00,
+    changeAmount: 70.00,
+    afterAmount: 305.00,
+    transactionAmount: 80.00,
+    merchantRate: 12.50,
+    merchantFee: 10.00,
     remark: '-',
-    auditId: 'MJK202503281223510001',
-    systemOrderId: 'P202503281223510001',
-    merchantOrderId: 'M20250328001',
-    createTime: '2025/03/28 12:23:51'
+    auditId: 'MJK202503291223510001',
+    systemOrderId: 'P202503291223510001',
+    merchantOrderId: 'M20250329001',
+    createTime: '2025/03/29 12:23:51'
   },
   {
     type: '交易撤销',
-    beforeAmount: 4519.90,
-    changeAmount: 481.00,
-    afterAmount: 5000.90,
-    transactionAmount: 500.00,
-    merchantRate: 3.80,
-    merchantFee: 19.00,
+    beforeAmount: 335.00,
+    changeAmount: -100.00,
+    afterAmount: 235.00,
+    transactionAmount: 100.00,
+    merchantRate: 0.00,
+    merchantFee: 0.00,
     remark: '-',
     auditId: 'MJK202503281127260002',
     systemOrderId: 'P202503281127260002',
@@ -204,12 +235,12 @@ const tableData = ref([
   },
   {
     type: '修改金额',
-    beforeAmount: 4235.80,
-    changeAmount: 284.10,
-    afterAmount: 4519.90,
-    transactionAmount: 300.00,
+    beforeAmount: 235.00,
+    changeAmount: 100.00,
+    afterAmount: 335.00,
+    transactionAmount: 100.00,
     merchantRate: 5.30,
-    merchantFee: 15.90,
+    merchantFee: 5.30,
     remark: '-',
     auditId: 'MJK202503280950500003',
     systemOrderId: 'P202503280950500003',
@@ -218,10 +249,10 @@ const tableData = ref([
   },
   {
     type: '余额增加',
-    beforeAmount: 3235.80,
-    changeAmount: 1000.00,
-    afterAmount: 4235.80,
-    transactionAmount: 1000.00,
+    beforeAmount: 135.00,
+    changeAmount: 100.00,
+    afterAmount: 235.00,
+    transactionAmount: 100.00,
     merchantRate: 0,
     merchantFee: 0,
     remark: '人工进行余额操作时输入的备注',
@@ -232,10 +263,10 @@ const tableData = ref([
   },
   {
     type: '余额扣减',
-    beforeAmount: 5235.80,
-    changeAmount: -2000.00,
-    afterAmount: 3235.80,
-    transactionAmount: 2000.00,
+    beforeAmount: 100.00,
+    changeAmount: -65.00,
+    afterAmount: 135.00,
+    transactionAmount: 65.00,
     merchantRate: 0,
     merchantFee: 0,
     remark: '人工进行余额操作时输入的备注',

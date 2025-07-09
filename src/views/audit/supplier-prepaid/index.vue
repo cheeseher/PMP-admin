@@ -89,7 +89,9 @@
         </el-table-column>
         <el-table-column prop="transactionAmount" label="交易金额" min-width="100">
           <template #default="scope">
-            {{ formatAmount(scope.row.transactionAmount) }}
+            <span :style="{ color: scope.row.transactionAmount >= 0 ? '#67c23a' : '#f56c6c' }">
+              {{ scope.row.transactionAmount >= 0 ? '+' : '' }}{{ formatAmount(scope.row.transactionAmount) }}
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="transactionType" label="交易类型" min-width="100" />
@@ -200,7 +202,7 @@ const tableData = ref([
     beforeTotal: 8500.00,
     beforeAvailable: 8500.00,
     beforeFrozen: 0.00,
-    transactionAmount: 2500.00,
+    transactionAmount: -2500.00,
     transactionType: '余额扣减',
     fee: 0.00,
     freezeAmount: 0.00,

@@ -64,7 +64,9 @@
         </el-table-column>
         <el-table-column prop="changeAmount" label="变更金额" min-width="120" align="right">
           <template #default="scope">
-            <span :class="getAmountClass(scope.row.changeAmount)">¥{{ formatAmount(scope.row.changeAmount) }}</span>
+            <span :style="{ color: scope.row.changeAmount >= 0 ? '#67c23a' : '#f56c6c' }">
+              ¥{{ scope.row.changeAmount >= 0 ? '+' : '' }}{{ formatAmount(scope.row.changeAmount) }}
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="afterPaidAmount" label="变更后预付" min-width="120" align="right">

@@ -55,7 +55,7 @@
       >
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="botName" label="机器人名称" min-width="180" />
-        <el-table-column prop="botUsername" label="Bot-Username" min-width="180" />
+        <el-table-column prop="botUsername" label="Bot 用户名" min-width="180" />
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 'enabled' ? 'success' : 'danger'">
@@ -123,6 +123,13 @@
             :disabled="dialogType === 'edit'" 
           />
         </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-switch
+            v-model="botForm.statusEnabled"
+            active-text="开启"
+            inactive-text="关闭"
+          />
+        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -185,7 +192,8 @@ const botForm = reactive({
   botName: '',
   botUsername: '',
   token: '',
-  status: 'enabled' // 默认为开启状态
+  status: 'enabled', // 默认为开启状态
+  statusEnabled: true // 新增状态开关属性，默认为开启
 })
 
 // 表单验证规则
@@ -271,6 +279,7 @@ const openBotDialog = (type, row) => {
   nextTick(() => {
     botFormRef.value.resetFields()
     botForm.id = null
+    botForm.statusEnabled = true // 默认设置为开启
     
     if (type === 'edit' && row) {
       botForm.id = row.id
@@ -278,6 +287,7 @@ const openBotDialog = (type, row) => {
       botForm.botUsername = row.botUsername
       botForm.token = row.token
       botForm.status = row.status
+      botForm.statusEnabled = row.status === 'enabled' // 设置开关状态
     }
   })
 }
@@ -288,6 +298,9 @@ const submitBotForm = () => {
     if (valid) {
       // 模拟提交
       loading.value = true
+      // 根据开关状态设置实际status值
+      botForm.status = botForm.statusEnabled ? 'enabled' : 'disabled'
+      
       setTimeout(() => {
         if (dialogType.value === 'add') {
           // 模拟添加数据
@@ -296,7 +309,7 @@ const submitBotForm = () => {
             ...botForm,
             creator: 'admin',
             createdAt: new Date().toLocaleString(),
-            status: 'offline'
+            status: botForm.status // 使用从开关转换的状态值
           }
           tableData.value.unshift(newBot)
           total.value++

@@ -190,19 +190,22 @@
           </el-radio-group>
           <div class="form-tip">预设指令为系统内置基础指令，自定义指令为自定义扩展指令</div>
         </el-form-item>
-        <el-form-item label="指令关键词" prop="keyword">
+        <!-- 预设指令和自定义指令共有的字段 -->
+        <el-form-item label="指令名称" prop="keyword">
           <el-input 
             v-model="commandForm.keyword" 
-            placeholder="请输入指令关键词，如：ye"
+            placeholder="请输入指令名称，如：ye"
           />
         </el-form-item>
-        <el-form-item label="示例格式" prop="format">
+        <!-- 预设指令特有的字段 -->
+        <el-form-item v-if="commandForm.type === 'default'" label="指令格式" prop="format">
           <el-input 
             v-model="commandForm.format" 
-            placeholder="请输入示例格式，如：ye#商户名"
+            placeholder="请输入指令格式，如：ye#商户名"
           />
         </el-form-item>
-        <el-form-item label="响应模板" prop="responseTemplate" v-if="!(dialogType === 'edit' && commandForm.type === 'default')">
+        <!-- 自定义指令特有的字段 -->
+        <el-form-item v-if="commandForm.type === 'other'" label="回复内容" prop="responseTemplate">
           <el-input 
             v-model="commandForm.responseTemplate"
             type="textarea"
@@ -214,6 +217,7 @@
           />
           <div class="form-tip">支持 Mustache 变量替换语法，使用 {{变量名}} 引用变量</div>
         </el-form-item>
+        <!-- 删除预设指令的响应模板字段 -->
         <el-form-item label="启用状态" prop="status">
           <el-switch
             v-model="commandForm.statusEnabled"
@@ -459,14 +463,14 @@ const commandForm = reactive({
 // 表单验证规则
 const commandRules = {
   keyword: [
-    { required: true, message: '请输入指令关键词', trigger: 'blur' },
+    { required: true, message: '请输入指令名称', trigger: 'blur' },
     { min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur' }
   ],
   format: [
-    { required: true, message: '请输入指令示例格式', trigger: 'blur' }
+    { required: true, message: '请输入指令格式', trigger: 'blur' }
   ],
   responseTemplate: [
-    { required: true, message: '请输入响应模板', trigger: 'blur' }
+    { required: true, message: '请输入回复内容', trigger: 'blur' }
   ]
 }
 

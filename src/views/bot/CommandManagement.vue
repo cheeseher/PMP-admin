@@ -101,9 +101,7 @@
                 <el-button type="primary" link @click="openCommandDialog('edit', row.type, row)">
                   编辑
                 </el-button>
-                <el-button type="danger" link @click="handleDelete(row)">
-                  删除
-                </el-button>
+                <!-- 删除预设指令表格中的删除按钮 -->
               </template>
             </el-table-column>
           </el-table>

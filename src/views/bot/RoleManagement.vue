@@ -83,6 +83,15 @@
             </el-tag>
           </template>
         </el-table-column>
+        
+        <el-table-column prop="callbackPermission" label="回调权限" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.callbackPermission ? 'success' : 'danger'">
+              {{ row.callbackPermission ? '启用' : '禁用' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        
         <el-table-column fixed="right" label="操作" width="120" align="center">
           <template #default="{ row }">
             <el-button type="primary" link @click="openDialog('edit', row)">编辑</el-button>
@@ -184,6 +193,15 @@
             <el-radio label="enabled">启用</el-radio>
             <el-radio label="disabled">禁用</el-radio>
           </el-radio-group>
+        </el-form-item>
+        
+        <el-form-item label="回调权限" prop="callbackPermission">
+          <el-switch
+            v-model="dialogForm.callbackPermission"
+            active-text="启用"
+            inactive-text="禁用"
+          />
+          <div class="form-tip">开启后，该角色将拥有回调第三方系统的权限</div>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -445,7 +463,8 @@ const mockRoleData = [
     commands: [1, 2, 3, 4, 5],
     tgids: '123456789,987654321',
     groupCount: 2,
-    groupTypePermission: true
+    groupTypePermission: true,
+    callbackPermission: true
   },
   {
     id: 2,
@@ -455,7 +474,8 @@ const mockRoleData = [
     commands: [1, 2, 4],
     tgids: '123456789',
     groupCount: 1,
-    groupTypePermission: false
+    groupTypePermission: false,
+    callbackPermission: true
   },
   {
     id: 3,
@@ -465,7 +485,8 @@ const mockRoleData = [
     commands: [1, 2],
     tgids: '',
     groupCount: 0,
-    groupTypePermission: false
+    groupTypePermission: false,
+    callbackPermission: true
   },
   {
     id: 4,
@@ -475,7 +496,8 @@ const mockRoleData = [
     commands: [],
     tgids: '',
     groupCount: 0,
-    groupTypePermission: false
+    groupTypePermission: false,
+    callbackPermission: true
   }
 ];
 
@@ -593,6 +615,7 @@ const dialogForm = reactive({
   cascaderCommands: [], // 级联选择器使用的格式
   tgids: '', // 旧的TGID字段（用于兼容）
   members: [], // 新增关联人员列表
+  callbackPermission: false // 新增回调权限字段
 
 });
 
@@ -741,6 +764,7 @@ const openDialog = (type, row) => {
     dialogForm.cascaderCommands = getSelectedCascaderValues(row.commands); // 转换为级联选择器格式
     dialogForm.tgids = row.tgids || ''; // 保留旧的TGID字段
     dialogForm.members = tgidsToMembers(row.tgids, row.id); // 从旧的TGID字段转换成员数组
+    dialogForm.callbackPermission = row.callbackPermission; // 设置回调权限
 
   } else {
     dialogForm.id = null;
@@ -751,6 +775,7 @@ const openDialog = (type, row) => {
     dialogForm.cascaderCommands = [];
     dialogForm.tgids = '';
     dialogForm.members = [];
+    dialogForm.callbackPermission = false; // 新增角色时重置回调权限
 
   }
   dialogVisible.value = true;
@@ -793,7 +818,7 @@ const submitForm = () => {
       status: dialogForm.status,
       commands: commandIds,
       tgids: tgids,
-    
+      callbackPermission: dialogForm.callbackPermission // 添加回调权限
     };
     
     // 保存到mockGroupsData

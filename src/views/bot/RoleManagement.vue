@@ -201,7 +201,7 @@
             active-text="启用"
             inactive-text="禁用"
           />
-          <div class="form-tip">开启后，该角色将拥有回调第三方系统的权限</div>
+          <div class="form-tip">开启后，该角色可在上游群中点击机器人回复指令中的按钮来执行操作</div>
         </el-form-item>
       </el-form>
       <template #footer>

@@ -67,7 +67,7 @@
                 style="margin-bottom: 0"
               >
                 <template #title>
-                  <span>预设指令为系统内置指令，不支持新增，仅可编辑状态和配置</span>
+                  <span>预设指令为系统内置指令，不支持新增，仅可编辑状态</span>
                 </template>
               </el-alert>
             </div>
@@ -193,6 +193,7 @@
           <el-input 
             v-model="commandForm.keyword" 
             placeholder="请输入指令名称，如：ye"
+            :readonly="dialogType === 'edit' && commandForm.type === 'default'"
           />
         </el-form-item>
         <!-- 预设指令特有的字段 -->
@@ -200,6 +201,7 @@
           <el-input 
             v-model="commandForm.format" 
             placeholder="请输入指令格式，如：ye#商户名"
+            :readonly="dialogType === 'edit' && commandForm.type === 'default'"
           />
         </el-form-item>
         <!-- 自定义指令特有的字段 -->
@@ -285,7 +287,7 @@ const allCommands = ref([
   {
     id: 4,
     keyword: '解绑商户',
-    format: 'jcbdsh#商户名称',
+    format: 'jcbdsh',
     responseTemplate: '商户 {{merchantName}} 解绑成功！',
     requiresBinding: true,
     status: 'enabled',
@@ -348,7 +350,7 @@ const allCommands = ref([
   {
     id: 11,
     keyword: '解绑渠道',
-    format: 'jcbdqd#渠道名称',
+    format: 'jcbdqd',
     responseTemplate: '渠道 {{channelName}} 解绑成功！',
     requiresBinding: true,
     status: 'enabled',

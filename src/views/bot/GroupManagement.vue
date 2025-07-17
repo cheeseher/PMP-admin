@@ -20,6 +20,7 @@
               <el-option label="全部" value="" />
               <el-option label="上游群" value="upstream" />
               <el-option label="商户群" value="merchant" />
+              <el-option label="未分配" value="unassigned" />
             </el-select>
           </el-form-item>
           <el-form-item label="关联机器人：">
@@ -73,8 +74,8 @@
         </el-table-column>
         <el-table-column prop="groupType" label="群组类型" width="120" align="center">
           <template #default="{ row }">
-            <el-tag :type="row.groupType === 'upstream' ? 'success' : 'primary'">
-              {{ row.groupType === 'upstream' ? '上游群' : '商户群' }}
+            <el-tag :type="getGroupTypeTagType(row.groupType)">
+              {{ getGroupTypeLabel(row.groupType) }}
             </el-tag>
           </template>
         </el-table-column>
@@ -124,7 +125,7 @@
     >
       <div v-if="currentGroupForMembers" style="margin-bottom: 16px;">
           <strong>群组: {{ currentGroupForMembers.groupName }} ({{ currentGroupForMembers.groupId }})</strong>
-          <p>群组类型: {{ currentGroupForMembers.groupType === 'upstream' ? '上游群' : '商户群' }}</p>
+          <p>群组类型: {{ getGroupTypeLabel(currentGroupForMembers.groupType) }}</p>
       </div>
       <el-table :data="memberListData" border stripe v-loading="memberListLoading">
         <el-table-column prop="userTgId" label="用户TGID" width="120" />
@@ -602,11 +603,24 @@ const tableData = ref([
     boundMerchants: [
       { id: 1004, name: '商户D' }
     ]
+  },
+  {
+    groupId: '-100523456789',
+    groupName: '未分配群组',
+    groupLink: 'https://t.me/unassigned_group',
+    groupType: 'unassigned',
+    roleId: null,
+    roleName: null,
+    memberCount: 8,
+    associatedBot: '机器人A',
+    createTime: '2023-12-15 11:30:20',
+    boundSuppliers: [],
+    boundMerchants: []
   }
 ]);
 const currentPage = ref(1);
 const pageSize = ref(10);
-const total = ref(4);
+const total = ref(5);
 
 // 群组成员列表对话框
 const memberListDialogVisible = ref(false);
@@ -696,6 +710,10 @@ const mockMemberData = {
     '-100423456789': [
         { userTgId: '102938475', userTgName: '孙八', role: '商户群普通权限' },
         { userTgId: '102938476', userTgName: '杨九', role: '客服' },
+    ],
+    '-100523456789': [
+        { userTgId: '203948576', userTgName: '李十', role: '未设置' },
+        { userTgId: '304958677', userTgName: '王十一', role: '未设置' },
     ]
 };
 
@@ -717,6 +735,34 @@ const getRoleTagType = (role) => {
       return 'info';
     default:
       return 'info';
+  }
+};
+
+// 获取群组类型标签类型
+const getGroupTypeTagType = (groupType) => {
+  switch (groupType) {
+    case 'upstream':
+      return 'success';
+    case 'merchant':
+      return 'primary';
+    case 'unassigned':
+      return 'warning';
+    default:
+      return 'info';
+  }
+};
+
+// 获取群组类型标签文本
+const getGroupTypeLabel = (groupType) => {
+  switch (groupType) {
+    case 'upstream':
+      return '上游群';
+    case 'merchant':
+      return '商户群';
+    case 'unassigned':
+      return '未分配';
+    default:
+      return '未知';
   }
 };
 
@@ -874,6 +920,10 @@ const openMemberListDialog = (row) => {
       // 商户群不显示"上游群普通权限"的成员
       memberListData.value = members.filter(m => m.role !== '上游群普通权限');
       console.log('过滤后的商户群成员:', memberListData.value);
+    } else if (row.groupType === 'unassigned') {
+      // 未分配群组显示所有成员
+      memberListData.value = members;
+      console.log('未分配群组成员:', memberListData.value);
     } else {
       memberListData.value = members;
     }
@@ -1125,4 +1175,4 @@ onMounted(() => {
   font-size: 12px;
   margin-top: 5px;
 }
-</style> 
+</style>

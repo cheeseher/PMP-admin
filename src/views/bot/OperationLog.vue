@@ -95,11 +95,11 @@
               <div>{{ row.groupInvolved }}</div>
               <div class="text-secondary">ID: {{ row.groupId }}</div>
               <el-tag 
-                :type="row.groupType === 'upstream' ? 'success' : 'primary'"
+                :type="getGroupTypeTagType(row.groupType)"
                 size="small"
                 class="group-tag"
               >
-                {{ row.groupType === 'upstream' ? '上游群' : '商户群' }}
+                {{ getGroupTypeLabel(row.groupType) }}
               </el-tag>
             </div>
             <span v-else>{{ row.groupInvolved }}</span>
@@ -219,6 +219,34 @@ const showFullFeedback = (feedback) => {
   feedbackDialogVisible.value = true;
 };
 
+// 获取群组类型标签类型
+const getGroupTypeTagType = (groupType) => {
+  switch (groupType) {
+    case 'upstream':
+      return 'success';
+    case 'merchant':
+      return 'primary';
+    case 'unassigned':
+      return 'warning';
+    default:
+      return 'info';
+  }
+};
+
+// 获取群组类型标签文本
+const getGroupTypeLabel = (groupType) => {
+  switch (groupType) {
+    case 'upstream':
+      return '上游群';
+    case 'merchant':
+      return '商户群';
+    case 'unassigned':
+      return '未分配';
+    default:
+      return '未知';
+  }
+};
+
 // 模拟数据
 const mockLogData = [
   { userTgName: '张三', userTgId: '123456789', specificAction: 'ZF20231027001', imageUrl: 'https://via.placeholder.com/300/409EFF/FFFFFF?text=支付图片', botInvolved: '机器人A', groupInvolved: '闪电', groupType: 'upstream', groupId: '-100123456789', botFeedback: '此处转发上游群回复的内容', operationTime: '2023-10-27 10:00:00' },
@@ -226,6 +254,7 @@ const mockLogData = [
   { userTgName: '李四', userTgId: '987654321', specificAction: '渠道余额#纵横#+0.01', botInvolved: '机器人A', groupInvolved: '纵横', groupType: 'upstream', groupId: '-100323456789', botFeedback: '========渠道【纵横】设置预付========\n变动前：0.00\n变动金额：0.01\n变动后：0.01\n供应商余额：0.01\n【渠道余额#纵横#+0.01】操作人TG：李四 @lisi\n========设置预付完毕========', operationTime: '2023-10-27 10:10:00' },
   { userTgName: '王五', userTgId: '123456789', specificAction: '商户费率', botInvolved: '机器人A', groupInvolved: '商户B', groupType: 'merchant', groupId: '-100423456789', botFeedback: '商户【商户B】支付产品费率: \n支付产品名称：微信支付,支付产品编码：WXPAY,商户费率：0.6%\n支付产品名称：支付宝,支付产品编码：ALIPAY,商户费率：0.7%', operationTime: '2023-10-27 10:15:00' },
   { userTgName: '赵六', userTgId: '123456789', specificAction: '商户余额#商户A#-0.01', botInvolved: '机器人A', groupInvolved: '商户A', groupType: 'merchant', groupId: '-100223456789', botFeedback: '========商户【测测】设置预付========\n变动前：0.01\n变动金额：0.01\n变动后：0.00\n商户余额：0.00\n【余额#测测#-0.01】操作人TG：TG 用户名 @用户名\n========设置预付完毕========', operationTime: '2023-10-27 10:20:00' },
+  { userTgName: '测试用户', userTgId: '555666777', specificAction: 'id', botInvolved: '机器人A', groupInvolved: '未分配群组', groupType: 'unassigned', groupId: '-100523456789', botFeedback: '987654321', operationTime: '2023-10-27 10:25:00' },
 ];
 
 const loadTableData = () => {
@@ -319,4 +348,4 @@ onMounted(() => {
   width: fit-content;
   margin-top: 3px;
 }
-</style> 
+</style>

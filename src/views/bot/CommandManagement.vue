@@ -59,15 +59,16 @@
         <el-tab-pane label="预设指令" name="default">
           <!-- 预设指令表格工具栏 -->
           <div class="table-toolbar">
-            <div class="left">
+            <div class="left" style="display: flex; align-items: center; gap: 10px;">
+              <el-button type="primary" :icon="Setting" @click="openOrderQuerySettingDrawer">查单按钮设置</el-button>
               <el-alert
                 type="info"
                 show-icon
                 :closable="false"
-                style="margin-bottom: 0"
+                style="margin: 0; padding: 0 16px; line-height: 30px; height: 32px; box-sizing: border-box;"
               >
                 <template #title>
-                  <span>预设指令为系统内置指令，不支持新增，仅可编辑状态</span>
+                  <span style="line-height: 32px;">预设指令为系统内置指令，不支持新增，仅可编辑状态</span>
                 </template>
               </el-alert>
             </div>
@@ -233,13 +234,56 @@
         </div>
       </template>
     </el-dialog>
+    
+    <!-- 查单按钮设置抽屉 -->
+    <el-drawer
+      v-model="orderQuerySettingDrawerVisible"
+      title="查单按钮设置"
+      direction="rtl"
+      size="50%"
+      destroy-on-close
+    >
+      <div class="drawer-container">
+        <div class="drawer-toolbar">
+          <el-button type="primary" :icon="Plus" @click="addButton">新增按钮</el-button>
+        </div>
+        <el-table :data="orderQueryButtons" border style="width: 100%">
+          <el-table-column label="按钮顺序" width="120">
+            <template #default="{ row }">
+              <el-input-number v-model="row.order" :min="1" controls-position="right" style="width: 100%" />
+            </template>
+          </el-table-column>
+          <el-table-column label="按钮文字">
+            <template #default="{ row }">
+              <el-input v-model="row.text" placeholder="请输入按钮文字" />
+            </template>
+          </el-table-column>
+          <el-table-column label="按钮回复">
+            <template #default="{ row }">
+              <el-input v-model="row.reply" type="textarea" :rows="2" placeholder="请输入点击按钮后的回复内容" />
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="80" align="center">
+            <template #default="{ $index }">
+              <el-button type="danger" link @click="removeButton($index)">删除</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <template #footer>
+        <div style="flex: auto">
+          <el-button @click="orderQuerySettingDrawerVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveOrderQuerySetting">保存</el-button>
+        </div>
+      </template>
+    </el-drawer>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, Plus, ArrowDown } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, ArrowDown, Setting } from '@element-plus/icons-vue'
 
 // 显示信息卡片
 // 移除了说明卡片
@@ -273,7 +317,11 @@ const allCommands = ref([
     responseTemplate: '订单号：{{orderId}}\n订单状态：{{orderStatus}}\n订单金额：¥{{amount}}\n创建时间：{{createTime}}\n完成时间：{{completeTime}}',
     requiresBinding: true,
     status: 'enabled',
-    type: 'default' // 预设指令
+    type: 'default', // 预设指令
+    buttonConfig: [
+      { id: 1, order: 1, text: '已补单', reply: '当前订单已补单！' },
+      { id: 2, order: 2, text: '未付款', reply: '当前订单未付款，请您检查' },
+    ]
   },
   {
     id: 3,
@@ -562,6 +610,60 @@ const openCommandDialog = (type, cmdType, row) => {
   })
 }
 
+// 查单按钮设置抽屉
+const orderQuerySettingDrawerVisible = ref(false)
+const orderQueryButtons = ref([])
+
+// 打开查单按钮设置抽屉
+const openOrderQuerySettingDrawer = () => {
+  const orderQueryCommand = allCommands.value.find(cmd => cmd.keyword === '查单' && cmd.type === 'default');
+  if (orderQueryCommand && orderQueryCommand.buttonConfig) {
+    // 深拷贝，避免直接修改源数据
+    orderQueryButtons.value = JSON.parse(JSON.stringify(orderQueryCommand.buttonConfig));
+  } else {
+    orderQueryButtons.value = [];
+  }
+  orderQuerySettingDrawerVisible.value = true;
+}
+
+// 新增按钮
+const addButton = () => {
+  orderQueryButtons.value.push({
+    id: Date.now(),
+    order: orderQueryButtons.value.length + 1,
+    text: '',
+    reply: ''
+  });
+}
+
+// 删除按钮
+const removeButton = (index) => {
+  orderQueryButtons.value.splice(index, 1);
+}
+
+// 保存查单按钮设置
+const saveOrderQuerySetting = () => {
+  // 校验顺序号是否重复
+  const orders = orderQueryButtons.value.map(btn => btn.order);
+  const hasDuplicates = new Set(orders).size !== orders.length;
+
+  if (hasDuplicates) {
+    ElMessage.error('按钮顺序不能重复，请修改后保存');
+    return;
+  }
+
+  const index = allCommands.value.findIndex(cmd => cmd.keyword === '查单' && cmd.type === 'default');
+  if (index !== -1) {
+    // 保存排序后的按钮
+    allCommands.value[index].buttonConfig = [...orderQueryButtons.value].sort((a, b) => a.order - b.order);
+    ElMessage.success('查单按钮设置已保存');
+    orderQuerySettingDrawerVisible.value = false;
+  } else {
+    ElMessage.error('未找到“查单”指令，保存失败');
+  }
+}
+
+
 // 提交指令表单
 const submitCommandForm = () => {
   commandFormRef.value.validate((valid) => {
@@ -722,5 +824,16 @@ onMounted(() => {
   color: #909399;
   margin-top: 4px;
   line-height: 1.4;
+}
+
+.drawer-container {
+  padding: 0 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-toolbar {
+  margin-bottom: 16px;
 }
 </style> 

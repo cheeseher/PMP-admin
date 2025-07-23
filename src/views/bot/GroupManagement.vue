@@ -395,7 +395,7 @@
       destroy-on-close
     >
       <el-alert
-        title="此处设置的权限将作为群组中普通用户的默认权限，已有群组不受影响"
+        title="此处设置的权限将作为群组中普通用户的默认权限，更改后相应的所有群组权限同步变更"
         type="info"
         show-icon
         :closable="false"

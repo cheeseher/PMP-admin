@@ -365,12 +365,7 @@ const router = createRouter({
           component: () => import('@/views/organized/account/LoginRecord.vue'),
           meta: { title: '登录记录' }
         },
-        {
-          path: 'help',
-          name: 'MerchantHelp',
-          component: () => import('@/views/organized/help/Index.vue'),
-          meta: { title: '文档中心' }
-        },
+
         {
           path: 'setting/profile',
           name: 'MerchantSettingProfile',
@@ -408,4 +403,4 @@ router.onError((error) => {
   }
 });
 
-export default router 
+export default router

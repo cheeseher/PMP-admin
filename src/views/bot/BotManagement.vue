@@ -55,7 +55,11 @@
       >
         <el-table-column type="index" label="序号" width="60" align="center" />
         <el-table-column prop="botName" label="机器人名称" min-width="180" />
-        <el-table-column prop="botUsername" label="Bot 用户名" min-width="180" />
+        <el-table-column label="Bot 用户名" min-width="180">
+          <template #default="{ row }">
+            {{ formatBotUsername(row.botUsername) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 'enabled' ? 'success' : 'danger'">
@@ -119,7 +123,7 @@
         <el-form-item label="Bot 用户名" prop="botUsername">
           <el-input 
             v-model="botForm.botUsername" 
-            placeholder="请输入机器人用户名，必须以bot结尾"
+            placeholder="请输入机器人用户名，必须以bot结尾，无需添加@符号"
             :disabled="dialogType === 'edit'" 
           />
         </el-form-item>
@@ -207,7 +211,7 @@ const botRules = {
   ],
   botUsername: [
     { required: true, message: '请输入机器人用户名', trigger: 'blur' },
-    { pattern: /^[A-Za-z0-9_]+bot$/, message: '用户名必须以 bot 结尾', trigger: 'blur' }
+    { pattern: /^[A-Za-z0-9_]+bot$/, message: '用户名必须以 bot 结尾，无需添加@符号', trigger: 'blur' }
   ]
 }
 
@@ -284,7 +288,7 @@ const openBotDialog = (type, row) => {
     if (type === 'edit' && row) {
       botForm.id = row.id
       botForm.botName = row.botName
-      botForm.botUsername = row.botUsername
+      botForm.botUsername = formatBotUsername(row.botUsername) // 去除@符号
       botForm.token = row.token
       botForm.status = row.status
       botForm.statusEnabled = row.status === 'enabled' // 设置开关状态
@@ -307,6 +311,8 @@ const submitBotForm = () => {
           const newBot = {
             id: Date.now(),
             ...botForm,
+            // 确保用户名格式正确，如果用户输入了@，则保留；如果没有输入@，则不添加
+            botUsername: botForm.botUsername.startsWith('@') ? botForm.botUsername : '@' + botForm.botUsername,
             creator: 'admin',
             createdAt: new Date().toLocaleString(),
             status: botForm.status // 使用从开关转换的状态值
@@ -347,6 +353,12 @@ const toggleBotStatus = (row) => {
       loading.value = false
     }, 500)
   }).catch(() => {})
+}
+
+// 格式化机器人用户名，去除@符号
+const formatBotUsername = (username) => {
+  if (!username) return ''
+  return username.replace('@', '')
 }
 
 // 生命周期钩子
@@ -489,4 +501,4 @@ onMounted(() => {
   display: flex;
   align-items: center;
 }
-</style> 
+</style>

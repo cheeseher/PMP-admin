@@ -71,6 +71,9 @@ const loadDocumentation = async () => {
       docPath = '/docs/payment/product.md';
     } else if (route.path.startsWith('/order/merchant')) {
       docPath = '/docs/order/merchant.md';
+    } else if (route.path.startsWith('/organized/help')) {
+      // 商户文档中心页面
+      docPath = '/docs/merchant/help.md';
     } else {
       docPath = `/docs/${structuredPath}.md`;
     }
@@ -218,4 +221,4 @@ onMounted(() => {
   background-color: #f8f8f9;
   font-weight: bold;
 }
-</style> 
+</style>

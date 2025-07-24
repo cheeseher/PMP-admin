@@ -80,11 +80,7 @@
             <el-menu-item index="/merchant/account/login-record">登录记录</el-menu-item>
           </el-sub-menu>
           
-          <!-- 文档中心 -->
-          <el-menu-item index="/merchant/help">
-            <el-icon><QuestionFilled /></el-icon>
-            <span>文档中心</span>
-          </el-menu-item>
+
         </el-menu>
       </el-scrollbar>
     </el-aside>
@@ -194,7 +190,6 @@ import {
   Document, 
   Money, 
   Setting, 
-  QuestionFilled, 
   ArrowDown,
   User,
   Expand,
@@ -501,4 +496,4 @@ onMounted(() => {
   justify-content: flex-end;
   gap: 12px;
 }
-</style> 
+</style>

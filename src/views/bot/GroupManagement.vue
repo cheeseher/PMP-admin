@@ -723,11 +723,9 @@ const getRoleTagType = (role) => {
   
   switch (role) {
     case '超级管理员':
-      return 'danger';
     case '财务':
-      return 'warning';
     case '运营':
-      return 'success';
+      return 'danger';
     case '客服':
       return 'primary';
     case '上游群普通权限':

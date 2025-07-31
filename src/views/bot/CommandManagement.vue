@@ -248,6 +248,11 @@
           <el-button type="primary" :icon="Plus" @click="addButton">新增按钮</el-button>
         </div>
         <el-table :data="orderQueryButtons" border style="width: 100%">
+          <el-table-column label="按钮名称" width="150">
+            <template #default="{ row }">
+              <el-input v-model="row.name" placeholder="请输入按钮名称" :disabled="!row.isNew" />
+            </template>
+          </el-table-column>
           <el-table-column label="按钮顺序" width="120">
             <template #default="{ row }">
               <el-input-number v-model="row.order" :min="1" controls-position="right" style="width: 100%" />
@@ -319,8 +324,8 @@ const allCommands = ref([
     status: 'enabled',
     type: 'default', // 预设指令
     buttonConfig: [
-      { id: 1, order: 1, text: '已补单', reply: '当前订单已补单！' },
-      { id: 2, order: 2, text: '未付款', reply: '当前订单未付款，请您检查' },
+      { id: 1, order: 1, name: '补单按钮', text: '已补单', reply: '当前订单已补单！' },
+      { id: 2, order: 2, name: '未付款按钮', text: '未付款', reply: '当前订单未付款，请您检查' },
     ]
   },
   {
@@ -630,9 +635,11 @@ const openOrderQuerySettingDrawer = () => {
 const addButton = () => {
   orderQueryButtons.value.push({
     id: Date.now(),
+    name: '',
     order: orderQueryButtons.value.length + 1,
     text: '',
-    reply: ''
+    reply: '',
+    isNew: true // 标识为新增按钮
   });
 }
 
@@ -643,6 +650,17 @@ const removeButton = (index) => {
 
 // 保存查单按钮设置
 const saveOrderQuerySetting = () => {
+  // 校验输入框是否为空
+  const hasEmptyFields = orderQueryButtons.value.some(btn => 
+    !btn.name || btn.name.trim() === '' ||
+    !btn.text || btn.text.trim() === '' ||
+    !btn.reply || btn.reply.trim() === ''
+  );
+  if (hasEmptyFields) {
+    ElMessage.error('输入框不能为空');
+    return;
+  }
+  
   // 校验顺序号是否重复
   const orders = orderQueryButtons.value.map(btn => btn.order);
   const hasDuplicates = new Set(orders).size !== orders.length;
@@ -651,15 +669,28 @@ const saveOrderQuerySetting = () => {
     ElMessage.error('按钮顺序不能重复，请修改后保存');
     return;
   }
+  
+  // 校验按钮名称是否重复
+  const names = orderQueryButtons.value.map(btn => btn.name);
+  const hasDuplicateNames = new Set(names).size !== names.length;
+  
+  if (hasDuplicateNames) {
+    ElMessage.error('按钮名称不能重复，请修改后保存');
+    return;
+  }
 
   const index = allCommands.value.findIndex(cmd => cmd.keyword === '查单' && cmd.type === 'default');
   if (index !== -1) {
-    // 保存排序后的按钮
-    allCommands.value[index].buttonConfig = [...orderQueryButtons.value].sort((a, b) => a.order - b.order);
+    // 移除isNew标识，保存排序后的按钮
+    const buttonsToSave = orderQueryButtons.value.map(btn => {
+      const { isNew, ...buttonData } = btn;
+      return buttonData;
+    });
+    allCommands.value[index].buttonConfig = buttonsToSave.sort((a, b) => a.order - b.order);
     ElMessage.success('查单按钮设置已保存');
     orderQuerySettingDrawerVisible.value = false;
   } else {
-    ElMessage.error('未找到“查单”指令，保存失败');
+    ElMessage.error('未找到"查单"指令，保存失败');
   }
 }
 
@@ -836,4 +867,4 @@ onMounted(() => {
 .drawer-toolbar {
   margin-bottom: 16px;
 }
-</style> 
+</style>

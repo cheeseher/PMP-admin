@@ -66,12 +66,7 @@
         style="width: 100%"
       >
         <el-table-column prop="groupId" label="群组ID" min-width="150" />
-        <el-table-column prop="groupName" label="群组名称" min-width="150" />
-        <el-table-column prop="groupLink" label="TG群链接" min-width="180">
-            <template #default="{ row }">
-                <el-link :href="row.groupLink" type="primary" target="_blank" :underline="false">{{ row.groupLink }}</el-link>
-            </template>
-        </el-table-column>
+        <el-table-column prop="groupName" label="群组名称" min-width="180" />
         <el-table-column prop="groupType" label="群组类型" width="120" align="center">
           <template #default="{ row }">
             <el-tag :type="getGroupTypeTagType(row.groupType)">

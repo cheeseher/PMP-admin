@@ -315,7 +315,6 @@ import {
   Money,
   Expand,
   Fold,
-  ShoppingCart,
   Setting,
   DataLine,
   Histogram,

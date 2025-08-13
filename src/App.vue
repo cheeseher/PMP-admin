@@ -1,10 +1,8 @@
 <template>
   <router-view />
-  <PageDocumentation />
 </template>
 
 <script setup>
-import PageDocumentation from '@/components/PageDocumentation.vue';
 </script>
 
 <style>
@@ -17,4 +15,4 @@ html, body {
 .app {
   min-height: 100vh;
 }
-</style> 
+</style>

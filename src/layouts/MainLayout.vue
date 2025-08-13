@@ -144,6 +144,7 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="security">账户安全</el-dropdown-item>
+                <el-dropdown-item command="exportManagement">导出管理</el-dropdown-item>
                 <el-dropdown-item command="clearCache">清理缓存</el-dropdown-item>
                 <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
@@ -200,6 +201,91 @@
         <el-button type="primary" @click="handleSecuritySubmit">确认修改</el-button>
       </el-form-item>
     </el-form>
+  </el-drawer>
+
+  <!-- 导出管理抽屉 -->
+  <el-drawer
+    v-model="exportDrawerVisible"
+    title="导出管理"
+    direction="rtl"
+    size="800px"
+  >
+    <div class="export-management">
+      <div class="export-header">
+        <span class="export-title">导出文件记录</span>
+        <el-tag type="info" size="small">{{ exportList.length }}条记录</el-tag>
+      </div>
+      
+      <el-table :data="paginatedExportList" style="width: 100%" class="export-table">
+        <el-table-column prop="fileName" label="文件名" min-width="200">
+          <template #default="{ row }">
+            <span class="file-name">{{ row.fileName }}</span>
+          </template>
+        </el-table-column>
+        
+        <el-table-column prop="fileSize" label="文件大小" width="100" align="center" />
+        
+        <el-table-column prop="exportTime" label="导出时间" width="160" align="center">
+          <template #default="{ row }">
+            <div class="export-time">
+              <div>{{ row.exportTime.split(' ')[0] }}</div>
+              <div>{{ row.exportTime.split(' ')[1] }}</div>
+            </div>
+          </template>
+        </el-table-column>
+        
+        <el-table-column prop="status" label="状态" width="150" align="center">
+          <template #default="{ row }">
+            <div v-if="row.status === 'completed'" class="status-container">
+              <el-tag type="success" size="small">已完成</el-tag>
+              <el-progress :percentage="100" :show-text="false" :stroke-width="4" status="success" class="status-progress" />
+            </div>
+            <div v-else-if="row.status === 'processing'" class="status-container">
+              <el-tag type="warning" size="small">处理中</el-tag>
+              <el-progress :percentage="row.progress || 65" :show-text="false" :stroke-width="4" status="warning" class="status-progress" />
+            </div>
+            <div v-else class="status-container">
+              <el-tag type="danger" size="small">失败</el-tag>
+              <el-progress :percentage="0" :show-text="false" :stroke-width="4" status="exception" class="status-progress" />
+            </div>
+          </template>
+        </el-table-column>
+        
+        <el-table-column label="操作" width="120" align="center" fixed="right">
+          <template #default="{ row }">
+            <div class="operation-links">
+              <span
+                v-if="row.status === 'completed'"
+                class="download-link"
+                @click="downloadExportFile(row)"
+              >
+                下载
+              </span>
+              <span
+                class="delete-link"
+                @click="deleteExportRecord(row)"
+              >
+                删除
+              </span>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
+      
+      <div v-if="exportList.length === 0" class="empty-state">
+        <el-empty description="暂无导出记录" />
+      </div>
+      
+      <div v-if="exportList.length > 0" class="pagination-container">
+        <el-pagination
+          v-model:current-page="currentPage"
+          :page-size="pageSize"
+          :total="exportList.length"
+          layout="total, prev, pager, next, jumper"
+          @current-change="handlePageChange"
+        />
+      </div>
+    </div>
   </el-drawer>
 
   <!-- 清理缓存对话框 -->
@@ -300,6 +386,198 @@ const handleSecuritySubmit = () => {
   })
 }
 
+// 导出管理抽屉
+const exportDrawerVisible = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const exportList = ref([
+  {
+    id: 1,
+    fileName: '商户资金流水_20241201143025.xlsx',
+    fileSize: '2.5MB',
+    exportTime: '2024-12-01 14:30:25',
+    status: 'completed',
+    progress: 100,
+    downloadUrl: '/api/export/download/1'
+  },
+  {
+    id: 2,
+    fileName: '商户订单管理_20241130164512.xlsx',
+    fileSize: '5.8MB',
+    exportTime: '2024-11-30 16:45:12',
+    status: 'completed',
+    progress: 100,
+    downloadUrl: '/api/export/download/2'
+  },
+  {
+    id: 3,
+    fileName: '支付产品管理_20241129102033.xlsx',
+    fileSize: '1.2MB',
+    exportTime: '2024-11-29 10:20:33',
+    status: 'processing',
+    progress: 65,
+    downloadUrl: ''
+  },
+  {
+    id: 4,
+    fileName: '供应商通道管理_20241128091542.xlsx',
+    fileSize: '3.1MB',
+    exportTime: '2024-11-28 09:15:42',
+    status: 'failed',
+    progress: 0,
+    downloadUrl: ''
+  },
+  {
+    id: 5,
+    fileName: '商户列表_20241127083015.xlsx',
+    fileSize: '4.2MB',
+    exportTime: '2024-11-27 08:30:15',
+    status: 'completed',
+    progress: 100,
+    downloadUrl: '/api/export/download/5'
+  },
+  {
+    id: 6,
+    fileName: '支付类型管理_20241126155230.xlsx',
+    fileSize: '800KB',
+    exportTime: '2024-11-26 15:52:30',
+    status: 'completed',
+    progress: 100,
+    downloadUrl: '/api/export/download/6'
+  },
+  {
+    id: 7,
+    fileName: '供应商列表_20241125112045.xlsx',
+    fileSize: '6.7MB',
+    exportTime: '2024-11-25 11:20:45',
+    status: 'processing',
+    progress: 35,
+    downloadUrl: ''
+  },
+  {
+    id: 8,
+    fileName: '商户产品列表_20241124094318.xlsx',
+    fileSize: '3.8MB',
+    exportTime: '2024-11-24 09:43:18',
+    status: 'completed',
+    progress: 100,
+    downloadUrl: '/api/export/download/8'
+  },
+  {
+    id: 9,
+    fileName: '系统用户管理_20241123173522.xlsx',
+    fileSize: '1.5MB',
+    exportTime: '2024-11-23 17:35:22',
+    status: 'failed',
+    progress: 0,
+    downloadUrl: ''
+  },
+  {
+    id: 10,
+    fileName: '角色权限管理_20241122141208.xlsx',
+    fileSize: '950KB',
+    exportTime: '2024-11-22 14:12:08',
+    status: 'completed',
+    progress: 100,
+    downloadUrl: '/api/export/download/10'
+  },
+  {
+    id: 11,
+    fileName: '操作日志_20241121105533.xlsx',
+    fileSize: '12.3MB',
+    exportTime: '2024-11-21 10:55:33',
+    status: 'processing',
+    progress: 78,
+    downloadUrl: ''
+  },
+  {
+    id: 12,
+    fileName: '财务对账单_20241120162847.xlsx',
+    fileSize: '8.9MB',
+    exportTime: '2024-11-20 16:28:47',
+    status: 'completed',
+    progress: 100,
+    downloadUrl: '/api/export/download/12'
+  },
+  {
+    id: 13,
+    fileName: '交易统计报表_20241119134512.xlsx',
+    fileSize: '5.4MB',
+    exportTime: '2024-11-19 13:45:12',
+    status: 'completed',
+    progress: 100,
+    downloadUrl: '/api/export/download/13'
+  },
+  {
+    id: 14,
+    fileName: '风控规则配置_20241118091025.xlsx',
+    fileSize: '2.1MB',
+    exportTime: '2024-11-18 09:10:25',
+    status: 'failed',
+    progress: 0,
+    downloadUrl: ''
+  },
+  {
+    id: 15,
+    fileName: '通知消息记录_20241117203318.xlsx',
+    fileSize: '3.6MB',
+    exportTime: '2024-11-17 20:33:18',
+    status: 'completed',
+    progress: 100,
+    downloadUrl: '/api/export/download/15'
+  }
+])
+
+// 计算分页数据
+const paginatedExportList = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  const end = start + pageSize.value
+  return exportList.value.slice(start, end)
+})
+
+// 处理分页变化
+const handlePageChange = (page) => {
+  currentPage.value = page
+}
+
+// 下载导出文件
+const downloadExportFile = (row) => {
+  if (row.status === 'completed' && row.downloadUrl) {
+    // 模拟下载
+    const link = document.createElement('a')
+    link.href = row.downloadUrl
+    link.download = row.fileName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    ElMessage.success('文件下载已开始')
+  } else {
+    ElMessage.warning('文件还在处理中，请稍后再试')
+  }
+}
+
+// 删除导出记录
+const deleteExportRecord = (row) => {
+  ElMessageBox.confirm('确定要删除这条导出记录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    const index = exportList.value.findIndex(item => item.id === row.id)
+    if (index > -1) {
+      exportList.value.splice(index, 1)
+      ElMessage.success('删除成功')
+      // 如果当前页没有数据了，回到上一页
+      const totalPages = Math.ceil(exportList.value.length / pageSize.value)
+      if (currentPage.value > totalPages && totalPages > 0) {
+        currentPage.value = totalPages
+      }
+    }
+  }).catch(() => {
+    // 取消删除
+  })
+}
+
 // 清理缓存对话框
 const clearCacheDialogVisible = ref(false)
 
@@ -335,6 +613,9 @@ const handleCommand = (command) => {
   switch (command) {
     case 'security':
       securityDrawerVisible.value = true
+      break
+    case 'exportManagement':
+      exportDrawerVisible.value = true
       break
     case 'clearCache':
       clearCacheDialogVisible.value = true
@@ -453,4 +734,104 @@ const handleCommand = (command) => {
 .security-form {
   padding: 20px;
 }
-</style> 
+
+.export-management {
+  padding: 20px;
+  
+  .export-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    
+    .export-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+    }
+  }
+  
+  .export-table {
+    .file-info {
+      display: flex;
+      align-items: center;
+      
+      .file-icon {
+        margin-right: 8px;
+        color: #409eff;
+      }
+      
+      .file-name {
+        color: #303133;
+        word-break: break-all;
+      }
+    }
+    
+    .status-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      
+      .status-progress {
+        width: 80px;
+      }
+    }
+    
+    .operation-links {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      
+      .download-link {
+        color: #409eff;
+        cursor: pointer;
+        font-size: 14px;
+        
+        &:hover {
+          color: #66b1ff;
+          text-decoration: underline;
+        }
+      }
+      
+      .delete-link {
+        color: #f56c6c;
+        cursor: pointer;
+        font-size: 14px;
+        
+        &:hover {
+          color: #f78989;
+          text-decoration: underline;
+        }
+      }
+     }
+     
+     .export-time {
+       display: flex;
+       flex-direction: column;
+       align-items: center;
+       line-height: 1.2;
+       
+       div {
+         font-size: 13px;
+         color: #606266;
+       }
+       
+       div:first-child {
+         margin-bottom: 2px;
+       }
+     }
+   }
+   
+   .empty-state {
+     margin-top: 40px;
+   }
+   
+   .pagination-container {
+     margin-top: 20px;
+     display: flex;
+     justify-content: center;
+   }
+ }
+</style>

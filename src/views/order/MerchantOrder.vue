@@ -290,36 +290,25 @@
         <el-table-column type="selection" width="55" fixed="left" />
         <el-table-column prop="merchantId" label="商户ID" width="80" fixed="left" />
         <el-table-column prop="merchantName" label="商户账号" width="120" />
-        <el-table-column prop="upstream" label="渠道名称" width="120">
+        <el-table-column prop="upstream" label="渠道名称" width="180">
           <template #default="scope">
-            <span v-if="scope.row.orderStatus === 'created'">-</span>
-            <span v-else>{{ scope.row.upstream }}</span>
+            <div style="display: flex; align-items: center; gap: 8px;" v-if="scope.row.orderStatus !== 'created'">
+              <span>{{ scope.row.upstream }}</span>
+              <el-tag size="small" type="info">
+                {{ getTemplateLabel(scope.row.upstreamChannelCode) }}
+              </el-tag>
+            </div>
+            <span v-else>-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="upstreamChannelCode" label="渠道模板" width="120">
-          <template #default="scope">
-            <span v-if="scope.row.orderStatus === 'created'">-</span>
-            <el-tag v-else size="small" type="info">
-              {{ getTemplateLabel(scope.row.upstreamChannelCode) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="upstreamOrderNo" label="上游单号" width="120">
-          <template #default="scope">
-            <span v-if="scope.row.orderStatus === 'created'">-</span>
-            <span v-else>{{ scope.row.upstreamOrderNo }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="orderNo" label="平台单号" width="120">
-          <template #default="scope">
-            <span v-if="scope.row.orderStatus === 'created'">-</span>
-            <span v-else>{{ scope.row.orderNo }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="merchantOrderNo" label="商户单号" width="120" />
         <el-table-column prop="channelCode" label="通道编码" width="100" />
-        <el-table-column prop="productName" label="支付产品名称" width="120" />
-        <el-table-column prop="productCode" label="支付产品编码" width="100" />
+        <el-table-column prop="productCode" label="产品编码" width="100" />
+        <el-table-column prop="productName" label="产品名称" width="120" />
+        <el-table-column prop="orderAmount" label="订单金额" width="100" align="right">
+          <template #default="scope">
+            <span class="amount-cell">{{ formatAmount(scope.row.orderAmount) }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="orderStatus" label="订单状态" width="100" align="center">
           <template #default="scope">
             <el-tag 
@@ -330,26 +319,8 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="orderAmount" label="订单金额" width="100" align="right">
-          <template #default="scope">
-            <span class="amount-cell">{{ formatAmount(scope.row.orderAmount) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="fee" label="手续费" width="100" align="right">
-          <template #default="scope">
-            <span class="amount-cell income-green">{{ formatAmount(scope.row.fee || 0) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="receiveAmount" label="入账金额" width="100" align="right">
-          <template #default="scope">
-            <span class="amount-cell income-green">{{ formatAmount(scope.row.receiveAmount || scope.row.orderAmount) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="channelCost" label="通道成本" width="100" align="right">
-          <template #default="scope">
-            <span class="amount-cell cost-black">{{ formatAmount(scope.row.channelCost || 0) }}</span>
-          </template>
-        </el-table-column>
+        <el-table-column prop="createTime" label="创建时间" width="150" />
+        <el-table-column prop="completeTime" label="完成时间" width="150" />
         <el-table-column prop="pushStatus" label="推送状态" width="90" align="center">
           <template #default="scope">
             <template v-if="scope.row.orderStatus === 'success' || scope.row.orderStatus === 'reorder_success'">
@@ -366,7 +337,6 @@
             </template>
           </template>
         </el-table-column>
-        
         <el-table-column prop="pushResultContent" label="推送结果" width="120">
           <template #default="scope">
             <template v-if="scope.row.orderStatus === 'success' || scope.row.orderStatus === 'reorder_success'">
@@ -377,7 +347,13 @@
             </template>
           </template>
         </el-table-column>
-        
+        <el-table-column prop="orderNo" label="平台单号" width="120">
+          <template #default="scope">
+            <span v-if="scope.row.orderStatus === 'created'">-</span>
+            <span v-else>{{ scope.row.orderNo }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="merchantOrderNo" label="商户单号" width="120" />
         <el-table-column prop="isNextDay" label="隔日补单" width="90" align="center">
           <template #default="scope">
             <el-tag 
@@ -388,8 +364,27 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="订单创建时间" width="150" />
-        <el-table-column prop="completeTime" label="订单完成时间" width="150" />
+        <el-table-column prop="receiveAmount" label="入账金额" width="100" align="right">
+          <template #default="scope">
+            <span class="amount-cell income-green">{{ formatAmount(scope.row.receiveAmount || scope.row.orderAmount) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="fee" label="手续费" width="100" align="right">
+          <template #default="scope">
+            <span class="amount-cell income-green">{{ formatAmount(scope.row.fee || 0) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="channelCost" label="通道成本" width="100" align="right">
+          <template #default="scope">
+            <span class="amount-cell cost-black">{{ formatAmount(scope.row.channelCost || 0) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="upstreamOrderNo" label="上游单号" width="120">
+          <template #default="scope">
+            <span v-if="scope.row.orderStatus === 'created'">-</span>
+            <span v-else>{{ scope.row.upstreamOrderNo }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="remarkInfo" label="备注" min-width="150" />
         <el-table-column label="操作" width="120" fixed="right">
           <template #default="{ row }">
@@ -597,7 +592,7 @@ const tableData = ref([
     merchantName: '商户账号A',
     upstream: '渠道A',
     channelCode: 'wxh5',
-    orderNo: '102',
+    orderNo: 'P1678788692',
     merchantOrderNo: 'MO20230314001',
     productCode: '8888',
     productName: '支付产品A',
@@ -620,7 +615,7 @@ const tableData = ref([
     merchantName: '商户账号B',
     upstream: '渠道B',
     channelCode: 'alipayh5',
-    orderNo: '103',
+    orderNo: 'P1709107516',
     merchantOrderNo: 'MO20240228001',
     productCode: '9999',
     productName: '支付产品B',
@@ -643,7 +638,7 @@ const tableData = ref([
     merchantName: '商户账号C',
     upstream: '渠道C',
     channelCode: 'unionqr',
-    orderNo: '104',
+    orderNo: 'P1711870930',
     merchantOrderNo: 'MO20240331001',
     productCode: '7777',
     productName: '支付产品C',
@@ -666,7 +661,7 @@ const tableData = ref([
     merchantName: '商户账号D',
     upstream: '渠道A',
     channelCode: 'wxqr',
-    orderNo: '105',
+    orderNo: 'P1712302530',
     merchantOrderNo: 'MO20240405001',
     productCode: '6666',
     productName: '支付产品D',
@@ -689,7 +684,7 @@ const tableData = ref([
     merchantName: '商户账号E',
     upstream: '渠道B',
     channelCode: 'alipayapp',
-    orderNo: '106',
+    orderNo: 'P1712734710',
     merchantOrderNo: 'MO20240410001',
     productCode: '5555',
     productName: '支付产品E',
@@ -712,7 +707,7 @@ const tableData = ref([
     merchantName: '商户账号F',
     upstream: '渠道C',
     channelCode: 'unionweb',
-    orderNo: '107',
+    orderNo: 'P1712561645',
     merchantOrderNo: 'MO20240408001',
     productCode: '4444',
     productName: '支付产品F',
@@ -735,7 +730,7 @@ const tableData = ref([
     merchantName: '商户账号H',
     upstream: '渠道B',
     channelCode: 'alipayh5',
-    orderNo: '109',
+    orderNo: 'P1712489740',
     merchantOrderNo: 'MO20240407001',
     productCode: '2222',
     productName: '支付产品H',
@@ -1327,4 +1322,4 @@ function getOrderStatusTagClass(status) {
   background: #EDEDED !important;
   color: #555555 !important;
 }
-</style> 
+</style>

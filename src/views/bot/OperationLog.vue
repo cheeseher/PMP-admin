@@ -110,7 +110,6 @@
             <div class="feedback-cell">
               <span class="feedback-content">{{ truncateFeedback(row.botFeedback) }}</span>
               <el-button 
-                v-if="row.botFeedback && row.botFeedback.length > 30" 
                 type="primary" 
                 link 
                 @click="showFullFeedback(row.botFeedback)"
@@ -144,6 +143,9 @@
       width="500px"
     >
       <div class="feedback-detail">{{ currentFeedback }}</div>
+      <div class="dialog-actions" v-if="hasVideoContent">
+        <el-button type="primary" @click="downloadVideo">视频下载</el-button>
+      </div>
     </el-dialog>
     
     <!-- 图片预览 -->
@@ -160,7 +162,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { Search, Refresh } from '@element-plus/icons-vue';
-import { ElImageViewer } from 'element-plus';
+import { ElImageViewer, ElMessage } from 'element-plus';
 
 // 筛选表单
 const filterForm = reactive({
@@ -196,6 +198,7 @@ const pagination = reactive({
 // 反馈详情相关
 const feedbackDialogVisible = ref(false);
 const currentFeedback = ref('');
+const hasVideoContent = ref(false);
 
 // 图片预览相关
 const showImageViewer = ref(false);
@@ -216,7 +219,30 @@ const truncateFeedback = (feedback) => {
 // 显示完整反馈
 const showFullFeedback = (feedback) => {
   currentFeedback.value = feedback;
+  // 检查反馈内容是否包含视频相关信息
+  hasVideoContent.value = checkHasVideoContent(feedback);
   feedbackDialogVisible.value = true;
+};
+
+// 检查是否包含视频内容
+const checkHasVideoContent = (feedback) => {
+  if (!feedback) return false;
+  const videoKeywords = ['视频', '录像', '图片', '文件', '附件', 'video', 'mp4', 'avi', 'mov'];
+  return videoKeywords.some(keyword => feedback.toLowerCase().includes(keyword.toLowerCase()));
+};
+
+// 下载视频文件
+const downloadVideo = () => {
+  // 创建一个虚拟的下载链接
+  const link = document.createElement('a');
+  link.href = '#'; // 这里应该是实际的文件URL
+  link.download = '视频.mp4'; // 统一文件名为"视频"
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // 显示下载提示
+  ElMessage.success('视频下载已开始');
 };
 
 // 获取群组类型标签类型
@@ -250,10 +276,10 @@ const getGroupTypeLabel = (groupType) => {
 // 模拟数据
 const mockLogData = [
   { userTgName: '张三', userTgId: '123456789', specificAction: 'ZF20231027001', imageUrl: 'https://via.placeholder.com/300/409EFF/FFFFFF?text=支付图片', botInvolved: '机器人A', groupInvolved: '闪电', groupType: 'upstream', groupId: '-100123456789', botFeedback: '此处转发上游群回复的内容', operationTime: '2023-10-27 10:00:00' },
-  { userTgName: '张三', userTgId: '123456789', specificAction: 'jcbdqd#闪电', botInvolved: '机器人A', groupInvolved: '闪电', groupType: 'upstream', groupId: '-100123456789', botFeedback: '解除绑定【闪电】渠道成功！', operationTime: '2023-10-27 10:05:00' },
-  { userTgName: '李四', userTgId: '987654321', specificAction: '渠道余额#纵横#+0.01', botInvolved: '机器人A', groupInvolved: '纵横', groupType: 'upstream', groupId: '-100323456789', botFeedback: '========渠道【纵横】设置预付========\n变动前：0.00\n变动金额：0.01\n变动后：0.01\n供应商余额：0.01\n【渠道余额#纵横#+0.01】操作人TG：李四 @lisi\n========设置预付完毕========', operationTime: '2023-10-27 10:10:00' },
+  { userTgName: '张三', userTgId: '123456789', specificAction: 'jcbdqd#闪电', botInvolved: '机器人A', groupInvolved: '闪电', groupType: 'upstream', groupId: '-100123456789', botFeedback: '解除绑定【闪电】渠道成功！操作视频已保存。', operationTime: '2023-10-27 10:05:00' },
+  { userTgName: '李四', userTgId: '987654321', specificAction: '渠道余额#纵横#+0.01', botInvolved: '机器人A', groupInvolved: '纵横', groupType: 'upstream', groupId: '-100323456789', botFeedback: '========渠道【纵横】设置预付========\n变动前：0.00\n变动金额：0.01\n变动后：0.01\n供应商余额：0.01\n【渠道余额#纵横#+0.01】操作人TG：李四 @lisi\n========设置预付完毕========\n相关操作视频已记录。', operationTime: '2023-10-27 10:10:00' },
   { userTgName: '王五', userTgId: '123456789', specificAction: '商户费率', botInvolved: '机器人A', groupInvolved: '商户B', groupType: 'merchant', groupId: '-100423456789', botFeedback: '商户【商户B】支付产品费率: \n支付产品名称：微信支付,支付产品编码：WXPAY,商户费率：0.6%\n支付产品名称：支付宝,支付产品编码：ALIPAY,商户费率：0.7%', operationTime: '2023-10-27 10:15:00' },
-  { userTgName: '赵六', userTgId: '123456789', specificAction: '商户余额#商户A#-0.01', botInvolved: '机器人A', groupInvolved: '商户A', groupType: 'merchant', groupId: '-100223456789', botFeedback: '========商户【测测】设置预付========\n变动前：0.01\n变动金额：0.01\n变动后：0.00\n商户余额：0.00\n【余额#测测#-0.01】操作人TG：TG 用户名 @用户名\n========设置预付完毕========', operationTime: '2023-10-27 10:20:00' },
+  { userTgName: '赵六', userTgId: '123456789', specificAction: '商户余额#商户A#-0.01', botInvolved: '机器人A', groupInvolved: '商户A', groupType: 'merchant', groupId: '-100223456789', botFeedback: '========商户【测测】设置预付========\n变动前：0.01\n变动金额：0.01\n变动后：0.00\n商户余额：0.00\n【余额#测测#-0.01】操作人TG：TG 用户名 @用户名\n========设置预付完毕========\n操作录像文件已生成。', operationTime: '2023-10-27 10:20:00' },
   { userTgName: '测试用户', userTgId: '555666777', specificAction: 'id', botInvolved: '机器人A', groupInvolved: '未分配群组', groupType: 'unassigned', groupId: '-100523456789', botFeedback: '987654321', operationTime: '2023-10-27 10:25:00' },
 ];
 
@@ -325,6 +351,13 @@ onMounted(() => {
   line-height: 1.6;
   max-height: 400px;
   overflow-y: auto;
+  margin-bottom: 20px;
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 15px;
+  border-top: 1px solid #ebeef5;
 }
 .command-content {
   display: flex;

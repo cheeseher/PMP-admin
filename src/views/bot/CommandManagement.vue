@@ -250,7 +250,11 @@
         <el-table :data="orderQueryButtons" border style="width: 100%">
           <el-table-column label="按钮名称" width="150">
             <template #default="{ row }">
-              <el-input v-model="row.name" placeholder="请输入按钮名称" :disabled="!row.isNew" />
+              <el-input 
+                v-model="row.name" 
+                placeholder="请输入按钮名称" 
+                :disabled="row.isDefault || !row.isNew" 
+              />
             </template>
           </el-table-column>
           <el-table-column label="按钮顺序" width="120">
@@ -269,8 +273,15 @@
             </template>
           </el-table-column>
           <el-table-column label="操作" width="80" align="center">
-            <template #default="{ $index }">
-              <el-button type="danger" link @click="removeButton($index)">删除</el-button>
+            <template #default="{ row, $index }">
+              <el-button 
+                type="danger" 
+                link 
+                @click="removeButton($index)"
+                :disabled="row.isDefault"
+              >
+                删除
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -324,8 +335,9 @@ const allCommands = ref([
     status: 'enabled',
     type: 'default', // 预设指令
     buttonConfig: [
-      { id: 1, order: 1, name: '补单按钮', text: '已补单', reply: '当前订单已补单！' },
-      { id: 2, order: 2, name: '未付款按钮', text: '未付款', reply: '当前订单未付款，请您检查' },
+      { id: 'default-callback', order: 1, name: '回调按钮', text: '成功', reply: '默认', isDefault: true },
+      { id: 1, order: 2, name: '补单按钮', text: '已补单', reply: '当前订单已补单！' },
+      { id: 2, order: 3, name: '未付款按钮', text: '未付款', reply: '当前订单未付款，请您检查' },
     ]
   },
   {
@@ -628,6 +640,27 @@ const openOrderQuerySettingDrawer = () => {
   } else {
     orderQueryButtons.value = [];
   }
+  
+  // 确保始终有一个默认的回调按钮
+  const hasDefaultButton = orderQueryButtons.value.some(btn => btn.isDefault);
+  if (!hasDefaultButton) {
+    orderQueryButtons.value.unshift({
+      id: 'default-callback',
+      name: '回调按钮',
+      order: 1,
+      text: '成功',
+      reply: '默认',
+      isDefault: true, // 标识为默认按钮，不允许删除
+      isNew: false
+    });
+    // 调整其他按钮的顺序
+    orderQueryButtons.value.forEach((btn, index) => {
+      if (!btn.isDefault) {
+        btn.order = index + 1;
+      }
+    });
+  }
+  
   orderQuerySettingDrawerVisible.value = true;
 }
 
@@ -645,6 +678,11 @@ const addButton = () => {
 
 // 删除按钮
 const removeButton = (index) => {
+  const button = orderQueryButtons.value[index];
+  if (button.isDefault) {
+    ElMessage.warning('默认按钮不允许删除');
+    return;
+  }
   orderQueryButtons.value.splice(index, 1);
 }
 
@@ -681,7 +719,7 @@ const saveOrderQuerySetting = () => {
 
   const index = allCommands.value.findIndex(cmd => cmd.keyword === '查单' && cmd.type === 'default');
   if (index !== -1) {
-    // 移除isNew标识，保存排序后的按钮
+    // 移除isNew标识，保留isDefault标识，保存排序后的按钮
     const buttonsToSave = orderQueryButtons.value.map(btn => {
       const { isNew, ...buttonData } = btn;
       return buttonData;

@@ -1,4 +1,4 @@
-<!-- 订单管理/商户订单管理 - 展示和管理商户的订单列表 -->
+<!--收到多少多少 订单管理/商户订单管理 - 展示和管理商户的订单列表 -->
 <template>
   <div class="order-merchant">
     <!-- 搜索表单 -->
@@ -189,6 +189,14 @@
               <el-option label="交易关闭" value="closed" />
             </el-select>
           </el-form-item>
+
+          <el-form-item label="推送状态：">
+            <el-select v-model="searchForm.pushStatus" placeholder="请选择" class="input-normal" clearable>
+              <el-option label="全部" value="" />
+              <el-option label="成功" value="success" />
+              <el-option label="失败" value="failed" />
+            </el-select>
+          </el-form-item>
         </div>
 
         <!-- 按钮操作行 -->
@@ -273,6 +281,14 @@
           <el-tag type="info" size="small" effect="plain">{{ pagination.total }}条记录</el-tag>
         </div>
         <div class="right">
+          <el-button 
+            type="warning" 
+            :icon="Refresh" 
+            @click="handleBatchPush"
+            :disabled="!hasFailedPushOrders"
+          >
+            批量推送
+          </el-button>
           <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="refreshData" />
@@ -582,11 +598,12 @@ const searchForm = reactive({
   orderStatus: '',
   minAmount: null,
   maxAmount: null,
-  isNextDay: ''
+  isNextDay: '',
+  pushStatus: '' // 新增推送状态筛选字段
 })
 
-// 表格数据
-const tableData = ref([
+// 原始表格数据
+const originalTableData = ref([
   {
     merchantId: '1',
     merchantName: '商户账号A',
@@ -750,6 +767,35 @@ const tableData = ref([
   }
 ])
 
+// 筛选后的表格数据
+const tableData = computed(() => {
+  let filteredData = originalTableData.value
+
+  // 根据推送状态筛选
+  if (searchForm.pushStatus) {
+    filteredData = filteredData.filter(item => {
+      // 只有交易成功或补单成功的订单才有推送状态
+      if (item.orderStatus === 'success' || item.orderStatus === 'reorder_success') {
+        return item.pushResult === searchForm.pushStatus
+      }
+      return false
+    })
+  }
+
+  // 更新分页总数
+  pagination.total = filteredData.length
+  
+  return filteredData
+})
+
+// 检查是否有推送失败的订单
+const hasFailedPushOrders = computed(() => {
+  return originalTableData.value.some(item => {
+    return (item.orderStatus === 'success' || item.orderStatus === 'reorder_success') && 
+           item.pushResult === 'failed'
+  })
+})
+
 // 分页数据
 const pagination = reactive({
   currentPage: 1,
@@ -831,10 +877,55 @@ const handleExport = () => {
   ElMessage.success('订单数据导出中，请稍后...')
 }
 
+// 处理批量推送
+const handleBatchPush = () => {
+  // 获取所有推送失败的订单
+  const failedPushOrders = originalTableData.value.filter(item => {
+    return (item.orderStatus === 'success' || item.orderStatus === 'reorder_success') && 
+           item.pushResult === 'failed'
+  })
+
+  if (failedPushOrders.length === 0) {
+    ElMessage.warning('当前没有推送失败的订单')
+    return
+  }
+
+  ElMessageBox.confirm(
+    `检测到 ${failedPushOrders.length} 个推送失败的订单，确定要批量重新推送吗？`, 
+    '批量推送确认', 
+    {
+      confirmButtonText: '确定推送',
+      cancelButtonText: '取消',
+      type: 'warning',
+      customClass: 'batch-push-dialog'
+    }
+  ).then(() => {
+    // 模拟批量推送处理
+    loading.value = true
+    
+    // 模拟异步处理
+    setTimeout(() => {
+      // 更新推送状态为成功（模拟推送成功）
+      failedPushOrders.forEach(order => {
+        order.pushResult = 'success'
+      })
+      
+      loading.value = false
+      ElMessage.success(`成功批量推送 ${failedPushOrders.length} 个订单`)
+    }, 2000)
+    
+  }).catch(() => {
+    ElMessage.info('已取消批量推送')
+  })
+}
+
 // 处理查询
 const handleSearch = () => {
+  // 重置分页到第一页
+  pagination.currentPage = 1
   ElMessage.success('正在查询数据，请稍后...')
   // 实际项目中这里应该调用API接口获取数据
+  // 由于使用了计算属性，筛选会自动生效
 }
 
 // 重置搜索条件
@@ -860,7 +951,8 @@ const handleReset = () => {
     orderStatus: '',
     minAmount: null,
     maxAmount: null,
-    isNextDay: ''
+    isNextDay: '',
+    pushStatus: '' // 重置推送状态筛选
   })
   ElMessage.success('搜索条件已重置')
 }
@@ -1321,5 +1413,37 @@ function getOrderStatusTagClass(status) {
   border: 1px solid #808080 !important;
   background: #EDEDED !important;
   color: #555555 !important;
+}
+
+/* 批量推送对话框样式 */
+:deep(.batch-push-dialog) {
+  border-radius: 8px !important;
+}
+
+:deep(.batch-push-dialog .el-message-box__header) {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #e9ecef !important;
+  padding: 16px 20px !important;
+}
+
+:deep(.batch-push-dialog .el-message-box__title) {
+  color: #495057 !important;
+  font-weight: 600 !important;
+}
+
+:deep(.batch-push-dialog .el-message-box__content) {
+  padding: 20px !important;
+  color: #6c757d !important;
+  line-height: 1.5 !important;
+}
+
+:deep(.batch-push-dialog .el-button--primary) {
+  background-color: #e67e22 !important;
+  border-color: #e67e22 !important;
+}
+
+:deep(.batch-push-dialog .el-button--primary:hover) {
+  background-color: #d35400 !important;
+  border-color: #d35400 !important;
 }
 </style>

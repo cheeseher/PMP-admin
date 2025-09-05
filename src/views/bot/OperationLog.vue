@@ -10,6 +10,9 @@
         <el-form-item label="TGID：">
           <el-input v-model="filterForm.tgId" placeholder="请输入用户TGID" clearable />
         </el-form-item>
+        <el-form-item label="用户指令：">
+          <el-input v-model="filterForm.userCommand" placeholder="请输入用户指令关键词" clearable />
+        </el-form-item>
         <el-form-item label="所属群组：">
           <el-select
             v-model="filterForm.groups"
@@ -168,6 +171,7 @@ import { ElImageViewer, ElMessage } from 'element-plus';
 const filterForm = reactive({
   tgName: '',
   tgId: '',
+  userCommand: '',
   groups: [],
   bots: [],
   dateRange: [],
@@ -299,6 +303,7 @@ const handleSearch = () => {
 const resetFilter = () => {
   filterForm.tgName = '';
   filterForm.tgId = '';
+  filterForm.userCommand = '';
   filterForm.groups = [];
   filterForm.bots = [];
   filterForm.dateRange = [];

@@ -61,6 +61,7 @@
           <div class="table-toolbar">
             <div class="left" style="display: flex; align-items: center; gap: 10px;">
               <el-button type="primary" :icon="Setting" @click="openOrderQuerySettingDrawer">查单按钮设置</el-button>
+              <el-button type="primary" :icon="Clock" @click="openReminderSettingDialog">提醒时间设置</el-button>
               <el-alert
                 type="info"
                 show-icon
@@ -293,13 +294,56 @@
         </div>
       </template>
     </el-drawer>
+    
+    <!-- 提醒时间设置弹窗 -->
+    <el-dialog
+      v-model="reminderSettingDialogVisible"
+      title="提醒时间设置"
+      width="500px"
+      destroy-on-close
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="reminderFormRef"
+        :model="reminderForm"
+        :rules="reminderRules"
+        label-width="120px"
+        label-position="left"
+      >
+        <el-form-item label="提醒开关" prop="enabled">
+          <el-switch
+            v-model="reminderForm.enabled"
+            active-text="开启"
+            inactive-text="关闭"
+          />
+        </el-form-item>
+        <el-form-item label="提醒间隔时间" prop="interval" v-if="reminderForm.enabled">
+          <el-input-number
+            v-model="reminderForm.interval"
+            :min="1"
+            :max="999"
+            :precision="0"
+            controls-position="right"
+            style="width: 200px"
+            @keydown="preventDecimalInput"
+          />
+          <span style="margin-left: 10px; color: #909399;">分钟</span>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="reminderSettingDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitReminderForm">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, Plus, ArrowDown, Setting } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, ArrowDown, Setting, Clock } from '@element-plus/icons-vue'
 
 // 显示信息卡片
 // 移除了说明卡片
@@ -631,6 +675,22 @@ const openCommandDialog = (type, cmdType, row) => {
 const orderQuerySettingDrawerVisible = ref(false)
 const orderQueryButtons = ref([])
 
+// 提醒时间设置弹窗
+const reminderSettingDialogVisible = ref(false)
+const reminderFormRef = ref(null)
+const reminderForm = reactive({
+  enabled: false,
+  interval: 10
+})
+
+// 提醒时间设置表单验证规则
+const reminderRules = {
+  interval: [
+    { required: true, message: '请输入提醒间隔时间', trigger: 'blur' },
+    { type: 'number', min: 1, max: 999, message: '间隔时间必须在1-999分钟之间', trigger: 'blur' }
+  ]
+}
+
 // 打开查单按钮设置抽屉
 const openOrderQuerySettingDrawer = () => {
   const orderQueryCommand = allCommands.value.find(cmd => cmd.keyword === '查单' && cmd.type === 'default');
@@ -729,6 +789,39 @@ const saveOrderQuerySetting = () => {
     orderQuerySettingDrawerVisible.value = false;
   } else {
     ElMessage.error('未找到"查单"指令，保存失败');
+  }
+}
+
+// 打开提醒时间设置弹窗
+const openReminderSettingDialog = () => {
+  // 这里可以从后端获取当前的提醒设置，暂时使用默认值
+  reminderForm.enabled = false;
+  reminderForm.interval = 10;
+  reminderSettingDialogVisible.value = true;
+}
+
+// 提交提醒时间设置表单
+const submitReminderForm = () => {
+  if (reminderForm.enabled) {
+    reminderFormRef.value.validate((valid) => {
+      if (valid) {
+        // 这里应该调用API保存设置
+        ElMessage.success(`提醒设置已保存：${reminderForm.enabled ? '开启' : '关闭'}${reminderForm.enabled ? '，间隔' + reminderForm.interval + '分钟' : ''}`);
+        reminderSettingDialogVisible.value = false;
+      }
+    });
+  } else {
+    // 如果关闭提醒，直接保存
+    ElMessage.success('提醒设置已保存：关闭');
+    reminderSettingDialogVisible.value = false;
+  }
+}
+
+// 阻止小数点输入
+const preventDecimalInput = (event) => {
+  // 阻止小数点(.)的输入
+  if (event.key === '.' || event.key === ',') {
+    event.preventDefault();
   }
 }
 

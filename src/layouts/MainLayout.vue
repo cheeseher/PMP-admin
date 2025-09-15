@@ -67,7 +67,7 @@
           </el-sub-menu>
 
           <!-- 商户管理 -->
-          <el-sub-menu index="/product">
+          <el-sub-menu index="product">
             <template #title>
               <el-icon><Goods /></el-icon>
               <span>商户管理</span>
@@ -76,8 +76,17 @@
             <el-menu-item index="/product/merchant-products">商户产品列表</el-menu-item>
           </el-sub-menu>
 
+          <!-- 代理商管理 -->
+          <el-sub-menu index="agent">
+            <template #title>
+              <el-icon><User /></el-icon>
+              <span>代理商管理</span>
+            </template>
+            <el-menu-item index="/agent/list">代理商列表</el-menu-item>
+          </el-sub-menu>
+
           <!-- 支付配置 -->
-          <el-sub-menu index="/payment">
+          <el-sub-menu index="payment">
             <template #title>
               <el-icon><Money /></el-icon>
               <span>支付配置</span>
@@ -85,6 +94,20 @@
             <el-menu-item index="/payment/type">支付类型管理</el-menu-item>
             <el-menu-item index="/payment/product">支付产品管理</el-menu-item>
             <el-menu-item index="/payment/setting">支付设置</el-menu-item>
+          </el-sub-menu>
+
+          <!-- 代付管理 -->
+          <el-sub-menu index="payout">
+            <template #title>
+              <el-icon><CreditCard /></el-icon>
+              <span>代付管理</span>
+            </template>
+            <el-menu-item index="/payout/merchant-fund-flow">商户代付资金流水</el-menu-item>
+            <el-menu-item index="/payout/upstream-channel">代付上游通道管理</el-menu-item>
+            <el-menu-item index="/payout/upstream">代付上游管理</el-menu-item>
+            <el-menu-item index="/payout/product">代付产品管理</el-menu-item>
+            <el-menu-item index="/payout/upstream-fund-flow">上游代付资金流水</el-menu-item>
+            <el-menu-item index="/payout/order">代付订单管理</el-menu-item>
           </el-sub-menu>
 
           <!-- 机器人管理 -->
@@ -318,7 +341,9 @@ import {
   Setting,
   DataLine,
   Histogram,
-  ChatLineRound
+  ChatLineRound,
+  User,
+  CreditCard
 } from '@element-plus/icons-vue'
 
 const route = useRoute()

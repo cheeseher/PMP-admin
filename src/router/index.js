@@ -92,6 +92,22 @@ const router = createRouter({
           ]
         },
 
+        // 代理商管理
+        {
+          path: '/agent',
+          name: 'Agent',
+          redirect: '/agent/list',
+          meta: { title: '代理商管理' },
+          children: [
+            {
+              path: 'list',
+              name: 'AgentList',
+              component: () => import(/* webpackChunkName: "agent" */ '@/views/agent/AgentList.vue'),
+              meta: { title: '代理商列表' }
+            }
+          ]
+        },
+
         // 支付配置
         {
           path: '/payment',
@@ -116,6 +132,52 @@ const router = createRouter({
               name: 'PaymentSetting',
               component: () => import('@/views/payment/Setting.vue'),
               meta: { title: '支付设置' }
+            }
+          ]
+        },
+
+        // 代付管理
+        {
+          path: '/payout',
+          name: 'Payout',
+          redirect: '/payout/merchant-fund-flow',
+          meta: { title: '代付管理' },
+          children: [
+            {
+              path: 'merchant-fund-flow',
+              name: 'PayoutMerchantFundFlow',
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/MerchantFundFlow.vue'),
+              meta: { title: '商户代付资金流水' }
+            },
+            {
+              path: 'upstream-channel',
+              name: 'PayoutUpstreamChannel',
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/UpstreamChannel.vue'),
+              meta: { title: '代付上游通道管理' }
+            },
+            {
+              path: 'upstream',
+              name: 'PayoutUpstream',
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/Upstream.vue'),
+              meta: { title: '代付上游管理' }
+            },
+            {
+              path: 'product',
+              name: 'PayoutProduct',
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/Product.vue'),
+              meta: { title: '代付产品管理' }
+            },
+            {
+              path: 'upstream-fund-flow',
+              name: 'PayoutUpstreamFundFlow',
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/UpstreamFundFlow.vue'),
+              meta: { title: '上游代付资金流水' }
+            },
+            {
+              path: 'order',
+              name: 'PayoutOrder',
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/OrderManagement.vue'),
+              meta: { title: '代付订单管理' }
             }
           ]
         },

@@ -152,19 +152,19 @@ const router = createRouter({
             {
               path: 'upstream-channel',
               name: 'PayoutUpstreamChannel',
-              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/UpstreamChannel.vue'),
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/PayoutChannelManagement.vue'),
               meta: { title: '代付上游通道管理' }
             },
             {
               path: 'upstream',
               name: 'PayoutUpstream',
-              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/Upstream.vue'),
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/PayoutUpstreamManagement.vue'),
               meta: { title: '代付上游管理' }
             },
             {
               path: 'product',
               name: 'PayoutProduct',
-              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/Product.vue'),
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/PayoutProductManagement.vue'),
               meta: { title: '代付产品管理' }
             },
             {

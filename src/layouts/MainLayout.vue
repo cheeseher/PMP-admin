@@ -213,11 +213,12 @@
         />
       </el-form-item>
       
-      <el-form-item label="开启google认证" prop="googleAuth">
-        <el-radio-group v-model="securityForm.googleAuth">
-          <el-radio :label="false">禁用</el-radio>
-          <el-radio :label="true">启用</el-radio>
-        </el-radio-group>
+      <el-form-item label="谷歌验证" prop="googleAuth">
+        <div class="google-auth">
+          <el-tag v-if="securityForm.googleAuthEnabled" type="success">已验证</el-tag>
+          <el-tag v-else type="warning">未验证</el-tag>
+          <el-button v-if="!securityForm.googleAuthEnabled" type="primary" size="small" @click="handleGoogleAuth" style="margin-left: 12px">立即验证</el-button>
+        </div>
       </el-form-item>
       
       <el-form-item>
@@ -325,6 +326,84 @@
       </span>
     </template>
   </el-dialog>
+
+  <!-- 谷歌验证器设置弹窗 -->
+  <el-dialog
+    v-model="googleAuthDialogVisible"
+    title="谷歌验证器"
+    width="600px"
+    :close-on-click-modal="false"
+    destroy-on-close
+    :show-close="false"
+  >
+    <template #header>
+      <div class="dialog-header">
+        <span>谷歌验证器</span>
+        <el-button class="close-btn" type="text" @click="handleCloseGoogleAuth">
+          <el-icon><Close /></el-icon>
+        </el-button>
+      </div>
+    </template>
+
+    <el-steps :active="activeStep" finish-status="success" class="auth-steps">
+      <el-step title="第一步：创建秘钥" />
+      <el-step title="第二步：验证身份" />
+      <el-step title="第三步：完成设置" />
+    </el-steps>
+
+    <div class="auth-content">
+      <!-- 第一步：创建秘钥 -->
+      <div v-if="activeStep === 1" class="step-content">
+        <div class="qrcode-container">
+          <img :src="qrCodeUrl" alt="Google Authenticator QR Code" class="qrcode-img" />
+        </div>
+        <div class="secret-key">
+          <span class="key-label">安全秘钥：</span>
+          <span class="key-value">{{ secretKey }}</span>
+          <el-button link type="primary" @click="handleCopy(secretKey)">复制</el-button>
+        </div>
+        <div class="auth-tip">
+          打开手机谷歌验证器，并扫描上方二维码或手动输入安全秘钥
+        </div>
+        <div class="step-footer">
+          <el-button @click="handleCloseGoogleAuth">取消</el-button>
+          <el-button type="primary" @click="activeStep = 2">下一步</el-button>
+        </div>
+      </div>
+
+      <!-- 第二步：验证身份 -->
+      <div v-if="activeStep === 2" class="step-content">
+        <div class="verify-container">
+          <el-form :model="authForm" ref="authFormRef">
+            <el-form-item>
+              <el-input
+                v-model="authForm.code"
+                placeholder="请输入6位验证码"
+                maxlength="6"
+                clearable
+                class="auth-input"
+              />
+            </el-form-item>
+          </el-form>
+        </div>
+        <div class="step-footer">
+          <el-button @click="activeStep = 1">上一步</el-button>
+          <el-button type="primary" @click="handleVerifyCode">下一步</el-button>
+        </div>
+      </div>
+
+      <!-- 第三步：完成设置 -->
+      <div v-if="activeStep === 3" class="step-content">
+        <div class="success-message">
+          <el-icon class="success-icon"><CircleCheckFilled /></el-icon>
+          <div class="success-text">恭喜您，谷歌验证器设置成功！</div>
+        </div>
+        <div class="step-footer">
+          <el-button type="primary" @click="handleFinishSetup">完成</el-button>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
 </template>
 
 <script setup>
@@ -343,7 +422,9 @@ import {
   Histogram,
   ChatLineRound,
   User,
-  CreditCard
+  CreditCard,
+  Close,
+  CircleCheckFilled
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -374,8 +455,19 @@ const securityForm = reactive({
   username: 'admin',
   nickname: '管理员',
   password: '',
-  googleAuth: false
+  googleAuth: false,
+  googleAuthEnabled: false
 })
+
+// Google验证相关
+const googleAuthDialogVisible = ref(false)
+const activeStep = ref(1)
+const secretKey = ref('JBSWY3DPEHPK3PXP')
+const qrCodeUrl = ref('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==')
+const authForm = reactive({
+  code: ''
+})
+const authFormRef = ref()
 
 // 表单验证规则
 const securityRules = {
@@ -408,6 +500,46 @@ const handleSecuritySubmit = () => {
       return false
     }
   })
+}
+
+// Google验证相关函数
+const handleGoogleAuth = () => {
+  googleAuthDialogVisible.value = true
+  activeStep.value = 1
+  // 模拟生成二维码和密钥
+  secretKey.value = 'JBSWY3DPEHPK3PXP'
+  qrCodeUrl.value = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=otpauth://totp/SiFang:admin?secret=' + secretKey.value + '&issuer=SiFang'
+}
+
+const handleCopy = (text) => {
+  navigator.clipboard.writeText(text).then(() => {
+    ElMessage.success('复制成功')
+  }).catch(() => {
+    ElMessage.error('复制失败')
+  })
+}
+
+const handleVerifyCode = () => {
+  if (!authForm.code || authForm.code.length !== 6) {
+    ElMessage.error('请输入6位验证码')
+    return
+  }
+  // 模拟验证
+  activeStep.value = 3
+}
+
+const handleFinishSetup = () => {
+  securityForm.googleAuthEnabled = true
+  googleAuthDialogVisible.value = false
+  activeStep.value = 1
+  authForm.code = ''
+  ElMessage.success('谷歌验证器设置成功')
+}
+
+const handleCloseGoogleAuth = () => {
+  googleAuthDialogVisible.value = false
+  activeStep.value = 1
+  authForm.code = ''
 }
 
 // 导出管理抽屉
@@ -757,6 +889,113 @@ const handleCommand = (command) => {
 
 .security-form {
   padding: 20px;
+}
+
+/* Google验证相关样式 */
+.google-auth {
+  display: flex;
+  align-items: center;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.close-btn {
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+}
+
+.auth-steps {
+  margin-bottom: 30px;
+}
+
+.auth-content {
+  min-height: 300px;
+}
+
+.step-content {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.qrcode-container {
+  margin-bottom: 20px;
+}
+
+.qrcode-img {
+  width: 200px;
+  height: 200px;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+}
+
+.secret-key {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #f5f5f5;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.key-label {
+  font-weight: 500;
+  color: #666;
+}
+
+.key-value {
+  font-family: monospace;
+  font-size: 16px;
+  color: #333;
+  letter-spacing: 2px;
+}
+
+.auth-tip {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 30px;
+  line-height: 1.5;
+}
+
+.verify-container {
+  max-width: 300px;
+  margin: 0 auto 30px;
+}
+
+.auth-input {
+  text-align: center;
+  font-size: 18px;
+  letter-spacing: 4px;
+}
+
+.success-message {
+  margin-bottom: 30px;
+}
+
+.success-icon {
+  font-size: 48px;
+  color: #52c41a;
+  margin-bottom: 15px;
+}
+
+.success-text {
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
+.step-footer {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
 }
 
 .export-management {

@@ -72,10 +72,27 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="操作" min-width="160" fixed="right">
+        <el-table-column label="操作" min-width="120" fixed="right">
           <template #default="scope">
-            <el-button type="primary" link :icon="Edit" @click="handleEdit(scope.row)" class="table-action-button">编辑</el-button>
-            <el-button type="danger" link :icon="Delete" @click="handleDelete(scope.row)" class="table-action-button">删除</el-button>
+            <el-dropdown trigger="click" @command="(command) => handleCommand(command, scope.row)">
+              <el-button type="primary" link>
+                操作 <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+              </el-button>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="edit">
+                    编辑
+                  </el-dropdown-item>
+                  <el-dropdown-item command="resetGoogle">
+                    重置Google验证
+                  </el-dropdown-item>
+                  <el-divider style="margin: 6px 0" />
+                  <el-dropdown-item command="delete" style="color: #f56c6c">
+                    删除
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
           </template>
         </el-table-column>
       </el-table>
@@ -151,7 +168,7 @@
 
 <script setup>
 import { ref, reactive, computed } from 'vue'
-import { Search, Refresh, Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus, Edit, Delete, ArrowDown } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 搜索表单数据
@@ -450,6 +467,40 @@ const handleStatusChange = (row, val) => {
   }, 500)
 }
 
+// 处理下拉菜单命令
+const handleCommand = (command, row) => {
+  switch (command) {
+    case 'edit':
+      handleEdit(row)
+      break
+    case 'delete':
+      handleDelete(row)
+      break
+    case 'resetGoogle':
+      handleResetGoogle(row)
+      break
+  }
+}
+
+// 重置Google绑定
+const handleResetGoogle = (row) => {
+  ElMessageBox.confirm(
+    `确定要重置管理员 "${row.username}" 的Google验证吗？重置后该账户将无法使用Google验证登录。`, 
+    '重置Google验证', 
+    {
+      confirmButtonText: '确定重置',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    // 模拟API调用
+    row.googleAuth = false
+    ElMessage.success(`已重置管理员 "${row.username}" 的Google验证`)
+  }).catch(() => {
+    ElMessage.info('已取消操作')
+  })
+}
+
 // 删除管理员
 const handleDelete = (row) => {
   ElMessageBox.confirm(
@@ -556,4 +607,4 @@ const handleCurrentChange = (val) => {
   display: flex;
   justify-content: flex-end;
 }
-</style> 
+</style>

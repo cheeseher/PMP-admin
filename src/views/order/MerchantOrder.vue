@@ -427,6 +427,7 @@
                   <template v-else-if="row.orderStatus === 'success'">
                     <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'resend', row: row}">重新推送</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'manualFail', row: row}">手动失败</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'cancel', row: row}">双向撤销</el-dropdown-item>
                   </template>
                   
@@ -434,6 +435,7 @@
                   <template v-else-if="row.orderStatus === 'reorder_success'">
                     <el-dropdown-item :command="{type: 'editAmount', row: row}">修改金额</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'resend', row: row}">重新推送</el-dropdown-item>
+                    <el-dropdown-item :command="{type: 'manualFail', row: row}">手动失败</el-dropdown-item>
                     <el-dropdown-item :command="{type: 'cancel', row: row}">双向撤销</el-dropdown-item>
                   </template>
                   
@@ -831,7 +833,7 @@ const getStatusText = (status) => {
     created: '订单创建',
     pending: '待付款',
     success: '交易成功',
-    failed: '下单失败',
+    failed: '交易失败',
     canceled: '交易撤销',
     reorder_success: '补单成功',
     closed: '交易关闭'
@@ -1015,6 +1017,23 @@ const handleCommand = (command) => {
       })
       break
       
+    case 'manualFail':
+      ElMessageBox.confirm(`确定将订单 ${row.orderNo} 标记为交易失败吗？`, '手动失败确认', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const originalOrder = originalTableData.value.find(item => item.orderNo === row.orderNo)
+        if (originalOrder) {
+          // 保持完成时间不变，仅更新状态
+          originalOrder.orderStatus = 'failed'
+        }
+        ElMessage.success(`订单 ${row.orderNo} 已标记为交易失败`)
+      }).catch(() => {
+        ElMessage.info('已取消操作')
+      })
+      break
+      
     case 'manualCallback':
       ElMessageBox.confirm(`确定要为订单 ${row.orderNo} 执行手动回调吗？`, '提示', {
         confirmButtonText: '确定',
@@ -1034,6 +1053,29 @@ const handleCommand = (command) => {
       
       // 打开修改金额对话框
       openEditAmountDialog()
+      break
+      
+    case 'manualFail':
+      ElMessageBox.confirm(
+        `确定要将订单 ${row.orderNo} 变更为交易失败状态吗？\n\n注意：此操作不可撤销，订单完成时间将保持不变。`, 
+        '手动失败确认', 
+        {
+          confirmButtonText: '确定失败',
+          cancelButtonText: '取消',
+          type: 'warning',
+          customClass: 'manual-fail-dialog'
+        }
+      ).then(() => {
+        // 找到原始数据并更新状态
+        const originalOrder = originalTableData.value.find(item => item.orderNo === row.orderNo)
+        if (originalOrder) {
+          originalOrder.orderStatus = 'failed'
+          // 订单完成时间保持不变
+          ElMessage.success(`订单 ${row.orderNo} 已成功变更为交易失败状态`)
+        }
+      }).catch(() => {
+        ElMessage.info('已取消手动失败操作')
+      })
       break
       
     default:

@@ -29,3 +29,9 @@ coverage
 .env.*
 !.env.example 
 node_modules
+
+# Local npm cache
+.npm-cache/
+
+# Vite temp timestamps
+vite.config.js.timestamp-*.mjs

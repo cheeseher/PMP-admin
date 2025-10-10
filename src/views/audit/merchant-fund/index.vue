@@ -128,7 +128,8 @@ const transactionTypeOptions = [
   { label: '余额增加', value: 'balance_increase' },
   { label: '余额扣减', value: 'balance_decrease' },
   { label: '修改金额', value: 'amount_change' },
-  { label: '修改金额冲账', value: 'amount_change_reverse' }
+  { label: '修改金额冲账', value: 'amount_change_reverse' },
+  { label: '失败返还', value: 'fail_return' }
 ]
 
 // 商户选项
@@ -316,6 +317,23 @@ const tableData = ref([
     remark: '人工进行余额操作时输入的备注',
     flowNo: 'MJK202503270918001006',
     createTime: '2025-03-27 09:18:12'
+  },
+  {
+    merchantName: '测试商户A',
+    transactionNo: 'P202503301500001237',
+    beforeTotal: 856.00,
+    beforeAvailable: 856.00,
+    beforeFrozen: 0.00,
+    transactionAmount: 50.00,
+    transactionType: '失败返还',
+    fee: 0.00,
+    freezeAmount: 0.00,
+    afterTotal: 906.00,
+    afterAvailable: 906.00,
+    afterFrozen: 0.00,
+    remark: '交易失败返还金额',
+    flowNo: 'MJK202503301500001007',
+    createTime: '2025-03-30 15:00:00'
   }
 ])
 
@@ -452,4 +470,4 @@ onMounted(() => {
 .mt-16 {
   margin-top: 16px;
 }
-</style> 
+</style>

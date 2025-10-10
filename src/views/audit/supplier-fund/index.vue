@@ -145,7 +145,8 @@ const transactionTypeOptions = [
   { label: '余额增加', value: 'balance_increase' },
   { label: '余额扣减', value: 'balance_decrease' },
   { label: '修改金额', value: 'amount_change' },
-  { label: '修改金额冲账', value: 'amount_change_reverse' }
+  { label: '修改金额冲账', value: 'amount_change_reverse' },
+  { label: '失败返还', value: 'fail_return' }
 ]
 
 // 供应商选项
@@ -308,6 +309,23 @@ const tableData = ref([
     afterFrozen: 0.00,
     remark: '人工进行余额操作时输入的备注',
     createTime: '2025-03-27 09:18:12'
+  },
+  {
+    upstream: '新闪电',
+    transactionNo: 'P202503301505001238',
+    flowNo: 'CJK202503301505001007',
+    beforeTotal: 678.00,
+    beforeAvailable: 578.00,
+    beforeFrozen: 100.00,
+    transactionAmount: 80.00,
+    transactionType: '失败返还',
+    fee: 0.00,
+    freezeAmount: 0.00,
+    afterTotal: 758.00,
+    afterAvailable: 658.00,
+    afterFrozen: 100.00,
+    remark: '交易失败返还金额',
+    createTime: '2025-03-30 15:05:00'
   }
 ])
 
@@ -435,4 +453,4 @@ onMounted(() => {
 .mt-16 {
   margin-top: 16px;
 }
-</style> 
+</style>

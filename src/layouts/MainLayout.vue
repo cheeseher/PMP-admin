@@ -10,6 +10,7 @@
         <el-menu
           :default-active="route.path"
           class="el-menu-vertical"
+          router
           :collapse="isCollapse"
           @select="handleSelect"
         >
@@ -67,7 +68,7 @@
           </el-sub-menu>
 
           <!-- 商户管理 -->
-          <el-sub-menu index="product">
+          <el-sub-menu index="/product">
             <template #title>
               <el-icon><Goods /></el-icon>
               <span>商户管理</span>

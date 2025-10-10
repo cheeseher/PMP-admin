@@ -24,6 +24,14 @@
               <el-option label="否" :value="'false'" />
             </el-select>
           </el-form-item>
+          <el-form-item label="商户费率：">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <el-input v-model="searchForm.minRate" placeholder="最小费率" style="width: 100px" clearable />
+              <span>-</span>
+              <el-input v-model="searchForm.maxRate" placeholder="最大费率" style="width: 100px" clearable />
+              <span>%</span>
+            </div>
+          </el-form-item>
         </div>
         <div class="filter-buttons">
           <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -41,7 +49,7 @@
           <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
         </div>
         <div class="right">
-          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
+          <el-button type="primary" @click="handleBatchAddChannels">批量添加通道</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="fetchData" />
           </el-tooltip>
@@ -53,9 +61,7 @@
         :data="tableData"
         border
         stripe
-        @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" fixed="left" />
         <el-table-column prop="id" label="商户ID" width="80" sortable />
         <el-table-column prop="merchantNo" label="商户账号" min-width="120" />
         <el-table-column prop="merchantName" label="商户名称" min-width="150" />
@@ -110,12 +116,84 @@
         </el-table-column>
       </el-table>
     </el-dialog>
+
+    <!-- 批量添加通道弹窗 -->
+    <el-dialog
+      v-model="batchAddChannelsDialog.visible"
+      title="批量添加通道"
+      width="800px"
+      :close-on-click-modal="false"
+    >
+      <el-form label-width="120px" class="batch-add-form">
+        <!-- 全部商户 -->
+        <el-form-item label="全部商户">
+          <div style="display: flex; align-items: center;">
+            <el-switch
+              v-model="batchAddChannelsDialog.applyToAllMerchants"
+              active-text="是"
+              inactive-text="否"
+              @change="handleApplyToAllMerchantsChange"
+            />
+            <span style="margin-left: 12px; color: #909399; font-size: 12px;">
+              启用后将针对全部商户产品添加通道
+            </span>
+          </div>
+        </el-form-item>
+
+        <!-- 商户产品 -->
+        <el-form-item label="商户产品" v-show="!batchAddChannelsDialog.applyToAllMerchants">
+          <el-select
+            v-model="batchAddChannelsDialog.selectedMerchantsDisplay"
+            placeholder="请选择商户产品"
+            style="width: 100%"
+            @change="handleSelectedMerchantsChange"
+            clearable
+            multiple
+            filterable
+            collapse-tags
+            collapse-tags-tooltip
+          >
+            <el-option
+              v-for="item in getSelectedMerchantOptions()"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+
+        <!-- 供应商通道选择 -->
+        <el-form-item label="供应商通道">
+          <el-select
+            v-model="batchAddChannelsDialog.selectedChannels"
+            multiple
+            filterable
+            placeholder="请选择供应商通道"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in supplierChannels"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="cancelBatchAddChannels">取消</el-button>
+          <el-button type="primary" @click="confirmBatchAddChannels">确认添加</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
-import { Search, Refresh, Download } from '@element-plus/icons-vue'
+import { Search, Refresh } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { merchantProductList } from '@/data/merchantProductData'
 
@@ -125,7 +203,9 @@ const searchForm = reactive({
   merchantNo: '',
   merchantName: '',
   product: '',
-  customOption: ''
+  customOption: '',
+  minRate: '',
+  maxRate: ''
 })
 
 // 表格数据
@@ -177,6 +257,15 @@ const fetchData = () => {
       filteredData = filteredData.filter(item => String(item.customOption) === searchForm.customOption)
     }
     
+    // 商户费率筛选
+    if (searchForm.minRate !== '') {
+      filteredData = filteredData.filter(item => item.rate >= parseFloat(searchForm.minRate))
+    }
+    
+    if (searchForm.maxRate !== '') {
+      filteredData = filteredData.filter(item => item.rate <= parseFloat(searchForm.maxRate))
+    }
+    
     total.value = filteredData.length
     
     // 分页处理
@@ -188,10 +277,7 @@ const fetchData = () => {
   }, 300)
 }
 
-// 导出数据
-const handleExport = () => {
-  ElMessage.success('商户产品关联数据导出成功')
-}
+
 
 // 搜索与重置
 const handleSearch = () => {
@@ -208,9 +294,134 @@ const handleReset = () => {
   fetchData()
 }
 
+// 批量添加通道弹窗
+const batchAddChannelsDialog = ref({
+  visible: false,
+  selectedMerchants: [],
+  selectedMerchantsDisplay: [],
+  selectedChannels: [],
+  applyToAllMerchants: false // 默认设置为"否"
+})
+
+// 供应商通道选项
+const supplierChannels = ref([
+  { id: 1, name: '渠道A | 通道A | 6%' },
+  { id: 2, name: '渠道A | 通道B | 5.5%' },
+  { id: 3, name: '渠道B | 通道A | 6.2%' },
+  { id: 4, name: '渠道B | 通道B | 5.8%' },
+  { id: 5, name: '渠道C | 通道A | 5.9%' },
+  { id: 6, name: '渠道C | 通道B | 6.1%' }
+])
+
+// 示例商户产品选项（用于未选择具体行时的演示数据）
+const sampleMerchantProductOptions = [
+  { label: '商户A | 产品A', value: 'sample_1' },
+  { label: '商户B | 产品B', value: 'sample_2' },
+  { label: '商户C | 产品C', value: 'sample_3' },
+  { label: '商户D | 产品D', value: 'sample_4' },
+  { label: '商户E | 产品E', value: 'sample_5' }
+]
+
+// 批量添加通道
+const handleBatchAddChannels = () => {
+  // 由于默认启用针对全部商户，不需要重置开关状态
+  // 默认隐藏已选商户产品下拉菜单，所以不需要设置selectedMerchantsDisplay
+  
+  batchAddChannelsDialog.value.selectedChannels = []
+  batchAddChannelsDialog.value.visible = true
+}
+
+// 确认批量添加通道
+const confirmBatchAddChannels = () => {
+  if (batchAddChannelsDialog.value.selectedChannels.length === 0) {
+    ElMessage.warning('请选择要添加的供应商通道')
+    return
+  }
+  
+  let merchantCount = 0
+  if (batchAddChannelsDialog.value.applyToAllMerchants) {
+    merchantCount = tableData.value.length
+  } else {
+    if (!batchAddChannelsDialog.value.selectedMerchantsDisplay || batchAddChannelsDialog.value.selectedMerchantsDisplay.length === 0) {
+      ElMessage.warning('请选择商户产品范围')
+      return
+    }
+    merchantCount = batchAddChannelsDialog.value.selectedMerchantsDisplay.length
+  }
+  const channelCount = batchAddChannelsDialog.value.selectedChannels.length
+  
+  ElMessage.success(`成功为 ${merchantCount} 个商户添加 ${channelCount} 个通道`)
+  batchAddChannelsDialog.value.visible = false
+  
+  // 刷新数据
+  fetchData()
+}
+
+// 获取已选商户选项
+const getSelectedMerchantOptions = () => {
+  // 如果启用针对全部商户，显示"全部商户产品"
+  if (batchAddChannelsDialog.value.applyToAllMerchants) {
+    return [{ label: '全部商户产品', value: 'all_merchants' }]
+  }
+  
+  // 未选择任何行时，返回示例选项
+  if (selectedRows.value.length === 0) {
+    return sampleMerchantProductOptions
+  }
+  
+  // 返回具体选项，格式为"商户A | 产品A"
+  return selectedRows.value.map(row => ({
+    label: `${row.merchantName} | ${row.productName}`,
+    value: row.id
+  }))
+}
+
+// 处理商户产品下拉菜单变化（多选）
+const handleSelectedMerchantsChange = (value) => {
+  if (Array.isArray(value)) {
+    ElMessage.info(`当前已选择 ${value.length} 个商户产品`)
+  }
+}
+
+// 取消批量添加通道
+const cancelBatchAddChannels = () => {
+  batchAddChannelsDialog.value.visible = false
+  batchAddChannelsDialog.value.selectedChannels = []
+}
+
 // 表格选择
 const handleSelectionChange = (rows) => {
   selectedRows.value = rows
+}
+
+// 判断行是否可选（当启用针对全部商户时，禁用选择功能）
+const isRowSelectable = (row, index) => {
+  return !batchAddChannelsDialog.value.applyToAllMerchants
+}
+
+// 处理针对全部商户开关变化
+const handleApplyToAllMerchantsChange = (value) => {
+  if (value) {
+    // 启用针对全部商户时，清空之前的选择状态
+    selectedRows.value = []
+    batchAddChannelsDialog.value.selectedMerchantsDisplay = []
+    ElMessage.info('已启用针对全部商户，将清空当前选择')
+  } else {
+    // 禁用针对全部商户时，恢复选择功能
+    if (selectedRows.value.length > 0) {
+      if (selectedRows.value.length <= 5) {
+        // 选择1-5个时，默认选中全部这些项
+        batchAddChannelsDialog.value.selectedMerchantsDisplay = selectedRows.value.map(r => r.id)
+      } else {
+        // 选择超过5个时，默认选中前5个，标签折叠显示统计
+        batchAddChannelsDialog.value.selectedMerchantsDisplay = selectedRows.value.slice(0, 5).map(r => r.id)
+      }
+    } else {
+      // 未选择行时默认选中第一个示例选项
+      batchAddChannelsDialog.value.selectedMerchantsDisplay = [sampleMerchantProductOptions[0].value]
+    }
+    ElMessage.info('已禁用针对全部商户，可选择商户产品范围')
+  }
 }
 
 // 分页处理
@@ -253,11 +464,12 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 16px;
 }
 
 .filter-row .el-form-item {
   margin-bottom: 0;
-  margin-right: 20px;
+  margin-right: 0;
 }
 
 .filter-buttons {
@@ -287,8 +499,10 @@ onMounted(() => {
   font-weight: 500;
 }
 
-.table-toolbar .right .el-button {
-  margin-left: 8px;
+.table-toolbar .right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .pagination-container {
@@ -307,4 +521,22 @@ onMounted(() => {
   margin-right: 4px;
   color: #606266;
 }
-</style> 
+
+/* 下拉菜单样式优化 */
+:deep(.el-select__tags) {
+  flex-wrap: nowrap !important;
+  overflow: hidden;
+}
+
+:deep(.el-select__tags-text) {
+  display: inline-block;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:deep(.el-select .el-tag__close) {
+  display: none;
+}
+</style>

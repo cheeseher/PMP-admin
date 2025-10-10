@@ -52,7 +52,7 @@ export const merchantProductList = [
     id: 4,
     merchantNo: '商户B',
     merchantName: '商户B',
-    productName: '产品D',
+    productName: '产品A',
     productCode: 'YL001',
     rate: 2.80,
     weight: 5,
@@ -68,7 +68,7 @@ export const merchantProductList = [
     id: 5,
     merchantNo: '商户B',
     merchantName: '商户B',
-    productName: '产品E',
+    productName: '产品B',
     productCode: 'YSF001',
     rate: 2.50,
     weight: 7,
@@ -81,10 +81,10 @@ export const merchantProductList = [
   },
   {
     id: 6,
-    merchantNo: '商户C',
-    merchantName: '商户C',
-    productName: '产品B',
-    productCode: 'WX001',
+    merchantNo: '商户B',
+    merchantName: '商户B',
+    productName: '产品C',
+    productCode: 'ZFB002',
     rate: 3.20,
     weight: 9,
     remark: '特约商户',
@@ -96,9 +96,9 @@ export const merchantProductList = [
   },
   {
     id: 7,
-    merchantNo: '商户D',
-    merchantName: '商户D',
-    productName: '产品F',
+    merchantNo: '商户C',
+    merchantName: '商户C',
+    productName: '产品A',
     productCode: 'ICC001',
     rate: 4.50,
     weight: 3,
@@ -112,9 +112,9 @@ export const merchantProductList = [
   },
   {
     id: 8,
-    merchantNo: '商户E',
-    merchantName: '商户E',
-    productName: '产品G',
+    merchantNo: '商户C',
+    merchantName: '商户C',
+    productName: '产品B',
     productCode: 'QP001',
     rate: 2.60,
     weight: 6,
@@ -129,9 +129,9 @@ export const merchantProductList = [
   },
   {
     id: 9,
-    merchantNo: '商户F',
-    merchantName: '商户F',
-    productName: '产品H',
+    merchantNo: '商户C',
+    merchantName: '商户C',
+    productName: '产品C',
     productCode: 'AGG001',
     rate: 3.80,
     weight: 4,
@@ -144,9 +144,9 @@ export const merchantProductList = [
   },
   {
     id: 10,
-    merchantNo: '商户G',
-    merchantName: '商户G',
-    productName: '产品I',
+    merchantNo: '商户D',
+    merchantName: '商户D',
+    productName: '产品A',
     productCode: 'SCAN001',
     rate: 2.20,
     weight: 8,
@@ -157,5 +157,36 @@ export const merchantProductList = [
       { name: '渠道B', rate: 6 },
       { name: '渠道C', rate: 6 }
     ]
+  },
+  {
+    id: 11,
+    merchantNo: '商户D',
+    merchantName: '商户D',
+    productName: '产品B',
+    productCode: 'WX002',
+    rate: 3.30,
+    weight: 7,
+    remark: '标准费率',
+    customOption: false,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 }
+    ]
+  },
+  {
+    id: 12,
+    merchantNo: '商户E',
+    merchantName: '商户E',
+    productName: '产品A',
+    productCode: 'ZFB003',
+    rate: 2.90,
+    weight: 5,
+    remark: '标准费率',
+    customOption: false,
+    selectedChannels: [
+      { name: '渠道A', rate: 6 },
+      { name: '渠道B', rate: 6 },
+      { name: '渠道C', rate: 6 }
+    ]
   }
-]; 
+];

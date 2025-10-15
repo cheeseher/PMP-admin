@@ -24,6 +24,13 @@
               <el-option label="否" :value="'false'" />
             </el-select>
           </el-form-item>
+          <el-form-item label="轮询/权重：">
+            <el-select v-model="searchForm.balanceType" placeholder="请选择" style="width: 120px" clearable>
+              <el-option label="全部" :value="''" />
+              <el-option label="轮询" :value="'polling'" />
+              <el-option label="权重" :value="'weight'" />
+            </el-select>
+          </el-form-item>
           <el-form-item label="商户费率：">
             <div style="display: flex; align-items: center; gap: 8px;">
               <el-input v-model="searchForm.minRate" placeholder="最小费率" style="width: 100px" clearable />
@@ -76,6 +83,13 @@
           <template #default="scope">
             <el-tag :type="scope.row.customOption ? 'success' : 'info'" size="small">
               {{ scope.row.customOption ? '是' : '否' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="轮询/权重" width="100">
+          <template #default="scope">
+            <el-tag :type="scope.row.balanceType === 'polling' ? 'primary' : 'warning'" size="small">
+              {{ scope.row.balanceType === 'polling' ? '轮询' : '权重' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -204,6 +218,7 @@ const searchForm = reactive({
   merchantName: '',
   product: '',
   customOption: '',
+  balanceType: '',
   minRate: '',
   maxRate: ''
 })
@@ -255,6 +270,11 @@ const fetchData = () => {
     
     if (searchForm.customOption !== '') {
       filteredData = filteredData.filter(item => String(item.customOption) === searchForm.customOption)
+    }
+    
+    // 轮询/权重筛选
+    if (searchForm.balanceType !== '') {
+      filteredData = filteredData.filter(item => item.balanceType === searchForm.balanceType)
     }
     
     // 商户费率筛选

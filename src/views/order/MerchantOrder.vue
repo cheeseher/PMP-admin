@@ -183,7 +183,7 @@
               <el-option label="订单创建" value="created" />
               <el-option label="交易成功" value="success" />
               <el-option label="待付款" value="pending" />
-              <el-option label="下单失败" value="failed" />
+              <el-option label="交易失败" value="failed" />
               <el-option label="交易撤销" value="canceled" />
               <el-option label="补单成功" value="reorder_success" />
               <el-option label="交易关闭" value="closed" />

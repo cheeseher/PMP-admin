@@ -10,6 +10,7 @@ export const merchantProductList = [
     weight: 1,
     remark: '',
     customOption: true,
+    balanceType: 'polling',
     selectedChannels: [
       { name: '渠道A', rate: 6 },
       { name: '渠道B', rate: 6 },
@@ -26,6 +27,7 @@ export const merchantProductList = [
     weight: 10,
     remark: '产品B优先',
     customOption: true,
+    balanceType: 'weight',
     selectedChannels: [
       { name: '渠道A', rate: 6 },
       { name: '渠道B', rate: 6 }
@@ -41,6 +43,7 @@ export const merchantProductList = [
     weight: 8,
     remark: '产品C次优先',
     customOption: true,
+    balanceType: 'polling',
     selectedChannels: [
       { name: '渠道A', rate: 6 },
       { name: '渠道B', rate: 6 },

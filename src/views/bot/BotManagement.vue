@@ -22,14 +22,7 @@
               <el-option label="关闭" value="disabled" />
             </el-select>
           </el-form-item>
-          <!-- 新增：配对状态筛选 -->
-          <el-form-item label="配对状态：">
-            <el-select v-model="filterForm.pairStatus" placeholder="请选择配对状态" clearable style="width: 168px">
-              <el-option label="全部" value="" />
-              <el-option label="未配对" value="unpaired" />
-              <el-option label="已配对" value="paired" />
-            </el-select>
-          </el-form-item>
+
         </div>
         
         <div class="filter-buttons">
@@ -68,28 +61,7 @@
             {{ formatBotUsername(row.botUsername) }}
           </template>
         </el-table-column>
-        <el-table-column prop="botType" label="机器人类型" width="120" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.botType === 'bot' ? 'primary' : 'warning'">
-              {{ row.botType === 'bot' ? '机器人' : '客户端账号' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <!-- 新增：配对状态列 -->
-        <el-table-column prop="pairStatus" label="配对状态" width="120" align="center">
-          <template #default="{ row }">
-            <el-tag v-if="row.botType === 'client' && row.pairStatus" :type="getPairStatusType(row.pairStatus)">
-              {{ getPairStatusLabel(row.pairStatus) }}
-            </el-tag>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="pairingToken" label="配对令牌" min-width="200">
-          <template #default="{ row }">
-            <span v-if="row.pairingToken" class="pairing-token">{{ row.pairingToken }}</span>
-            <span v-else>-</span>
-          </template>
-        </el-table-column>
+
         <el-table-column prop="status" label="状态" width="120" align="center">
           <template #default="{ row }">
             <el-tag :type="getStatusType(row.status)">
@@ -140,30 +112,23 @@
         label-width="130px"
         label-position="left"
       >
-        <el-form-item label="机器人类型" prop="botType" v-if="dialogType === 'add'">
-          <el-radio-group v-model="botForm.botType" @change="handleBotTypeChange">
-            <el-radio label="bot">机器人</el-radio>
-            <el-radio label="client">客户端账号</el-radio>
-          </el-radio-group>
-        </el-form-item>
+
         <el-form-item label="机器人名称" prop="botName">
           <el-input v-model="botForm.botName" placeholder="请输入机器人名称" />
         </el-form-item>
-        <el-form-item label="Bot Token" prop="token" v-if="botForm.botType === 'bot'">
+        <el-form-item label="Bot Token" prop="token">
           <el-input 
             v-model="botForm.token" 
             placeholder="请输入从 BotFather 获取的 Token"
-            :disabled="dialogType === 'edit'" 
           />
         </el-form-item>
-        <el-form-item label="Bot 用户名" prop="botUsername" v-if="botForm.botType === 'bot'">
+        <el-form-item label="Bot 用户名" prop="botUsername">
           <el-input 
             v-model="botForm.botUsername" 
             placeholder="请输入机器人用户名，必须以bot结尾，无需添加@符号"
-            :disabled="dialogType === 'edit'" 
           />
         </el-form-item>
-        <el-form-item label="状态" prop="status" v-if="botForm.botType === 'bot'">
+        <el-form-item label="状态" prop="status">
           <el-switch
             v-model="botForm.statusEnabled"
             active-text="开启"
@@ -173,9 +138,6 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <div class="left-buttons" v-if="dialogType === 'edit' && botForm.botType === 'client' && botForm.pairStatus === 'paired'">
-            <el-button type="warning" @click="confirmUnpair">取消配对</el-button>
-          </div>
           <div class="right-buttons">
             <el-button @click="botDialogVisible = false">取消</el-button>
             <el-button type="primary" @click="submitBotForm">确认</el-button>
@@ -197,8 +159,7 @@ import { Search, Refresh, Plus, ArrowDown } from '@element-plus/icons-vue'
 // 筛选表单
 const filterForm = reactive({
   botName: '',
-  status: '',
-  pairStatus: '' // 新增：配对状态筛选
+  status: ''
 })
 
 // 原始表格数据
@@ -207,23 +168,17 @@ const tableData = ref([
     id: 1,
     botName: '机器人A',
     botUsername: '@sifang_pay_bot',
-    botType: 'bot',
     token: '6895029194:AAE...',
     status: 'enabled',
-    pairingToken: '',
-    pairStatus: 'paired', // 新增：配对状态（机器人默认视为已配对）
     creator: 'admin',
     createdAt: '2023-10-01 12:00:00'
   },
   {
     id: 2,
-    botName: '查单客服-Client-01',
-    botUsername: '',
-    botType: 'client',
-    token: '',
+    botName: '查单客服机器人',
+    botUsername: '@check_order_bot',
+    token: '123456:ABCDEF...',
     status: 'enabled',
-    pairingToken: 'f7b3k9c1a_pmp_client_token_d4g6h2j8',
-    pairStatus: 'paired', // 新增：配对状态（已配对）
     creator: 'admin',
     createdAt: '2023-09-15 10:30:00'
   }
@@ -246,12 +201,9 @@ const botForm = reactive({
   id: null,
   botName: '',
   botUsername: '',
-  botType: 'bot', // 默认机器人类型
   token: '',
   status: 'enabled', // 默认为开启状态
-  statusEnabled: true, // 新增状态开关属性，默认为开启
-  pairingToken: '', // 配对令牌
-  pairStatus: '' // 配对状态
+  statusEnabled: true // 新增状态开关属性，默认为开启
 })
 
 // 表单验证规则
@@ -271,39 +223,31 @@ const botRules = {
 
 // 动态验证规则
 const getBotRules = () => {
-  const rules = {
+  return {
     botName: [
       { required: true, message: '请输入机器人名称', trigger: 'blur' },
       { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
-    ]
-  }
-  
-  if (botForm.botType === 'bot') {
-    rules.token = [
+    ],
+    token: [
       { required: true, message: '请输入Token', trigger: 'blur' }
-    ]
-    rules.botUsername = [
+    ],
+    botUsername: [
       { required: true, message: '请输入机器人用户名', trigger: 'blur' },
       { pattern: /^[A-Za-z0-9_]+bot$/, message: '用户名必须以 bot 结尾，无需添加@符号', trigger: 'blur' }
     ]
   }
-  
-  return rules
 }
 
 // 搜索方法
 const handleSearch = () => {
   loading.value = true
   setTimeout(() => {
-    // 过滤逻辑：按名称、状态、配对状态
+    // 过滤逻辑：按名称、状态
     const name = filterForm.botName?.trim().toLowerCase()
     displayData.value = tableData.value.filter(item => {
       const matchName = name ? item.botName.toLowerCase().includes(name) : true
       const matchStatus = filterForm.status ? item.status === filterForm.status : true
-      const matchPair = filterForm.pairStatus 
-        ? (item.botType === 'client' && item.pairStatus === filterForm.pairStatus)
-        : true
-      return matchName && matchStatus && matchPair
+      return matchName && matchStatus
     })
     total.value = displayData.value.length
     loading.value = false
@@ -315,7 +259,6 @@ const handleSearch = () => {
 const resetFilter = () => {
   filterForm.botName = ''
   filterForm.status = ''
-  filterForm.pairStatus = ''
   handleSearch()
 }
 
@@ -364,31 +307,7 @@ const confirmDelete = (row) => {
   }).catch(() => {})
 }
 
-// 确认取消配对
-const confirmUnpair = () => {
-  ElMessageBox.confirm(`确认取消配对客户端账号"${botForm.botName}"?\n取消配对后将清空配对令牌，需要重新配对。`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    loading.value = true
-    setTimeout(() => {
-      // 更新表单数据
-      botForm.pairStatus = 'unpaired'
-      botForm.pairingToken = ''
-      
-      // 更新表格数据
-      const index = tableData.value.findIndex(item => item.id === botForm.id)
-      if (index !== -1) {
-        tableData.value[index].pairStatus = 'unpaired'
-        tableData.value[index].pairingToken = ''
-      }
-      
-      ElMessage.success('取消配对成功')
-      loading.value = false
-    }, 500)
-  }).catch(() => {})
-}
+
 
 // 打开机器人表单对话框
 const openBotDialog = (type, row) => {
@@ -400,21 +319,15 @@ const openBotDialog = (type, row) => {
       botFormRef.value.resetFields()
     }
     botForm.id = null
-    botForm.botType = 'bot' // 默认机器人类型
     botForm.statusEnabled = true // 默认设置为开启
-    botForm.pairingToken = ''
-    botForm.pairStatus = ''
     
     if (type === 'edit' && row) {
       botForm.id = row.id
       botForm.botName = row.botName
-      botForm.botType = row.botType || 'bot'
       botForm.botUsername = formatBotUsername(row.botUsername) // 去除@符号
       botForm.token = row.token || ''
       botForm.status = row.status
       botForm.statusEnabled = row.status === 'enabled' // 设置开关状态
-      botForm.pairingToken = row.pairingToken || ''
-      botForm.pairStatus = row.pairStatus || ''
     }
   })
 }
@@ -434,19 +347,17 @@ const submitBotForm = () => {
     errorMessages.push('请输入正确的机器人名称（2-50个字符）')
   }
   
-  // 验证机器人类型相关的字段
-  if (botForm.botType === 'bot') {
-    if (!botForm.token) {
-      isValid = false
-      errorMessages.push('请输入Token')
-    }
-    if (!botForm.botUsername) {
-      isValid = false
-      errorMessages.push('请输入机器人用户名')
-    } else if (!/^[A-Za-z0-9_]+bot$/.test(botForm.botUsername)) {
-      isValid = false
-      errorMessages.push('用户名必须以 bot 结尾，无需添加@符号')
-    }
+  // 验证 Token 与用户名为必填
+  if (!botForm.token) {
+    isValid = false
+    errorMessages.push('请输入Token')
+  }
+  if (!botForm.botUsername) {
+    isValid = false
+    errorMessages.push('请输入机器人用户名')
+  } else if (!/^[A-Za-z0-9_]+bot$/.test(botForm.botUsername)) {
+    isValid = false
+    errorMessages.push('用户名必须以 bot 结尾，无需添加@符号')
   }
   
   if (!isValid) {
@@ -459,42 +370,18 @@ const submitBotForm = () => {
   
   setTimeout(() => {
     if (dialogType.value === 'add') {
-      // 生成配对令牌（客户端账号类型）
-      let status = botForm.statusEnabled ? 'enabled' : 'disabled'
-      let pairingToken = ''
-      let botUsername = botForm.botUsername
-      let pairStatus = ''
-      
-      if (botForm.botType === 'client') {
-        pairingToken = generatePairingToken()
-        botUsername = '' // 客户端账号不需要用户名
-        pairStatus = 'unpaired'
-      } else {
-        // 确保机器人用户名格式正确
-        botUsername = botForm.botUsername.startsWith('@') ? botForm.botUsername : '@' + botForm.botUsername
-        pairStatus = 'paired'
-      }
-      
       // 模拟添加数据
       const newBot = {
         id: Date.now(),
         botName: botForm.botName,
-        botUsername: botUsername,
-        botType: botForm.botType,
-        token: botForm.token || '',
-        status: status,
-        pairingToken: pairingToken,
-        pairStatus: pairStatus,
+        botUsername: botForm.botUsername.startsWith('@') ? botForm.botUsername : '@' + botForm.botUsername,
+        token: botForm.token,
+        status: botForm.statusEnabled ? 'enabled' : 'disabled',
         creator: 'admin',
         createdAt: new Date().toLocaleString()
       }
       tableData.value.unshift(newBot)
-      
-      if (botForm.botType === 'client') {
-        ElMessage.success(`客户端账号添加成功，配对令牌：${pairingToken}`)
-      } else {
-        ElMessage.success('机器人添加成功')
-      }
+      ElMessage.success('机器人添加成功')
     } else {
       // 模拟更新数据
       const index = tableData.value.findIndex(item => item.id === botForm.id)
@@ -502,6 +389,8 @@ const submitBotForm = () => {
         tableData.value[index] = { 
           ...tableData.value[index], 
           botName: botForm.botName,
+          botUsername: botForm.botUsername.startsWith('@') ? botForm.botUsername : '@' + botForm.botUsername,
+          token: botForm.token,
           status: botForm.statusEnabled ? 'enabled' : 'disabled'
         }
       }
@@ -541,28 +430,7 @@ const formatBotUsername = (username) => {
   return username.replace('@', '')
 }
 
-// 生成配对令牌
-const generatePairingToken = () => {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
-  const segments = []
-  for (let i = 0; i < 4; i++) {
-    let segment = ''
-    for (let j = 0; j < 8; j++) {
-      segment += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    segments.push(segment)
-  }
-  return segments.join('_') + '_pmp_client_token_' + Math.random().toString(36).substr(2, 8)
-}
 
-// 处理机器人类型变化
-const handleBotTypeChange = () => {
-  // 清空机器人类型相关的字段
-  if (botForm.botType === 'client') {
-    botForm.token = ''
-    botForm.botUsername = ''
-  }
-}
 
 // 获取状态标签类型
 const getStatusType = (status) => {
@@ -582,23 +450,6 @@ const getStatusLabel = (status) => {
   return statusMap[status] || status
 }
 
-// 获取配对状态标签类型
-const getPairStatusType = (pairStatus) => {
-  const map = {
-    'unpaired': 'warning',
-    'paired': 'success'
-  }
-  return map[pairStatus] || 'default'
-}
-
-// 获取配对状态标签文本
-const getPairStatusLabel = (pairStatus) => {
-  const map = {
-    'unpaired': '未配对',
-    'paired': '已配对'
-  }
-  return map[pairStatus] || pairStatus
-}
 
 // 生命周期钩子
 onMounted(() => {

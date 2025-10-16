@@ -4,11 +4,11 @@
     <!-- 筛选表单 -->
     <el-card shadow="never" class="filter-card">
       <el-form :model="filterForm" inline>
-        <el-form-item label="TG名称：">
-          <el-input v-model="filterForm.tgName" placeholder="请输入用户TG名称" clearable />
+        <el-form-item label="名称：">
+          <el-input v-model="filterForm.tgName" placeholder="请输入用户名称" clearable />
         </el-form-item>
-        <el-form-item label="TGID：">
-          <el-input v-model="filterForm.tgId" placeholder="请输入用户TGID" clearable />
+        <el-form-item label="ID：">
+          <el-input v-model="filterForm.tgId" placeholder="请输入用户ID" clearable />
         </el-form-item>
         <el-form-item label="用户指令：">
           <el-input v-model="filterForm.userCommand" placeholder="请输入用户指令关键词" clearable />
@@ -277,6 +277,12 @@ const getGroupTypeLabel = (groupType) => {
   }
 };
 
+// 生成随机TGID
+const generateRandomTgid = () => {
+  const digits = Math.floor(100000000 + Math.random() * 900000000);
+  return String(digits);
+}
+
 // 模拟数据
 const mockLogData = [
   { userTgName: '张三', userTgId: '123456789', specificAction: 'ZF20231027001', imageUrl: 'https://via.placeholder.com/300/409EFF/FFFFFF?text=支付图片', botInvolved: '机器人A', groupInvolved: '闪电', groupType: 'upstream', groupId: '-100123456789', botFeedback: '此处转发上游群回复的内容', operationTime: '2023-10-27 10:00:00' },
@@ -285,6 +291,7 @@ const mockLogData = [
   { userTgName: '王五', userTgId: '123456789', specificAction: '商户费率', botInvolved: '机器人A', groupInvolved: '商户B', groupType: 'merchant', groupId: '-100423456789', botFeedback: '商户【商户B】支付产品费率: \n支付产品名称：微信支付,支付产品编码：WXPAY,商户费率：0.6%\n支付产品名称：支付宝,支付产品编码：ALIPAY,商户费率：0.7%', operationTime: '2023-10-27 10:15:00' },
   { userTgName: '赵六', userTgId: '123456789', specificAction: '商户余额#商户A#-0.01', botInvolved: '机器人A', groupInvolved: '商户A', groupType: 'merchant', groupId: '-100223456789', botFeedback: '========商户【测测】设置预付========\n变动前：0.01\n变动金额：0.01\n变动后：0.00\n商户余额：0.00\n【余额#测测#-0.01】操作人TG：TG 用户名 @用户名\n========设置预付完毕========\n操作录像文件已生成。', operationTime: '2023-10-27 10:20:00' },
   { userTgName: '测试用户', userTgId: '555666777', specificAction: 'id', botInvolved: '机器人A', groupInvolved: '未分配群组', groupType: 'unassigned', groupId: '-100523456789', botFeedback: '987654321', operationTime: '2023-10-27 10:25:00' },
+  { userTgName: '测试用户', userTgId: '888999000', specificAction: '/add @shane @dylan', imageUrl: '', botInvolved: generateRandomTgid(), groupInvolved: '闪电', groupType: 'upstream', groupId: '-100123456789', botFeedback: '用户 @shane @dylan 已成功拉入群组 -100123456789', operationTime: '2023-10-27 10:30:00' },
 ];
 
 const loadTableData = () => {

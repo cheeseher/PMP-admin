@@ -120,12 +120,14 @@
           <el-input 
             v-model="botForm.token" 
             placeholder="请输入从 BotFather 获取的 Token"
+            :disabled="dialogType === 'edit'"
           />
         </el-form-item>
         <el-form-item label="Bot 用户名" prop="botUsername">
           <el-input 
             v-model="botForm.botUsername" 
             placeholder="请输入机器人用户名，必须以bot结尾，无需添加@符号"
+            :disabled="dialogType === 'edit'"
           />
         </el-form-item>
         <el-form-item label="状态" prop="status">

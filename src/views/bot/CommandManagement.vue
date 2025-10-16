@@ -152,6 +152,51 @@
             </el-table-column>
           </el-table>
         </el-tab-pane>
+
+        <!-- 新增：拉人指令标签页 -->
+        <el-tab-pane label="拉人指令" name="invite">
+          <!-- 拉人指令表格工具栏 -->
+          <div class="table-toolbar">
+            <div class="left">
+              <el-button type="primary" :icon="Plus" @click="openCommandDialog('add', 'invite')">新增拉人指令</el-button>
+            </div>
+            <div class="right">
+              <el-tooltip content="刷新数据">
+                <el-button :icon="Refresh" circle plain @click="handleSearch" />
+              </el-tooltip>
+            </div>
+          </div>
+
+          <!-- 拉人指令数据表格，与自定义指令一致 -->
+          <el-table
+            v-loading="loading"
+            :data="inviteCommands"
+            border
+            stripe
+            style="width: 100%"
+          >
+            <el-table-column type="index" label="序号" width="60" align="center" />
+            <el-table-column prop="keyword" label="指令名称" min-width="120" />
+            <el-table-column prop="responseTemplate" label="回复内容" min-width="200" show-overflow-tooltip />
+            <el-table-column prop="status" label="状态" width="100" align="center">
+              <template #default="{ row }">
+                <el-tag :type="row.status === 'enabled' ? 'success' : 'danger'" effect="plain">
+                  {{ row.status === 'enabled' ? '启用' : '停用' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column fixed="right" label="操作" width="180" align="center">
+              <template #default="{ row }">
+                <el-button type="primary" link @click="openCommandDialog('edit', row.type, row)">
+                  编辑
+                </el-button>
+                <el-button type="danger" link @click="handleDelete(row)">
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
       </el-tabs>
 
       <!-- 分页器 -->
@@ -161,7 +206,7 @@
           v-model:page-size="pageSize"
           :page-sizes="[10, 20, 50, 100]"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="activeTab === 'default' ? defaultCommandTotal : otherCommandTotal"
+          :total="activeTab === 'default' ? defaultCommandTotal : (activeTab === 'other' ? otherCommandTotal : inviteCommandTotal)"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
@@ -171,7 +216,7 @@
     <!-- 指令表单对话框 -->
     <el-dialog
       v-model="commandDialogVisible"
-      :title="dialogType === 'add' ? '新增自定义指令' : `${dialogType === 'edit' && commandForm.type === 'default' ? '编辑预设指令' : '编辑自定义指令'}`"
+      :title="dialogType === 'add' ? (commandType === 'invite' ? '新增拉人指令' : '新增自定义指令') : `${dialogType === 'edit' && commandForm.type === 'default' ? '编辑预设指令' : '编辑自定义指令'}`"
       width="650px"
       destroy-on-close
       :close-on-click-modal="false"
@@ -187,14 +232,15 @@
           <el-radio-group v-model="commandForm.type" disabled>
             <el-radio label="default">预设指令</el-radio>
             <el-radio label="other">自定义指令</el-radio>
+            <el-radio label="invite">拉人指令</el-radio>
           </el-radio-group>
-          <div class="form-tip">预设指令为系统内置基础指令，自定义指令为自定义扩展指令</div>
+          
         </el-form-item>
         <!-- 预设指令和自定义指令共有的字段 -->
-        <el-form-item label="指令名称" prop="keyword">
+        <el-form-item :label="commandType === 'invite' ? '指令' : '指令名称'" prop="keyword">
           <el-input 
             v-model="commandForm.keyword" 
-            placeholder="请输入指令名称，如：ye"
+            :placeholder="commandType === 'invite' ? '请输入' : '请输入指令名称，如：ye'"
             :readonly="dialogType === 'edit' && commandForm.type === 'default'"
           />
         </el-form-item>
@@ -206,18 +252,14 @@
             :readonly="dialogType === 'edit' && commandForm.type === 'default'"
           />
         </el-form-item>
-        <!-- 自定义指令特有的字段 -->
-        <el-form-item v-if="commandForm.type === 'other'" label="回复内容" prop="responseTemplate">
+        <!-- 自定义指令与拉人指令共有的字段 -->
+        <el-form-item v-if="commandForm.type === 'other' || commandForm.type === 'invite'" label="回复内容" prop="responseTemplate">
           <el-input 
             v-model="commandForm.responseTemplate"
             type="textarea"
             :rows="6"
-            placeholder="支持 Mustache 模板语法，如：您当前配置的支付产品如下：
-{{#each products}}
-- {{name}}（{{code}}）
-{{/each}}"
+            :placeholder="commandType === 'invite' ? '请输入完整的拉人指令，例：/add @shane @dylan @pmpbot' : '支持 Mustache 模板语法，如：您当前配置的支付产品如下：\n{{#each products}}\n- {{name}}（{{code}}）\n{{/each}}'"
           />
-          <div class="form-tip">支持 Mustache 变量替换语法，使用 {{变量名}} 引用变量</div>
         </el-form-item>
         <!-- 删除预设指令的响应模板字段 -->
         <el-form-item label="启用状态" prop="status">
@@ -501,6 +543,16 @@ const allCommands = ref([
     status: 'enabled',
     type: 'default' // 预设指令
   },
+  // 新增：预设指令 序号16 拉人（默认tab显示第16条）
+  {
+    id: 118,
+    keyword: '拉人',
+    format: '/add',
+    responseTemplate: '请输入要拉入的群ID和用户ID，格式：/add#群ID#用户ID',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'default' // 预设指令
+  },
   {
     id: 16,
     keyword: '商户使用说明',
@@ -530,6 +582,11 @@ const otherCommands = computed(() => {
   return filterCommands(allCommands.value.filter(cmd => cmd.type === 'other'));
 })
 
+// 新增：拉人指令数据
+const inviteCommands = computed(() => {
+  return filterCommands(allCommands.value.filter(cmd => cmd.type === 'invite'));
+})
+
 // 根据筛选条件过滤指令
 const filterCommands = (commands) => {
   if (!filterForm.keyword && !filterForm.status) {
@@ -552,6 +609,8 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const defaultCommandTotal = computed(() => defaultCommands.value.length)
 const otherCommandTotal = computed(() => otherCommands.value.length)
+// 新增：拉人指令总数
+const inviteCommandTotal = computed(() => inviteCommands.value.length)
 const loading = ref(false)
 
 // 指令表单对话框
@@ -833,7 +892,7 @@ const submitCommandForm = () => {
       loading.value = true
       setTimeout(() => {
         if (dialogType.value === 'add') {
-          // 添加新记录 - 始终设置为自定义指令
+          // 添加新记录 - 根据类型写入
           const newCommand = {
             id: Date.now(),
             keyword: commandForm.keyword,
@@ -841,10 +900,10 @@ const submitCommandForm = () => {
             responseTemplate: commandForm.responseTemplate,
             requiresBinding: false,
             status: commandForm.statusEnabled ? 'enabled' : 'disabled',
-            type: 'other' // 强制设置为自定义指令
+            type: commandForm.type // 支持 other/invite
           }
           allCommands.value.unshift(newCommand)
-          ElMessage.success('自定义指令添加成功')
+          ElMessage.success(commandForm.type === 'invite' ? '拉人指令添加成功' : '自定义指令添加成功')
         } else {
           // 更新现有记录
           const index = allCommands.value.findIndex(item => item.id === commandForm.id)

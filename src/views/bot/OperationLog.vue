@@ -51,6 +51,14 @@
             />
           </el-select>
         </el-form-item>
+        <!-- 新增：关联类型筛选（机器人 / 普通账号） -->
+        <el-form-item label="关联类型：">
+          <el-select v-model="filterForm.botType" placeholder="请选择关联类型" clearable style="width: 168px">
+            <el-option label="全部" value="" />
+            <el-option label="机器人" value="robot" />
+            <el-option label="普通账号" value="normal" />
+          </el-select>
+        </el-form-item>
         <el-form-item label="操作时间：">
           <el-date-picker
             v-model="filterForm.dateRange"
@@ -91,7 +99,16 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="botInvolved" label="关联机器人" width="150" />
+        <el-table-column label="关联机器人" width="200">
+          <template #default="{ row }">
+            <div style="display: flex; align-items: center;">
+              <span>{{ row.botInvolved === '621152047' ? '普通账号A' : row.botInvolved }}</span>
+              <el-tag size="small" class="group-tag" type="info" style="margin-left: 6px;">
+                {{ /^\d+$/.test(row.botInvolved) ? '普通账号' : '机器人' }}
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column label="所属群组" width="180">
           <template #default="{ row }">
             <div v-if="row.groupInvolved !== '多个群组'" class="group-info">
@@ -175,6 +192,8 @@ const filterForm = reactive({
   groups: [],
   bots: [],
   dateRange: [],
+  // 新增：关联类型（机器人/普通账号）
+  botType: ''
 });
 
 // 群组选项
@@ -291,7 +310,7 @@ const mockLogData = [
   { userTgName: '王五', userTgId: '123456789', specificAction: '商户费率', botInvolved: '机器人A', groupInvolved: '商户B', groupType: 'merchant', groupId: '-100423456789', botFeedback: '商户【商户B】支付产品费率: \n支付产品名称：微信支付,支付产品编码：WXPAY,商户费率：0.6%\n支付产品名称：支付宝,支付产品编码：ALIPAY,商户费率：0.7%', operationTime: '2023-10-27 10:15:00' },
   { userTgName: '赵六', userTgId: '123456789', specificAction: '商户余额#商户A#-0.01', botInvolved: '机器人A', groupInvolved: '商户A', groupType: 'merchant', groupId: '-100223456789', botFeedback: '========商户【测测】设置预付========\n变动前：0.01\n变动金额：0.01\n变动后：0.00\n商户余额：0.00\n【余额#测测#-0.01】操作人TG：TG 用户名 @用户名\n========设置预付完毕========\n操作录像文件已生成。', operationTime: '2023-10-27 10:20:00' },
   { userTgName: '测试用户', userTgId: '555666777', specificAction: 'id', botInvolved: '机器人A', groupInvolved: '未分配群组', groupType: 'unassigned', groupId: '-100523456789', botFeedback: '987654321', operationTime: '2023-10-27 10:25:00' },
-  { userTgName: '测试用户', userTgId: '888999000', specificAction: '/add @shane @dylan', imageUrl: '', botInvolved: generateRandomTgid(), groupInvolved: '闪电', groupType: 'upstream', groupId: '-100123456789', botFeedback: '用户 @shane @dylan 已成功拉入群组 -100123456789', operationTime: '2023-10-27 10:30:00' },
+  { userTgName: '测试用户', userTgId: '888999000', specificAction: '/add @shane @dylan', imageUrl: '', botInvolved: '621152047', groupInvolved: '闪电', groupType: 'upstream', groupId: '-100123456789', botFeedback: '', operationTime: '2023-10-27 10:30:00' },
 ];
 
 const loadTableData = () => {
@@ -303,10 +322,25 @@ const loadTableData = () => {
   }, 500);
 };
 
+// 查询（带筛选）
 const handleSearch = () => {
-  loadTableData();
+  loading.value = true;
+  setTimeout(() => {
+    let data = [...mockLogData];
+    // 按关联类型筛选
+    if (filterForm.botType) {
+      data = data.filter(row => {
+        const isNormal = /^\d+$/.test(row.botInvolved);
+        return filterForm.botType === 'normal' ? isNormal : !isNormal;
+      });
+    }
+    tableData.value = data;
+    pagination.total = data.length;
+    loading.value = false;
+  }, 300);
 };
 
+// 重置筛选
 const resetFilter = () => {
   filterForm.tgName = '';
   filterForm.tgId = '';
@@ -314,6 +348,8 @@ const resetFilter = () => {
   filterForm.groups = [];
   filterForm.bots = [];
   filterForm.dateRange = [];
+  // 新增：重置关联类型
+  filterForm.botType = '';
   handleSearch();
 };
 

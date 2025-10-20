@@ -7,10 +7,10 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="filterForm" inline class="filter-form">
         <div class="filter-row">
-          <el-form-item label="机器人名称：">
+          <el-form-item :label="activeTab === 'normal' ? '账号名称：' : '机器人名称：'">
             <el-input 
               v-model="filterForm.botName" 
-              placeholder="请输入机器人名称" 
+              :placeholder="activeTab === 'normal' ? '请输入账号名称' : '请输入机器人名称'" 
               clearable 
               style="width: 220px" 
             />
@@ -34,67 +34,134 @@
 
     <!-- 数据展示区域 -->
     <el-card shadow="never">
-      <!-- 表格工具栏 -->
-      <div class="table-toolbar">
-        <div class="left">
-          <el-button type="primary" :icon="Plus" @click="openBotDialog('add')">新增机器人</el-button>
-        </div>
-        <div class="right">
-          <el-tooltip content="刷新数据">
-            <el-button :icon="Refresh" circle plain @click="handleSearch" />
-          </el-tooltip>
-        </div>
-      </div>
+      <!-- 标签页 -->
+      <el-tabs v-model="activeTab" @tab-click="handleTabChange">
+        <!-- 机器人列表 Tab -->
+        <el-tab-pane label="机器人列表" name="bot">
+          <!-- 表格工具栏 -->
+          <div class="table-toolbar">
+            <div class="left">
+              <el-button type="primary" :icon="Plus" @click="openBotDialog('add')">新增机器人</el-button>
+            </div>
+            <div class="right">
+              <el-tooltip content="刷新数据">
+                <el-button :icon="Refresh" circle plain @click="handleSearch" />
+              </el-tooltip>
+            </div>
+          </div>
 
-      <!-- 数据表格 -->
-      <el-table
-        v-loading="loading"
-        :data="displayData"
-        border
-        stripe
-        style="width: 100%"
-      >
-        <el-table-column type="index" label="序号" width="60" align="center" />
-        <el-table-column prop="botName" label="机器人名称" min-width="180" />
-        <el-table-column label="Bot 用户名" min-width="180">
-          <template #default="{ row }">
-            {{ formatBotUsername(row.botUsername) }}
-          </template>
-        </el-table-column>
+          <!-- 数据表格 -->
+          <el-table
+            v-loading="loading"
+            :data="displayData"
+            border
+            stripe
+            style="width: 100%"
+          >
+            <el-table-column type="index" label="序号" width="60" align="center" />
+            <el-table-column prop="botName" label="机器人名称" min-width="180" />
+            <el-table-column label="Bot 用户名" min-width="180">
+              <template #default="{ row }">
+                {{ formatBotUsername(row.botUsername) }}
+              </template>
+            </el-table-column>
 
-        <el-table-column prop="status" label="状态" width="120" align="center">
-          <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">
-              {{ getStatusLabel(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="creator" label="创建人" width="120" />
-        <el-table-column prop="createdAt" label="创建时间" width="180" />
-        <el-table-column fixed="right" label="操作" width="120" align="center">
-          <template #default="{ row }">
-            <el-button type="primary" link @click="openBotDialog('edit', row)">
-              编辑
-            </el-button>
-            <el-button type="danger" link @click="confirmDelete(row)">
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+            <el-table-column prop="status" label="状态" width="120" align="center">
+              <template #default="{ row }">
+                <el-tag :type="getStatusType(row.status)">
+                  {{ getStatusLabel(row.status) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="creator" label="创建人" width="120" />
+            <el-table-column prop="createdAt" label="创建时间" width="180" />
+            <el-table-column fixed="right" label="操作" width="120" align="center">
+              <template #default="{ row }">
+                <el-button type="primary" link @click="openBotDialog('edit', row)">
+                  编辑
+                </el-button>
+                <el-button type="danger" link @click="confirmDelete(row)">
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
 
-      <!-- 分页器 -->
-      <div class="pagination-container">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="total"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
+          <!-- 分页器 -->
+          <div class="pagination-container">
+            <el-pagination
+              v-model:current-page="currentPage"
+              v-model:page-size="pageSize"
+              :page-sizes="[10, 20, 50, 100]"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="total"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+            />
+          </div>
+        </el-tab-pane>
+
+        <!-- 新增：普通账号 Tab -->
+        <el-tab-pane label="普通账号" name="normal">
+          <!-- 表格工具栏 -->
+          <div class="table-toolbar">
+            <div class="left">
+              <el-button type="primary" :icon="Plus" @click="openNormalDialog('add')">新增普通账号</el-button>
+            </div>
+            <div class="right">
+              <el-tooltip content="刷新数据">
+                <el-button :icon="Refresh" circle plain @click="handleSearch" />
+              </el-tooltip>
+            </div>
+          </div>
+
+          <!-- 普通账号数据表格 -->
+          <el-table
+            v-loading="loading"
+            :data="displayNormalData"
+            border
+            stripe
+            style="width: 100%"
+          >
+            <el-table-column type="index" label="序号" width="60" align="center" />
+            <el-table-column prop="name" label="名称" min-width="160" />
+            <el-table-column prop="phone" label="手机号" min-width="180" />
+            <el-table-column prop="apiid" label="apiid" min-width="160" />
+            <el-table-column prop="status" label="状态" width="120" align="center">
+              <template #default="{ row }">
+                <el-tag :type="getStatusType(row.status)">
+                  {{ getStatusLabel(row.status) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="creator" label="创建人" width="120" />
+            <el-table-column prop="createdAt" label="创建时间" width="180" />
+            <el-table-column fixed="right" label="操作" width="120" align="center">
+              <template #default="{ row }">
+                <el-button type="primary" link @click="openNormalDialog('edit', row)">
+                  编辑
+                </el-button>
+                <el-button type="danger" link @click="handleNormalDelete(row)">
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <!-- 分页器 -->
+          <div class="pagination-container">
+            <el-pagination
+              v-model:current-page="normalCurrentPage"
+              v-model:page-size="normalPageSize"
+              :page-sizes="[10, 20, 50, 100]"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="normalTotal"
+              @size-change="handleNormalSizeChange"
+              @current-change="handleNormalCurrentChange"
+            />
+          </div>
+        </el-tab-pane>
+      </el-tabs>
     </el-card>
 
     <!-- 机器人表单对话框 -->
@@ -147,13 +214,60 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 普通账号表单对话框 -->
+    <el-dialog
+      v-model="normalDialogVisible"
+      :title="normalDialogType === 'add' ? '新增普通账户' : '编辑普通账号'"
+      width="520px"
+      destroy-on-close
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="normalFormRef"
+        :model="normalForm"
+        label-width="120px"
+        label-position="left"
+      >
+        <el-form-item label="名称" prop="name" required>
+          <el-input v-model="normalForm.name" placeholder="请输入名称（至少2个字符）" />
+        </el-form-item>
+        <el-form-item label="手机号" prop="phone" required>
+          <el-input v-model="normalForm.phone" placeholder="请输入手机号，例：+66123456789" />
+        </el-form-item>
+        <el-form-item label="apiid" prop="apiid" required>
+          <el-input v-model="normalForm.apiid" placeholder="请输入apiid" />
+        </el-form-item>
+        <el-form-item label="apihash" prop="apiHash" required>
+          <el-input v-model="normalForm.apiHash" type="password" show-password placeholder="请输入apihash" />
+        </el-form-item>
+        <el-form-item label="二级密码" prop="secondPassword">
+          <el-input v-model="normalForm.secondPassword" type="password" show-password placeholder="非必填，可留空" />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
+          <el-switch
+            v-model="normalForm.statusEnabled"
+            active-text="开启"
+            inactive-text="关闭"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <div class="right-buttons">
+            <el-button @click="normalDialogVisible = false">取消</el-button>
+            <el-button type="primary" @click="submitNormalForm">确认</el-button>
+          </div>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, Plus, ArrowDown } from '@element-plus/icons-vue'
+import { Search, Refresh, Plus } from '@element-plus/icons-vue'
 
 // 指引说明展示状态
 // 移除了说明卡片
@@ -198,6 +312,8 @@ const loading = ref(false)
 // 机器人表单对话框
 const botDialogVisible = ref(false)
 const dialogType = ref('add') // 'add' 或 'edit'
+// 新增：标签页状态
+const activeTab = ref('bot')
 const botFormRef = ref(null)
 const botForm = reactive({
   id: null,
@@ -244,14 +360,24 @@ const getBotRules = () => {
 const handleSearch = () => {
   loading.value = true
   setTimeout(() => {
-    // 过滤逻辑：按名称、状态
     const name = filterForm.botName?.trim().toLowerCase()
-    displayData.value = tableData.value.filter(item => {
-      const matchName = name ? item.botName.toLowerCase().includes(name) : true
-      const matchStatus = filterForm.status ? item.status === filterForm.status : true
-      return matchName && matchStatus
-    })
-    total.value = displayData.value.length
+    const statusFilter = filterForm.status
+    if (activeTab.value === 'normal') {
+      displayNormalData.value = normalTableData.value.filter(item => {
+        const matchName = name ? (item.name || item.username || '').toLowerCase().includes(name) : true
+        const matchStatus = statusFilter ? item.status === statusFilter : true
+        return matchName && matchStatus
+      })
+      normalTotal.value = displayNormalData.value.length
+    } else {
+      const matchNameLower = name
+      displayData.value = tableData.value.filter(item => {
+        const matchName = matchNameLower ? item.botName.toLowerCase().includes(matchNameLower) : true
+        const matchStatus = statusFilter ? item.status === statusFilter : true
+        return matchName && matchStatus
+      })
+      total.value = displayData.value.length
+    }
     loading.value = false
     ElMessage.success('查询成功')
   }, 300)
@@ -453,12 +579,171 @@ const getStatusLabel = (status) => {
 }
 
 
+// 新增：普通账号数据源与渲染数据
+const normalTableData = ref([
+  { id: 101, name: '普通账号A', phone: '+661380000001', apiid: '123456', apiHash: 'hashA', secondPassword: '', status: 'enabled', creator: 'admin', createdAt: '2023-10-02 09:00:00' },
+  { id: 102, name: '普通账号B', phone: '+661380000002', apiid: '234567', apiHash: 'hashB', secondPassword: '', status: 'disabled', creator: 'admin', createdAt: '2023-10-03 11:20:00' }
+])
+const displayNormalData = ref([...normalTableData.value])
+
+// 新增：普通账号分页数据
+const normalCurrentPage = ref(1)
+const normalPageSize = ref(10)
+const normalTotal = ref(displayNormalData.value.length)
+
+// 新增：普通账号表单对话框
+const normalDialogVisible = ref(false)
+const normalDialogType = ref('add')
+const normalFormRef = ref(null)
+const normalForm = reactive({
+  id: null,
+  name: '',
+  phone: '',
+  apiid: '',
+  apiHash: '',
+  secondPassword: '',
+  statusEnabled: true
+})
+
+// 新增：标签页切换
+const handleTabChange = () => {
+  handleSearch()
+}
+
+// 新增：打开普通账号对话框
+const openNormalDialog = (type, row) => {
+  normalDialogType.value = type
+  normalDialogVisible.value = true
+  nextTick(() => {
+    if (normalFormRef.value) normalFormRef.value.resetFields?.()
+    normalForm.id = null
+    normalForm.name = ''
+    normalForm.phone = ''
+    normalForm.apiid = ''
+    normalForm.apiHash = ''
+    normalForm.secondPassword = ''
+    normalForm.statusEnabled = true
+    if (type === 'edit' && row) {
+      normalForm.id = row.id
+      normalForm.name = row.name || row.username || ''
+      normalForm.phone = row.phone || ''
+      normalForm.apiid = row.apiid || ''
+      normalForm.apiHash = row.apiHash || ''
+      normalForm.secondPassword = row.secondPassword || ''
+      normalForm.statusEnabled = row.status === 'enabled'
+    }
+  })
+}
+
+// 新增：提交普通账号表单（增加验证码弹窗）
+const submitNormalForm = () => {
+  let isValid = true
+  const errors = []
+  if (!normalForm.name || normalForm.name.trim().length < 2) {
+    isValid = false
+    errors.push('请输入名称（至少2个字符）')
+  }
+  if (!normalForm.phone) {
+    isValid = false
+    errors.push('请输入手机号')
+  }
+  if (!normalForm.apiid) {
+    isValid = false
+    errors.push('请输入apiid')
+  }
+  if (!normalForm.apiHash) {
+    isValid = false
+    errors.push('请输入apihash')
+  }
+  if (!isValid) {
+    ElMessage.error(errors.join('；'))
+    return
+  }
+
+  // 验证码输入弹窗
+  ElMessageBox.prompt('请输入验证码', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    inputPlaceholder: '请输入验证码',
+    inputPattern: /.+/,
+    inputErrorMessage: '验证码不能为空'
+  }).then(({ value }) => {
+    loading.value = true
+    setTimeout(() => {
+      if (normalDialogType.value === 'add') {
+        const newUser = {
+          id: Date.now(),
+          name: normalForm.name.trim(),
+          phone: normalForm.phone,
+          apiid: normalForm.apiid,
+          apiHash: normalForm.apiHash,
+          secondPassword: normalForm.secondPassword || '',
+          status: normalForm.statusEnabled ? 'enabled' : 'disabled',
+          creator: 'admin',
+          createdAt: new Date().toLocaleString()
+        }
+        normalTableData.value.unshift(newUser)
+        ElMessage.success('普通账号添加成功')
+      } else {
+        const index = normalTableData.value.findIndex(item => item.id === normalForm.id)
+        if (index !== -1) {
+          normalTableData.value[index] = {
+            ...normalTableData.value[index],
+            name: normalForm.name.trim(),
+            phone: normalForm.phone,
+            apiid: normalForm.apiid,
+            apiHash: normalForm.apiHash,
+            secondPassword: normalForm.secondPassword || '',
+            status: normalForm.statusEnabled ? 'enabled' : 'disabled'
+          }
+        }
+        ElMessage.success('普通账号更新成功')
+      }
+      handleSearch()
+      loading.value = false
+      normalDialogVisible.value = false
+    }, 600)
+  }).catch(() => {})
+}
+
+// 新增：删除普通账号
+const handleNormalDelete = (row) => {
+  ElMessageBox.confirm(`确认删除普通账号"${row.name || row.username}"?`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    loading.value = true
+    setTimeout(() => {
+      const index = normalTableData.value.findIndex(item => item.id === row.id)
+      if (index !== -1) {
+        normalTableData.value.splice(index, 1)
+        ElMessage.success('普通账号删除成功')
+      }
+      handleSearch()
+      loading.value = false
+    }, 500)
+  }).catch(() => {})
+}
+
+// 新增：普通账号分页
+const handleNormalSizeChange = (val) => {
+  normalPageSize.value = val
+  handleSearch()
+}
+const handleNormalCurrentChange = (val) => {
+  normalCurrentPage.value = val
+  handleSearch()
+}
+
 // 生命周期钩子
 onMounted(() => {
   // 初始加载数据
   handleSearch()
 })
 </script>
+
+
 
 <style scoped>
 .bot-management-container {

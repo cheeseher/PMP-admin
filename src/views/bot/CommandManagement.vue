@@ -570,6 +570,16 @@ const allCommands = ref([
     requiresBinding: false,
     status: 'enabled',
     type: 'other' // 自定义指令
+  },
+  // 新增：拉人指令示例（邀请类型）
+  {
+    id: 201,
+    keyword: '拉人一',
+    format: '/add @shane @dylan',
+    responseTemplate: '/add @shane @dylan @pmpbot',
+    requiresBinding: false,
+    status: 'enabled',
+    type: 'invite' // 拉人指令
   }
 ])
 

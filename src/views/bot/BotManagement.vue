@@ -125,6 +125,7 @@
           >
             <el-table-column type="index" label="序号" width="60" align="center" />
             <el-table-column prop="name" label="名称" min-width="160" />
+            <el-table-column prop="tgid" label="TGID" min-width="160" />
             <el-table-column prop="phone" label="手机号" min-width="180" />
             <el-table-column prop="apiid" label="apiid" min-width="160" />
             <el-table-column prop="status" label="状态" width="120" align="center">
@@ -581,8 +582,8 @@ const getStatusLabel = (status) => {
 
 // 新增：普通账号数据源与渲染数据
 const normalTableData = ref([
-  { id: 101, name: '普通账号A', phone: '+661380000001', apiid: '123456', apiHash: 'hashA', secondPassword: '', status: 'enabled', creator: 'admin', createdAt: '2023-10-02 09:00:00' },
-  { id: 102, name: '普通账号B', phone: '+661380000002', apiid: '234567', apiHash: 'hashB', secondPassword: '', status: 'disabled', creator: 'admin', createdAt: '2023-10-03 11:20:00' }
+  { id: 101, name: '普通账号A', tgid: '100000001', phone: '+661380000001', apiid: '123456', apiHash: 'hashA', secondPassword: '', status: 'enabled', creator: 'admin', createdAt: '2023-10-02 09:00:00' },
+  { id: 102, name: '普通账号B', tgid: '100000002', phone: '+661380000002', apiid: '234567', apiHash: 'hashB', secondPassword: '', status: 'disabled', creator: 'admin', createdAt: '2023-10-03 11:20:00' }
 ])
 const displayNormalData = ref([...normalTableData.value])
 
@@ -674,6 +675,7 @@ const submitNormalForm = () => {
         const newUser = {
           id: Date.now(),
           name: normalForm.name.trim(),
+          tgid: '',
           phone: normalForm.phone,
           apiid: normalForm.apiid,
           apiHash: normalForm.apiHash,

@@ -128,20 +128,10 @@
             <el-table-column prop="tgid" label="TGID" min-width="160" />
             <el-table-column prop="phone" label="手机号" min-width="180" />
             <el-table-column prop="apiid" label="apiid" min-width="160" />
-            <el-table-column prop="status" label="状态" width="120" align="center">
-              <template #default="{ row }">
-                <el-tag :type="getStatusType(row.status)">
-                  {{ getStatusLabel(row.status) }}
-                </el-tag>
-              </template>
-            </el-table-column>
             <el-table-column prop="creator" label="创建人" width="120" />
             <el-table-column prop="createdAt" label="创建时间" width="180" />
             <el-table-column fixed="right" label="操作" width="120" align="center">
               <template #default="{ row }">
-                <el-button type="primary" link @click="openNormalDialog('edit', row)">
-                  编辑
-                </el-button>
                 <el-button type="danger" link @click="handleNormalDelete(row)">
                   删除
                 </el-button>

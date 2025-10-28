@@ -235,13 +235,6 @@
         <el-form-item label="二级密码" prop="secondPassword">
           <el-input v-model="normalForm.secondPassword" type="password" show-password placeholder="非必填，可留空" />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-switch
-            v-model="normalForm.statusEnabled"
-            active-text="开启"
-            inactive-text="关闭"
-          />
-        </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -593,7 +586,6 @@ const normalForm = reactive({
   apiid: '',
   apiHash: '',
   secondPassword: '',
-  statusEnabled: true
 })
 
 // 新增：标签页切换
@@ -613,20 +605,18 @@ const openNormalDialog = (type, row) => {
     normalForm.apiid = ''
     normalForm.apiHash = ''
     normalForm.secondPassword = ''
-    normalForm.statusEnabled = true
     if (type === 'edit' && row) {
       normalForm.id = row.id
-      normalForm.name = row.name || row.username || ''
-      normalForm.phone = row.phone || ''
-      normalForm.apiid = row.apiid || ''
-      normalForm.apiHash = row.apiHash || ''
-      normalForm.secondPassword = row.secondPassword || ''
-      normalForm.statusEnabled = row.status === 'enabled'
+      normalForm.name = row.name
+      normalForm.phone = row.phone
+      normalForm.apiid = row.apiid
+      normalForm.apiHash = row.apiHash
+      normalForm.secondPassword = row.secondPassword
     }
   })
 }
 
-// 新增：提交普通账号表单（增加验证码弹窗）
+// 新增：普通账号表单验证规则
 const submitNormalForm = () => {
   let isValid = true
   const errors = []
@@ -670,7 +660,7 @@ const submitNormalForm = () => {
           apiid: normalForm.apiid,
           apiHash: normalForm.apiHash,
           secondPassword: normalForm.secondPassword || '',
-          status: normalForm.statusEnabled ? 'enabled' : 'disabled',
+          status: 'enabled', // 默认启用
           creator: 'admin',
           createdAt: new Date().toLocaleString()
         }
@@ -686,7 +676,6 @@ const submitNormalForm = () => {
             apiid: normalForm.apiid,
             apiHash: normalForm.apiHash,
             secondPassword: normalForm.secondPassword || '',
-            status: normalForm.statusEnabled ? 'enabled' : 'disabled'
           }
         }
         ElMessage.success('普通账号更新成功')

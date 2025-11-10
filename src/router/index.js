@@ -368,6 +368,12 @@ const router = createRouter({
               name: 'BusinessLog',
               component: () => import('@/views/system/BusinessLog.vue'),
               meta: { title: '管理员业务日志' }
+            },
+            {
+              path: 'data-cleanup',
+              name: 'DataCleanup',
+              component: () => import('@/views/system/DataCleanup.vue'),
+              meta: { title: '数据清理' }
             }
           ]
         }

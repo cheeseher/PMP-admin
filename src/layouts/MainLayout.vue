@@ -138,6 +138,7 @@
             <el-menu-item index="/system/super-password">超级密码设置</el-menu-item>
             <el-menu-item index="/system/operation-log">管理员操作日志</el-menu-item>
             <el-menu-item index="/system/business-log">管理员业务日志</el-menu-item>
+            <el-menu-item index="/system/data-cleanup">数据清理</el-menu-item>
           </el-sub-menu>
         </el-menu>
       </el-scrollbar>

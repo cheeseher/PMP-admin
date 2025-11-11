@@ -53,8 +53,8 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="handleCleanup">立即清理</el-button>
-          <el-button v-if="cleanupForm.cleanupType === 'retention'" @click="handleSaveSettings">保存设置</el-button>
+          <el-button type="primary" @click="handleCleanup">执行一次性清理</el-button>
+          <el-button @click="handleSaveSettings">保存设置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -100,8 +100,8 @@
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleOtherCleanup">立即清理</el-button>
-          <el-button v-if="otherCleanupForm.cleanupType === 'retention'" @click="handleSaveOtherSettings">保存设置</el-button>
+          <el-button type="primary" @click="handleOtherCleanup">执行一次性清理</el-button>
+          <el-button @click="handleSaveOtherSettings">保存设置</el-button>
         </el-form-item>
       </el-form>
     </el-card>

@@ -18,6 +18,9 @@
           <el-form-item label="商户号：">
             <el-input v-model="searchForm.productNo" placeholder="请输入商户号" style="width: 168px" clearable />
           </el-form-item>
+          <el-form-item label="钱包地址：">
+            <el-input v-model="searchForm.walletAddress" placeholder="请输入钱包地址" style="width: 220px" clearable />
+          </el-form-item>
         </div>
         
         <!-- 第二行筛选项 -->
@@ -81,6 +84,7 @@
         <el-table-column prop="productId" label="商户账号" min-width="120" />
         <el-table-column prop="productName" label="商户名称" min-width="150" />
         <el-table-column prop="productNo" label="商户号" min-width="120" />
+        <el-table-column prop="walletAddress" label="钱包地址" min-width="220" />
         <el-table-column prop="balance" label="余额" width="160" align="right">
           <template #default="scope">
             <span class="amount-cell">{{ formatAmount(scope.row.balance) }}</span>
@@ -207,6 +211,9 @@
               <el-button @click="productForm.productNo = generateMerchantNo()">自动生成</el-button>
             </template>
           </el-input>
+        </el-form-item>
+        <el-form-item label="商户钱包地址" prop="walletAddress">
+          <el-input v-model="productForm.walletAddress" placeholder="请输入商户钱包地址" />
         </el-form-item>
         <el-form-item label="API密钥" prop="apiKey">
           <el-input v-model="productForm.apiKey" placeholder="请输入API密钥">
@@ -703,6 +710,7 @@ const searchForm = reactive({
   productId: '',
   productName: '',
   productNo: '',
+  walletAddress: '',
   verified: '',
   googleAuth: '',
   enableDeposit: ''
@@ -747,6 +755,10 @@ const fetchData = () => {
       if (searchForm.productNo) {
         filteredData = filteredData.filter(item => 
           item.productNo.toLowerCase().includes(searchForm.productNo.toLowerCase()))
+      }
+      if (searchForm.walletAddress) {
+        filteredData = filteredData.filter(item =>
+          item.walletAddress && item.walletAddress.toLowerCase().includes(searchForm.walletAddress.toLowerCase()))
       }
       
       if (searchForm.verified) {
@@ -826,6 +838,7 @@ const productForm = reactive({
   productName: '',
   productId: '',
   password: '',
+  walletAddress: '',
   verified: 'N',
   subAccounts: [],
   enableDeposit: true

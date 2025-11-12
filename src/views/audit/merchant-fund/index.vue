@@ -129,7 +129,8 @@ const transactionTypeOptions = [
   { label: '余额扣减', value: 'balance_decrease' },
   { label: '修改金额', value: 'amount_change' },
   { label: '修改金额冲账', value: 'amount_change_reverse' },
-  { label: '失败返还', value: 'fail_return' }
+  { label: '失败返还', value: 'fail_return' },
+  { label: '下发', value: 'payout' }
 ]
 
 // 商户选项
@@ -182,6 +183,23 @@ const searchForm = reactive({
 
 // 表格数据
 const tableData = ref([
+  {
+    merchantName: '测试商户A',
+    transactionNo: 'P202503301426001235',
+    beforeTotal: 1000.00,
+    beforeAvailable: 1000.00,
+    beforeFrozen: 0.00,
+    transactionAmount: -500.00,
+    transactionType: '下发',
+    fee: 5.00,
+    freezeAmount: 0.00,
+    afterTotal: 495.00,
+    afterAvailable: 495.00,
+    afterFrozen: 0.00,
+    remark: '资金下发处理',
+    flowNo: 'MJK202503301426001008',
+    createTime: '2025-03-30 14:26:00'
+  },
   {
     merchantName: '测试商户A',
     transactionNo: 'P202503301425001234',

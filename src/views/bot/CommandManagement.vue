@@ -543,20 +543,30 @@ const allCommands = ref([
     status: 'enabled',
     type: 'default' // 预设指令
   },
-  // 新增：预设指令 序号16 拉人（默认tab显示第16条）
-  {
-    id: 118,
-    keyword: '拉人',
-    format: '/add',
-    responseTemplate: '请输入要拉入的群ID和用户ID，格式：/add#群ID#用户ID',
-    requiresBinding: false,
-    status: 'enabled',
-    type: 'default' // 预设指令
-  },
-  {
-    id: 16,
-    keyword: '商户使用说明',
-    format: '商户使用说明',
+ // 新增：预设指令 序号16 拉人（默认tab显示第16条）
+ {
+   id: 118,
+   keyword: '拉人',
+   format: '/add',
+   responseTemplate: '请输入要拉入的群ID和用户ID，格式：/add#群ID#用户ID',
+   requiresBinding: false,
+   status: 'enabled',
+   type: 'default' // 预设指令
+ },
+  // 新增：预设指令 序号17 下发
+ {
+    id: 117,
+  keyword: '下发',
+   format: '下发#金额*汇率',
+  responseTemplate: '下发金额：¥{{amount}}，汇率：{{rate}}，实际到账：¥{{actualAmount}}',
+   requiresBinding: true,
+   status: 'enabled',
+   type: 'default' // 预设指令
+ },
+ {
+   id: 16,
+   keyword: '商户使用说明',
+   format: '商户使用说明',
     responseTemplate: '使用说明：\n1. 绑定商户：输入"绑定商户#商户ID#密钥"\n2. 查询余额：输入"查询商户余额#商户ID"\n3. 查单：输入"查单#订单号"\n4. 如需帮助请联系客服',
     requiresBinding: false,
     status: 'enabled',

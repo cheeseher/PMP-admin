@@ -69,4 +69,24 @@ export const generatePassword = (length = 0) => {
   
   // 打乱密码字符顺序
   return password.split('').sort(() => 0.5 - Math.random()).join('');
-}; 
+};
+
+/**
+ * 生成提现订单号
+ * 格式：MTX + 时间戳 + 6位随机数字
+ * - 时间戳使用毫秒级，保证唯一性
+ * - 随机数字补零至6位
+ * @returns {string}
+ */
+export const generateWithdrawNo = () => {
+  const now = new Date();
+  const year = now.getFullYear().toString();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hour = String(now.getHours()).padStart(2, '0');
+  const minute = String(now.getMinutes()).padStart(2, '0');
+  const second = String(now.getSeconds()).padStart(2, '0');
+  const tsStr = `${year}${month}${day}${hour}${minute}${second}`; // yyyyMMddHHmmss
+  const rand6 = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+  return `MTX${tsStr}${rand6}`;
+};

@@ -4,11 +4,11 @@
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" label-position="left" inline class="multi-line-filter-form">
-        <!-- 第一行筛选项 -->
-        <div class="filter-line">
+        <!-- 自适应网格筛选项 -->
+        <div class="filter-grid">
           <el-form-item label="时间：">
             <div class="time-filter-container">
-              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
+              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" class="input-normal">
                 <el-option label="自定义时间" value="custom" />
                 <el-option label="今日" value="today" />
                 <el-option label="昨日" value="yesterday" />
@@ -48,10 +48,7 @@
           <el-form-item label="商户单号：">
             <el-input v-model="searchForm.merchantOrderNo" placeholder="请输入商户单号" class="input-large" clearable />
           </el-form-item>
-        </div>
 
-        <!-- 第二行筛选项 -->
-        <div class="filter-line">
           <el-form-item label="商户ID：">
             <el-input v-model="searchForm.merchantId" placeholder="请输入商户ID" class="input-normal" clearable />
           </el-form-item>
@@ -80,10 +77,7 @@
               <el-option label="熊猫" value="template_panda" />
             </el-select>
           </el-form-item>
-        </div>
 
-        <!-- 第三行筛选项 -->
-        <div class="filter-line">
           <el-form-item label="订单金额：">
             <div class="amount-range-container">
               <el-input-number
@@ -148,10 +142,7 @@
               />
             </el-select>
           </el-form-item>
-        </div>
 
-        <!-- 第四行筛选项 -->
-        <div class="filter-line">
           <el-form-item label="供应商通道：">
             <el-select
               v-model="searchForm.supplierChannel"
@@ -1142,6 +1133,13 @@ function getOrderStatusTagClass(status) {
   width: 100%;
 }
 
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
 .multi-line-filter-form .filter-line {
   display: flex;
   flex-wrap: wrap;
@@ -1179,12 +1177,12 @@ function getOrderStatusTagClass(status) {
 
 /* 输入框宽度 */
 .input-normal {
-  width: 140px !important;
+  width: 168px !important;
   box-sizing: border-box;
 }
 
 .input-large {
-  width: 180px !important;
+  width: 168px !important;
   box-sizing: border-box;
 }
 

@@ -41,9 +41,9 @@ const router = createRouter({
             },
             {
               path: 'withdraw',
-              name: 'WithdrawList',
-              component: () => import('@/views/order/Withdraw.vue'),
-              meta: { title: '商户提现审核', hidden: true }
+             name: 'WithdrawList',
+             component: () => import('@/views/order/MerchantWithdraw.vue'),
+              meta: { title: '商户提现审核' }
             }
           ]
         },
@@ -472,3 +472,4 @@ router.onError((error) => {
 });
 
 export default router
+              meta: { title: '商户提现审核' }

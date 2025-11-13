@@ -14,7 +14,8 @@ const mockWithdrawData = [
     remark: '正常提现',
     auditRemark: '',
     status: 'pending',
-    createTime: '2024-12-01 10:30:00'
+    createTime: '2024-12-01 10:30:00',
+    finishTime: ''
   },
   {
     id: 'WD002',
@@ -27,7 +28,8 @@ const mockWithdrawData = [
     remark: '紧急提现',
     auditRemark: '',
     status: 'success',
-    createTime: '2024-12-01 09:15:00'
+    createTime: '2024-12-01 09:15:00',
+    finishTime: '2024-12-01 09:45:00'
   },
   {
     id: 'WD003',
@@ -40,7 +42,8 @@ const mockWithdrawData = [
     remark: '大额提现',
     auditRemark: '',
     status: 'failed',
-    createTime: '2024-12-01 08:45:00'
+    createTime: '2024-12-01 08:45:00',
+    finishTime: '2024-12-01 09:10:00'
   },
   {
     id: 'WD004',
@@ -53,7 +56,8 @@ const mockWithdrawData = [
     remark: '常规提现',
     auditRemark: '',
     status: 'pending',
-    createTime: '2024-12-01 14:20:00'
+    createTime: '2024-12-01 14:20:00',
+    finishTime: ''
   },
   {
     id: 'WD005',
@@ -66,9 +70,21 @@ const mockWithdrawData = [
     remark: '业务提现',
     auditRemark: '',
     status: 'success',
-    createTime: '2024-12-01 16:30:00'
+    createTime: '2024-12-01 16:30:00',
+    finishTime: '2024-12-01 16:50:00'
   }
 ]
+
+// 格式化日期时间为 YYYY-MM-DD HH:mm:ss
+function formatDateTime(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const hh = String(date.getHours()).padStart(2, '0')
+  const mm = String(date.getMinutes()).padStart(2, '0')
+  const ss = String(date.getSeconds()).padStart(2, '0')
+  return `${y}-${m}-${d} ${hh}:${mm}:${ss}`
+}
 
 // 获取提现列表
 export function getWithdrawList(params) {
@@ -124,8 +140,10 @@ export function approveWithdraw(data) {
       if (withdraw) {
         if (data.result === 'approve') {
           withdraw.status = 'success'
+          withdraw.finishTime = formatDateTime(new Date())
         } else if (data.result === 'reject') {
           withdraw.status = 'failed'
+          withdraw.finishTime = formatDateTime(new Date())
         }
         // 保存审核备注
         if (typeof data.remark === 'string') {
@@ -152,8 +170,10 @@ export function batchApproveWithdraw(data) {
         if (withdraw && withdraw.status === 'pending') {
           if (data.result === 'approve') {
             withdraw.status = 'success'
+            withdraw.finishTime = formatDateTime(new Date())
           } else if (data.result === 'reject') {
             withdraw.status = 'failed'
+            withdraw.finishTime = formatDateTime(new Date())
           }
           if (typeof data.remark === 'string') {
             withdraw.auditRemark = data.remark

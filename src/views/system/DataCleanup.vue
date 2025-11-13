@@ -61,8 +61,8 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="handleCleanup">执行一次性清理</el-button>
-          <el-button @click="handleSaveSettings">保存设置</el-button>
+          <el-button v-if="!cleanupForm.autoCleanup" type="primary" @click="handleCleanup">执行一次性清理</el-button>
+          <el-button v-if="cleanupForm.autoCleanup" type="primary" @click="handleSaveSettings">保存设置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -116,8 +116,13 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleOtherCleanup">执行一次性清理</el-button>
-          <el-button @click="handleSaveOtherSettings">保存设置</el-button>
+          <el-button
+            v-if="!otherCleanupForm.autoCleanup"
+            type="primary"
+            :disabled="otherCleanupForm.cleanupScope.length === 0"
+            @click="handleOtherCleanup"
+          >执行一次性清理</el-button>
+          <el-button v-if="otherCleanupForm.autoCleanup" type="primary" @click="handleSaveOtherSettings">保存设置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -144,7 +149,16 @@ const cleanupForm = reactive({
 })
 
 const otherCleanupForm = reactive({
-  cleanupScope: [],
+  cleanupScope: [
+    'platformProfit',
+    'merchantCollection',
+    'merchantBalance',
+    'merchantFunds',
+    'merchantPrepayment',
+    'supplierFunds',
+    'supplierPrepayment',
+    'botHistory'
+  ],
   retentionDays: 30,
   autoCleanup: false,
   autoCleanupTime: '',
@@ -204,6 +218,10 @@ const handleCleanup = async () => {
 }
 
 const handleOtherCleanup = async () => {
+  if (!otherCleanupForm.cleanupScope || otherCleanupForm.cleanupScope.length === 0) {
+    ElMessage.warning('请至少选择一个清理范围')
+    return
+  }
   try {
     await ElMessageBox.confirm('确定执行一次性清理吗？该操作不可恢复', '提示', { type: 'warning' })
     runCleanup('other')

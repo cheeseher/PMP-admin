@@ -7,18 +7,12 @@
         <!-- 第一行筛选项 -->
         <div class="filter-line">
           <el-form-item label="商户名称：" prop="merchantName">
-            <el-select 
-              v-model="searchForm.merchantName" 
-              placeholder="请选择商户" 
-              style="width: 168px" 
-              clearable 
-              filterable
-            >
-              <el-option label="全部" value="" />
-              <el-option label="商户A" value="商户A" />
-              <el-option label="商户B" value="商户B" />
-              <el-option label="商户C" value="商户C" />
-            </el-select>
+            <el-input
+              v-model="searchForm.merchantName"
+              placeholder="请输入商户名称"
+              style="width: 220px"
+              clearable
+            />
           </el-form-item>
           
           <el-form-item label="提现单号：" prop="withdrawNo">
@@ -78,14 +72,6 @@
           <el-tag type="info" size="small" effect="plain">{{ pagination.total }}条记录</el-tag>
         </div>
         <div class="right">
-          <el-button 
-            type="success" 
-            :icon="Check" 
-            @click="handleBatchApprove"
-            :disabled="selectedRows.length === 0"
-          >
-            批量审核
-          </el-button>
           <el-button plain :icon="Download" @click="handleExport">导出</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="refreshData" />
@@ -131,17 +117,20 @@
             <el-tag :type="getStatusTagType(row.status)">{{ getStatusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="createTime" label="操作时间" min-width="160" />
+        <!-- 创建时间列：展示记录创建时间 -->
+        <el-table-column prop="createTime" label="创建时间" min-width="160" />
+        <!-- 完成时间列：审核通过或拒绝后的完成时间 -->
+        <el-table-column prop="finishTime" label="完成时间" min-width="160" />
         <el-table-column label="操作" width="100" fixed="right" align="center">
           <template #default="{ row }">
             <div class="action-buttons">
               <el-button
-                type="primary"
+                type="danger"
                 link
-                @click="handleApprove(row)"
+                @click="handleReject(row)"
                 :disabled="row.status !== 'pending'"
               >
-                审核
+                拒绝
               </el-button>
             </div>
           </template>
@@ -162,10 +151,10 @@
       </div>
     </el-card>
 
-    <!-- 审核弹窗 -->
+    <!-- 拒绝弹窗 -->
     <el-dialog
       v-model="approveDialog.visible"
-      title="提现审核"
+      title="拒绝提现"
       width="500px"
       :close-on-click-modal="false"
     >
@@ -184,12 +173,6 @@
         </el-form-item>
         <el-form-item label="钱包地址：">
           <span>{{ approveForm.walletAddress }}</span>
-        </el-form-item>
-        <el-form-item label="审核结果：">
-          <el-radio-group v-model="approveForm.result">
-            <el-radio label="approve">通过</el-radio>
-            <el-radio label="reject">拒绝</el-radio>
-          </el-radio-group>
         </el-form-item>
         <el-form-item label="审核备注：">
           <el-input
@@ -393,8 +376,8 @@ const handleBatchApprove = () => {
 }
 
 
-// 审核
-const handleApprove = (row) => {
+// 拒绝
+const handleReject = (row) => {
   Object.assign(approveForm, {
     id: row.id,
     merchantName: row.merchantName,
@@ -402,30 +385,32 @@ const handleApprove = (row) => {
     amount: row.amount,
     withdrawAmount: row.withdrawAmount,
     walletAddress: row.walletAddress,
-    result: 'approve',
+    result: 'reject',
     remark: ''
   })
   approveDialog.visible = true
 }
 
 
-// 提交审核
+// 提交拒绝
 const submitApprove = async () => {
-  if (!approveForm.result) {
-    ElMessage.warning('请选择审核结果')
+  // 固定为拒绝并校验备注
+  approveForm.result = 'reject'
+  if (!approveForm.remark || approveForm.remark.trim().length === 0) {
+    ElMessage.warning('请填写审核备注')
     return
   }
   try {
     await approveWithdraw({
       id: approveForm.id,
-      result: approveForm.result,
+      result: 'reject',
       remark: approveForm.remark
     })
-    ElMessage.success(`提现申请 ${approveForm.result === 'approve' ? '已通过' : '已拒绝'}`)
+    ElMessage.success('提现申请已拒绝')
     approveDialog.visible = false
     refreshData()
   } catch (e) {
-    ElMessage.error('审核失败，请稍后重试')
+    ElMessage.error('拒绝失败，请稍后重试')
   }
 }
 

@@ -185,13 +185,13 @@ const searchForm = reactive({
 const tableData = ref([
   {
     merchantName: '测试商户A',
-    transactionNo: 'P202503301426001235',
+    transactionNo: '',
     beforeTotal: 1000.00,
     beforeAvailable: 1000.00,
     beforeFrozen: 0.00,
     transactionAmount: -500.00,
     transactionType: '下发',
-    fee: 5.00,
+    fee: 0.00,
     freezeAmount: 0.00,
     afterTotal: 495.00,
     afterAvailable: 495.00,

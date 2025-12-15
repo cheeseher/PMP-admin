@@ -5,20 +5,22 @@
 
     <!-- 筛选表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="filterForm" inline class="filter-form">
-        <el-form-item label="角色名称：">
-          <el-input 
-            v-model="filterForm.roleName" 
-            placeholder="请输入角色名称" 
-            clearable 
-            style="width: 220px"
-          />
-        </el-form-item>
+      <el-form :model="filterForm" class="filter-form">
+        <div class="filter-grid">
+          <el-form-item label="角色名称：">
+            <el-input 
+              v-model="filterForm.roleName" 
+              placeholder="请输入角色名称" 
+              clearable 
+              style="width: 220px"
+            />
+          </el-form-item>
 
-        <el-form-item>
-          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-          <el-button plain :icon="Refresh" @click="resetFilter">重置</el-button>
-        </el-form-item>
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button plain :icon="Refresh" @click="resetFilter">重置</el-button>
+          </div>
+        </div>
       </el-form>
     </el-card>
 
@@ -921,9 +923,25 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.filter-form {
+.filter-grid {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 8px 12px;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 0;
+}
+
+.filter-buttons {
+  margin-left: auto;
+  display: flex;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 .info-card {

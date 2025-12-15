@@ -2,8 +2,8 @@
 <template>
   <div class="supplier-prepaid-container">
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="filter-form">
-        <div class="filter-row">
+      <el-form :model="searchForm" class="filter-form">
+        <div class="filter-grid">
           <el-form-item label="流水单号：">
             <el-input v-model="searchForm.transactionNo" placeholder="请输入流水单号" style="width: 220px" clearable />
           </el-form-item>
@@ -291,11 +291,17 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 
-.filter-row {
+.filter-grid {
   display: flex;
   width: 100%;
   flex-wrap: wrap;
   align-items: flex-start;
+  gap: 8px 12px;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 0;
 }
 
 .filter-buttons {

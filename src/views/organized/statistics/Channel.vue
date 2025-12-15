@@ -2,8 +2,8 @@
   <div class="channel-report-container">
     <!-- 搜索筛选区域 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" label-position="left" inline class="multi-line-filter-form">
-        <div class="filter-line">
+      <el-form :model="searchForm" label-position="left" class="filter-form">
+        <div class="filter-grid">
           <el-form-item label="支付通道：">
             <el-select 
               v-model="searchForm.channels" 
@@ -353,30 +353,25 @@ const copyContent = (content) => {
   margin-bottom: 16px;
 }
 
-.multi-line-filter-form {
+.filter-form {
   width: 100%;
 }
 
-.multi-line-filter-form .filter-line {
+.filter-grid {
   display: flex;
   flex-wrap: wrap;
+  gap: 8px 12px;
   align-items: center;
-  margin-bottom: 16px;
-  row-gap: 12px;
 }
 
-.multi-line-filter-form .el-form-item {
+.filter-form :deep(.el-form-item) {
+  margin-right: 0;
   margin-bottom: 0;
-  margin-right: 16px;
-  display: flex;
-  align-items: center;
 }
 
-.multi-line-filter-form .el-form-item__label {
-  line-height: 32px;
-  white-space: nowrap;
-  width: auto !important;
-  padding-right: 6px;
+.filter-form :deep(.el-form-item__label) {
+  padding-right: 8px;
+  font-weight: normal;
 }
 
 /* 时间筛选容器样式 */
@@ -387,8 +382,9 @@ const copyContent = (content) => {
 }
 
 .filter-buttons {
-  display: flex;
   margin-left: auto;
+  display: flex;
+  gap: 12px;
 }
 
 .filter-buttons .el-button + .el-button {

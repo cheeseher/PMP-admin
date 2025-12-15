@@ -2,24 +2,26 @@
   <div class="page-container">
     <!-- 筛选区 -->
     <el-card shadow="never" class="filter-card">
-      <el-form :model="filterForm" inline>
-        <el-form-item label="代理商ID">
-          <el-input v-model="filterForm.agentId" placeholder="请输入代理商ID" style="width: 168px" />
-        </el-form-item>
-        <el-form-item label="账号">
-          <el-input v-model="filterForm.username" placeholder="请输入账号" style="width: 168px" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="filterForm.status" placeholder="请选择状态" style="width: 168px">
-            <el-option label="全部" value="" />
-            <el-option label="正常" value="active" />
-            <el-option label="禁用" value="disabled" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
+      <el-form :model="filterForm" class="filter-form">
+        <div class="filter-grid">
+          <el-form-item label="代理商ID">
+            <el-input v-model="filterForm.agentId" placeholder="请输入代理商ID" style="width: 168px" />
+          </el-form-item>
+          <el-form-item label="账号">
+            <el-input v-model="filterForm.username" placeholder="请输入账号" style="width: 168px" />
+          </el-form-item>
+          <el-form-item label="状态">
+            <el-select v-model="filterForm.status" placeholder="请选择状态" style="width: 168px">
+              <el-option label="全部" value="" />
+              <el-option label="正常" value="active" />
+              <el-option label="禁用" value="disabled" />
+            </el-select>
+          </el-form-item>
+          <div class="filter-buttons">
+            <el-button type="primary" @click="handleSearch">查询</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </div>
+        </div>
       </el-form>
     </el-card>
 
@@ -250,6 +252,36 @@ const handleCurrentChange = (val) => {
 
 .filter-card {
   margin-bottom: 20px;
+}
+
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.filter-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 .table-toolbar {

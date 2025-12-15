@@ -3,9 +3,8 @@
   <div class="merchant-transaction-container">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="filter-form">
-        <!-- 第一行筛选项 -->
-        <div class="filter-row">
+      <el-form :model="searchForm" class="filter-form">
+        <div class="filter-grid">
           <el-form-item label="流水类型：">
             <el-select v-model="searchForm.type" placeholder="请选择流水类型" style="width: 168px" clearable>
               <el-option label="全部" value="" />
@@ -35,12 +34,12 @@
               value-format="YYYY-MM-DD"
             />
           </el-form-item>
-        </div>
         
-        <!-- 按钮区域 -->
-        <div class="filter-buttons">
-          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          <!-- 按钮区域 -->
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -341,34 +340,30 @@ onMounted(() => {
 }
 
 .filter-form {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
   width: 100%;
 }
 
-.filter-row:last-child {
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-right: 0;
   margin-bottom: 0;
 }
 
-.filter-row .el-form-item {
-  margin-bottom: 0;
-  margin-right: 20px;
+.filter-form :deep(.el-form-item__label) {
+  padding-right: 8px;
+  font-weight: normal;
 }
 
 .filter-buttons {
-  display: flex;
-  justify-content: flex-end;
   margin-left: auto;
-}
-
-.filter-buttons .el-button + .el-button {
-  margin-left: 12px;
+  display: flex;
+  gap: 12px;
 }
 
 .pagination-container {

@@ -3,7 +3,7 @@
   <div class="operation-log-container">
     <!-- 筛选表单 -->
     <el-card shadow="never" class="filter-card filter-container">
-      <el-form :model="filterForm" inline class="multi-line-filter-form">
+      <el-form :model="filterForm" class="filter-form">
         <div class="filter-grid">
           <el-form-item label="名称：">
             <el-input v-model="filterForm.tgName" placeholder="请输入用户名称" clearable style="width: 168px" />
@@ -444,22 +444,21 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.multi-line-filter-form .el-form-item {
+.filter-form :deep(.el-form-item) {
   margin-bottom: 0;
   margin-right: 0;
-  display: flex;
-  align-items: center;
 }
 
-.multi-line-filter-form .el-form-item__label {
+.filter-form :deep(.el-form-item__label) {
   line-height: 32px;
   white-space: nowrap;
   width: auto !important;
-  padding-right: 6px;
+  padding-right: 8px;
+  font-weight: normal;
 }
 
 .filter-buttons {
   display: flex;
-  justify-content: flex-end;
+  margin-left: auto;
 }
 </style>

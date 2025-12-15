@@ -1,39 +1,41 @@
 <!-- 订单管理/商户提现审核 - 处理商户的提现申请 -->
 <template>
   <div class="order-withdraw">
-    <!-- 搜索表单 -->
-    <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="filter-form">
-        <el-form-item label="提现单号：">
-          <el-input v-model="searchForm.withdrawNo" placeholder="请输入提现单号" style="width: 220px" clearable />
-        </el-form-item>
-        
-        <el-form-item label="状态：">
-          <el-select v-model="searchForm.status" placeholder="请选择" style="width: 168px" clearable>
-            <el-option label="全部状态" value="all" />
-            <el-option label="未确认" value="PENDING" />
-            <el-option label="成功" value="PAID" />
-            <el-option label="失败" value="FAILED" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="日期范围：">
-          <el-date-picker
-            v-model="searchForm.dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            :shortcuts="dateShortcuts"
-            style="width: 340px"
-          />
-        </el-form-item>
-        
-        <div class="filter-buttons">
-          <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
-          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+    <!-- 筛选区域 -->
+    <el-card shadow="never" class="filter-card">
+      <el-form :model="searchForm" label-position="left" class="filter-form">
+        <div class="filter-grid">
+          <el-form-item label="提现单号：">
+            <el-input v-model="searchForm.withdrawNo" placeholder="请输入提现单号" style="width: 220px" clearable />
+          </el-form-item>
+          
+          <el-form-item label="状态：">
+            <el-select v-model="searchForm.status" placeholder="请选择" style="width: 168px" clearable>
+              <el-option label="全部状态" value="all" />
+              <el-option label="未确认" value="PENDING" />
+              <el-option label="成功" value="PAID" />
+              <el-option label="失败" value="FAILED" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="日期范围：">
+            <el-date-picker
+              v-model="searchForm.dateRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              :shortcuts="dateShortcuts"
+              style="width: 340px"
+            />
+          </el-form-item>
+          
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
+            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -532,25 +534,27 @@ const handleCurrentChange = (val) => {
     margin-bottom: 16px;
   }
 
-  .filter-form {
+  .filter-grid {
     display: flex;
-    align-items: center;
     flex-wrap: wrap;
+    gap: 8px 12px;
+    align-items: center;
   }
 
-  .filter-form .el-form-item {
+  .filter-form :deep(.el-form-item) {
+    margin-right: 0;
     margin-bottom: 0;
-    margin-right: 20px;
+  }
+
+  .filter-form :deep(.el-form-item__label) {
+    padding-right: 8px;
+    font-weight: normal;
   }
 
   .filter-buttons {
     margin-left: auto;
     display: flex;
-    align-items: center;
-  }
-
-  .filter-buttons .el-button + .el-button {
-    margin-left: 12px;
+    gap: 12px;
   }
 
   .table-toolbar {

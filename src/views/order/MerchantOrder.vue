@@ -3,7 +3,7 @@
   <div class="order-merchant">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" label-position="left" inline class="multi-line-filter-form">
+      <el-form :model="searchForm" label-position="left" class="filter-form">
         <!-- 自适应网格筛选项 -->
         <div class="filter-grid">
           <el-form-item label="时间：">
@@ -188,13 +188,10 @@
               <el-option label="失败" value="failed" />
             </el-select>
           </el-form-item>
-        </div>
-
-        <!-- 按钮操作行 -->
-        <div class="filter-line filter-buttons-line">
+          
           <div class="filter-buttons">
-            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+            <el-button type="primary" @click="handleSearch">查询</el-button>
+            <el-button plain @click="handleReset">重置</el-button>
           </div>
         </div>
       </el-form>
@@ -1124,13 +1121,8 @@ function getOrderStatusTagClass(status) {
 </script>
 
 <style scoped>
-.filter-container {
-  margin-bottom: 16px;
-  overflow: hidden;
-}
-
-.multi-line-filter-form {
-  width: 100%;
+.filter-card {
+  margin-bottom: 20px;
 }
 
 .filter-grid {
@@ -1140,27 +1132,27 @@ function getOrderStatusTagClass(status) {
   gap: 8px 12px;
 }
 
-.multi-line-filter-form .filter-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  margin-bottom: 16px;
-  row-gap: 12px;
-  column-gap: 12px;
-}
-
-.multi-line-filter-form .el-form-item {
+.filter-form :deep(.el-form-item) {
   margin-bottom: 0;
   margin-right: 0;
   display: flex;
   align-items: center;
 }
 
-.multi-line-filter-form .el-form-item__label {
+.filter-form :deep(.el-form-item__label) {
   line-height: 32px;
   white-space: nowrap;
   width: auto !important;
   padding-right: 6px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 /* 时间筛选容器样式 */
@@ -1207,13 +1199,6 @@ function getOrderStatusTagClass(status) {
   margin: 0 2px;
   height: 32px;
   border-radius: 4px;
-}
-
-/* 确保筛选项不重叠 */
-.multi-line-filter-form .el-input,
-.multi-line-filter-form .el-select {
-  margin: 0;
-  flex-shrink: 0;
 }
 
 /* 筛选按钮样式 */

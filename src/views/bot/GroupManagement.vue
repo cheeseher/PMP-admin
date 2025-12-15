@@ -5,8 +5,8 @@
 
     <!-- 筛选表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="filterForm" inline class="filter-form">
-        <div class="filter-row">
+      <el-form :model="filterForm" class="filter-form">
+        <div class="filter-grid">
           <el-form-item label="群组名称：">
             <el-input 
               v-model="filterForm.groupName" 
@@ -34,11 +34,11 @@
               />
             </el-select>
           </el-form-item>
-        </div>
         
-        <div class="filter-buttons">
-          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-          <el-button plain :icon="Refresh" @click="resetFilter">重置</el-button>
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button plain :icon="Refresh" @click="resetFilter">重置</el-button>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -1090,26 +1090,21 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.filter-form {
-  display: flex;
-  flex-direction: column;
-}
-
-.filter-row {
+.filter-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 8px 12px;
 }
 
-.filter-row .el-form-item {
+.filter-form :deep(.el-form-item) {
   margin-bottom: 0;
-  margin-right: 20px;
+  margin-right: 0;
 }
 
 .filter-buttons {
+  margin-left: auto;
   display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
 }
 
 .filter-buttons .el-button + .el-button {

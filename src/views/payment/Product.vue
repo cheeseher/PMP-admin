@@ -3,8 +3,8 @@
   <div class="payment-product">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="filter-form">
-        <div class="filter-row">
+      <el-form :model="searchForm" class="filter-form">
+        <div class="filter-grid">
           <el-form-item label="支付产品ID：">
             <el-input v-model="searchForm.id" placeholder="请输入支付产品ID" style="width: 168px" clearable />
           </el-form-item>
@@ -14,10 +14,10 @@
           <el-form-item label="支付产品编码：">
             <el-input v-model="searchForm.productCode" placeholder="请输入支付产品编码" style="width: 220px" clearable />
           </el-form-item>
-        </div>
-        <div class="filter-buttons">
-          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -1112,29 +1112,33 @@ const updateViewChannelTable = (selectedChannelIds) => {
 }
 
 .filter-container {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.filter-form {
+.filter-grid {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
 }
 
-.filter-row {
+.filter-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 0;
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
 }
 
-.filter-row .el-form-item {
-  margin-bottom: 0;
-  margin-right: 20px;
+.filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
 }
 
 .filter-buttons {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
 }
 
 .filter-buttons .el-button + .el-button {

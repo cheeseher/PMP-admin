@@ -3,8 +3,8 @@
   <div class="merchant-outcome-container">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="filter-form">
-        <div class="filter-row">
+      <el-form :model="searchForm" class="filter-form">
+        <div class="filter-grid">
           <el-form-item label="时间筛选：">
             <div class="time-filter-container">
               <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
@@ -391,15 +391,16 @@ const formatNumber = (num) => {
   flex-direction: column;
 }
 
-.filter-row {
+.filter-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 8px 12px;
 }
 
-.filter-row .el-form-item {
+.filter-form :deep(.el-form-item) {
   margin-bottom: 0;
-  margin-right: 20px;
+  margin-right: 0;
 }
 
 .filter-buttons {

@@ -3,7 +3,7 @@
   <div class="channel-stats-container">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="multi-line-filter-form">
+      <el-form :model="searchForm" class="filter-form">
         <div class="filter-grid">
           <el-form-item label="时间筛选：">
             <div class="time-filter-container">
@@ -427,23 +427,24 @@ const formatNumber = (num) => {
   overflow: hidden;
 }
 
-.multi-line-filter-form .el-form-item {
+.filter-form :deep(.el-form-item) {
   margin-bottom: 0;
   margin-right: 0;
   display: flex;
   align-items: center;
 }
 
-.multi-line-filter-form .el-form-item__label {
+.filter-form :deep(.el-form-item__label) {
   line-height: 32px;
   white-space: nowrap;
   width: auto !important;
-  padding-right: 6px;
+  padding-right: 8px;
+  font-weight: normal;
 }
 
 .filter-buttons {
   display: flex;
-  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .filter-buttons .el-button + .el-button {

@@ -3,9 +3,8 @@
   <div class="merchant-withdraw">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" label-position="left" inline class="multi-line-filter-form">
-        <!-- 第一行筛选项 -->
-        <div class="filter-line">
+      <el-form :model="searchForm" label-position="left" class="filter-form">
+        <div class="filter-grid">
           <el-form-item label="商户名称：" prop="merchantName">
             <el-input
               v-model="searchForm.merchantName"
@@ -51,14 +50,11 @@
               :shortcuts="dateShortcuts"
             />
           </el-form-item>
-        </div>
-        
-        <!-- 操作按钮行 -->
-        <div class="filter-line filter-buttons-line">
-        <div class="filter-buttons">
-          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
-        </div>
+          
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -440,33 +436,27 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.multi-line-filter-form .filter-line {
+.filter-grid {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   align-items: center;
-  margin-bottom: 16px;
 }
 
-.multi-line-filter-form .filter-line:last-child {
+.filter-form :deep(.el-form-item) {
+  margin-right: 0;
   margin-bottom: 0;
 }
 
-.multi-line-filter-form .el-form-item {
-  margin-bottom: 0;
-  margin-right: 20px;
-}
-
-.filter-buttons-line {
-  justify-content: flex-end;
+.filter-form :deep(.el-form-item__label) {
+  padding-right: 8px;
+  font-weight: normal;
 }
 
 .filter-buttons {
   margin-left: auto;
   display: flex;
-  align-items: center;
-}
-
-.filter-buttons .el-button + .el-button {
-  margin-left: 12px;
+  gap: 12px;
 }
 
 .table-toolbar {

@@ -2,8 +2,8 @@
   <div class="order-list-container">
     <!-- 搜索筛选区域 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" label-position="left" inline class="multi-line-filter-form">
-        <div class="filter-line">
+      <el-form :model="searchForm" label-position="left" class="filter-form">
+        <div class="filter-grid">
           <el-form-item label="商户订单号：">
             <el-input v-model="searchForm.merchantOrderNo" placeholder="请输入商户订单号" clearable style="width: 220px" />
           </el-form-item>
@@ -32,9 +32,7 @@
               <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
-        </div>
-        
-        <div class="filter-line">
+          
           <el-form-item label="订单创建时间：">
             <el-date-picker
               v-model="searchForm.dateRange"
@@ -80,9 +78,7 @@
               <el-option label="否" value="no" />
             </el-select>
           </el-form-item>
-        </div>
         
-        <div class="filter-line">
           <div class="filter-buttons">
             <el-button plain @click="handleReset">重置</el-button>
             <el-button type="primary" @click="handleSearch">查询</el-button>
@@ -706,21 +702,31 @@ const handleCurrentChange = (val) => {
   margin-bottom: 20px;
 }
 
-.multi-line-filter-form {
+.filter-form {
   width: 100%;
 }
 
-.filter-line {
+.filter-grid {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  margin-bottom: 16px;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-right: 0;
+  margin-bottom: 0;
+}
+
+.filter-form :deep(.el-form-item__label) {
+  padding-right: 8px;
+  font-weight: normal;
 }
 
 .filter-buttons {
   margin-left: auto;
   display: flex;
-  gap: 10px;
+  gap: 12px;
 }
 
 .summary-area {

@@ -3,9 +3,8 @@
   <div class="supplier-list-container">
     <!-- 搜索区域 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="filter-form">
-        <!-- 第一行筛选项 -->
-        <div class="filter-row">
+      <el-form :model="searchForm" class="filter-form">
+        <div class="filter-grid">
           <el-form-item label="供应商ID：">
             <el-input v-model="searchForm.id" placeholder="请输入供应商ID" style="width: 168px" clearable />
           </el-form-item>
@@ -35,12 +34,10 @@
               <el-option label="禁用" value="disabled" />
             </el-select>
           </el-form-item>
-        </div>
-        
-        <!-- 按钮区域 -->
-        <div class="filter-buttons">
-          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -667,29 +664,33 @@ onMounted(() => {
 }
 
 .filter-container {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.filter-form {
-  display: flex;
-  flex-direction: column;
-}
-
-.filter-row {
+.filter-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 8px 12px;
 }
 
-.filter-row .el-form-item {
+.filter-form .el-form-item {
   margin-bottom: 0;
-  margin-right: 20px;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
 }
 
 .filter-buttons {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
 }
 
 .filter-buttons .el-button + .el-button {

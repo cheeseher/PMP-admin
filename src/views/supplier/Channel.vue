@@ -832,14 +832,14 @@ let feeRateTimer = null;
   gap: 8px 12px;
 }
 
-.filter-form .el-form-item {
+.filter-form :deep(.el-form-item) {
   margin-bottom: 0;
   margin-right: 0;
   display: flex;
   align-items: center;
 }
 
-.filter-form .el-form-item__label {
+.filter-form :deep(.el-form-item__label) {
   line-height: 32px;
   white-space: nowrap;
   width: auto !important;
@@ -979,20 +979,6 @@ let feeRateTimer = null;
 
 .filter-container {
   overflow: hidden;
-}
-
-.multi-line-filter-form .el-form-item {
-  margin-bottom: 0;
-  margin-right: 0;
-  display: flex;
-  align-items: center;
-}
-
-.multi-line-filter-form .el-form-item__label {
-  line-height: 32px;
-  white-space: nowrap;
-  width: auto !important;
-  padding-right: 6px;
 }
 
 .filter-buttons {

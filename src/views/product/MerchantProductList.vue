@@ -3,7 +3,7 @@
   <div class="merchant-product-list-container">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="multi-line-filter-form">
+      <el-form :model="searchForm" label-position="left" class="filter-form">
         <div class="filter-grid">
           <el-form-item label="商户ID：">
             <el-input v-model="searchForm.id" placeholder="请输入商户ID" style="width: 168px" clearable />
@@ -486,18 +486,14 @@ onMounted(() => {
   overflow: hidden;
 }
 
-.multi-line-filter-form .el-form-item {
-  margin-bottom: 0;
+.filter-form :deep(.el-form-item) {
   margin-right: 0;
-  display: flex;
-  align-items: center;
+  margin-bottom: 0;
 }
 
-.multi-line-filter-form .el-form-item__label {
-  line-height: 32px;
-  white-space: nowrap;
-  width: auto !important;
-  padding-right: 6px;
+.filter-form :deep(.el-form-item__label) {
+  padding-right: 8px;
+  font-weight: normal;
 }
 
 .filter-buttons {

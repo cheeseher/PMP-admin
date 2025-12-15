@@ -3,7 +3,7 @@
   <div class="product-list-container">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" label-position="left" inline class="multi-line-filter-form">
+      <el-form :model="searchForm" label-position="left" class="filter-form">
         <div class="filter-grid">
           <el-form-item label="商户ID：">
             <el-input v-model="searchForm.id" placeholder="请输入商户ID" style="width: 168px" clearable />
@@ -38,10 +38,10 @@
               <el-option label="否" :value="false" />
             </el-select>
           </el-form-item>
-          <el-form-item>
+          <div class="filter-buttons">
             <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
             <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
-          </el-form-item>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -1731,12 +1731,7 @@ onMounted(() => {
 }
 
 .filter-container {
-  margin-bottom: 16px;
-  overflow: hidden;
-}
-
-.multi-line-filter-form {
-  width: 100%;
+  margin-bottom: 20px;
 }
 
 .filter-grid {
@@ -1746,25 +1741,27 @@ onMounted(() => {
   gap: 8px 12px;
 }
 
-.multi-line-filter-form .el-form-item {
+.filter-form :deep(.el-form-item) {
   margin-bottom: 0;
   margin-right: 0;
   display: flex;
   align-items: center;
 }
 
-.multi-line-filter-form .el-form-item__label {
+.filter-form :deep(.el-form-item__label) {
   line-height: 32px;
   white-space: nowrap;
   width: auto !important;
   padding-right: 6px;
 }
 
-/* 确保筛选项不重叠 */
-.multi-line-filter-form .el-input,
-.multi-line-filter-form .el-select {
-  margin: 0;
-  flex-shrink: 0;
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 .table-toolbar {

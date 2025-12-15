@@ -2,32 +2,34 @@
   <div class="login-record-container">
     <!-- 筛选区域 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="filterForm" inline class="filter-form">
-        <el-form-item label="登录IP：" prop="loginIp">
-          <el-input
-            v-model="filterForm.loginIp"
-            placeholder="请输入登录IP"
-            clearable
-            style="width: 220px"
-          />
-        </el-form-item>
-        
-        <el-form-item label="登录状态：" prop="loginStatus">
-          <el-select
-            v-model="filterForm.loginStatus"
-            placeholder="请选择登录状态"
-            clearable
-            style="width: 168px"
-          >
-            <el-option label="成功" value="success" />
-            <el-option label="失败" value="failed" />
-          </el-select>
-        </el-form-item>
-        
-        <!-- 操作按钮组 -->
-        <div class="filter-buttons">
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button plain @click="resetSearch">重置</el-button>
+      <el-form :model="filterForm" class="filter-form">
+        <div class="filter-grid">
+          <el-form-item label="登录IP：" prop="loginIp">
+            <el-input
+              v-model="filterForm.loginIp"
+              placeholder="请输入登录IP"
+              clearable
+              style="width: 220px"
+            />
+          </el-form-item>
+          
+          <el-form-item label="登录状态：" prop="loginStatus">
+            <el-select
+              v-model="filterForm.loginStatus"
+              placeholder="请选择登录状态"
+              clearable
+              style="width: 168px"
+            >
+              <el-option label="成功" value="success" />
+              <el-option label="失败" value="failed" />
+            </el-select>
+          </el-form-item>
+          
+          <!-- 操作按钮组 -->
+          <div class="filter-buttons">
+            <el-button type="primary" @click="handleSearch">查询</el-button>
+            <el-button plain @click="resetSearch">重置</el-button>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -208,23 +210,30 @@ onMounted(() => {
 }
 
 .filter-form {
+  width: 100%;
+}
+
+.filter-grid {
   display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
   align-items: center;
 }
 
-.filter-form .el-form-item {
+.filter-form :deep(.el-form-item) {
+  margin-right: 0;
   margin-bottom: 0;
-  margin-right: 20px;
+}
+
+.filter-form :deep(.el-form-item__label) {
+  padding-right: 8px;
+  font-weight: normal;
 }
 
 .filter-buttons {
   margin-left: auto;
   display: flex;
-  align-items: center;
-}
-
-.filter-buttons .el-button + .el-button {
-  margin-left: 12px;
+  gap: 12px;
 }
 
 .pagination-container {

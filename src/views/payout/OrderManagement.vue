@@ -2,100 +2,102 @@
   <div class="payout-order-page">
     <!-- 筛选区域 -->
     <el-card class="filter-card" shadow="never">
-      <el-form :model="filterForm" inline class="filter-form">
-        <el-form-item label="订单号">
-          <el-input 
-            v-model="filterForm.orderNo" 
-            placeholder="请输入订单号" 
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="商户订单号">
-          <el-input 
-            v-model="filterForm.merchantOrderNo" 
-            placeholder="请输入商户订单号" 
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="商户名称">
-          <el-select 
-            v-model="filterForm.merchantName" 
-            placeholder="请选择商户" 
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="商户A" value="merchant_a" />
-            <el-option label="商户B" value="merchant_b" />
-            <el-option label="商户C" value="merchant_c" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="代付产品">
-          <el-select 
-            v-model="filterForm.payoutProduct" 
-            placeholder="请选择代付产品" 
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="产品A" value="product_a" />
-            <el-option label="产品B" value="product_b" />
-            <el-option label="产品C" value="product_c" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="订单状态">
-          <el-select 
-            v-model="filterForm.status" 
-            placeholder="请选择状态" 
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="待处理" value="pending" />
-            <el-option label="处理中" value="processing" />
-            <el-option label="成功" value="success" />
-            <el-option label="失败" value="failed" />
-            <el-option label="已取消" value="cancelled" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="代付通道">
-          <el-select 
-            v-model="filterForm.payoutChannel" 
-            placeholder="请选择代付通道" 
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="代付通道A" value="channel_a" />
-            <el-option label="代付通道B" value="channel_b" />
-            <el-option label="代付通道C" value="channel_c" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="创建时间">
-          <el-date-picker
-            v-model="filterForm.createTime"
-            type="datetimerange"
-            range-separator="至"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            style="width: 320px"
-          />
-        </el-form-item>
-        
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>
-            搜索
-          </el-button>
-          <el-button @click="handleReset">
-            <el-icon><Refresh /></el-icon>
-            重置
-          </el-button>
-        </el-form-item>
+      <el-form :model="filterForm" class="filter-form">
+        <div class="filter-grid">
+          <el-form-item label="订单号">
+            <el-input 
+              v-model="filterForm.orderNo" 
+              placeholder="请输入订单号" 
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="商户订单号">
+            <el-input 
+              v-model="filterForm.merchantOrderNo" 
+              placeholder="请输入商户订单号" 
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="商户名称">
+            <el-select 
+              v-model="filterForm.merchantName" 
+              placeholder="请选择商户" 
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="商户A" value="merchant_a" />
+              <el-option label="商户B" value="merchant_b" />
+              <el-option label="商户C" value="merchant_c" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="代付产品">
+            <el-select 
+              v-model="filterForm.payoutProduct" 
+              placeholder="请选择代付产品" 
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="产品A" value="product_a" />
+              <el-option label="产品B" value="product_b" />
+              <el-option label="产品C" value="product_c" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="订单状态">
+            <el-select 
+              v-model="filterForm.status" 
+              placeholder="请选择状态" 
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="待处理" value="pending" />
+              <el-option label="处理中" value="processing" />
+              <el-option label="成功" value="success" />
+              <el-option label="失败" value="failed" />
+              <el-option label="已取消" value="cancelled" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="代付通道">
+            <el-select 
+              v-model="filterForm.payoutChannel" 
+              placeholder="请选择代付通道" 
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="代付通道A" value="channel_a" />
+              <el-option label="代付通道B" value="channel_b" />
+              <el-option label="代付通道C" value="channel_c" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="创建时间">
+            <el-date-picker
+              v-model="filterForm.createTime"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              style="width: 320px"
+            />
+          </el-form-item>
+          
+          <div class="filter-buttons">
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+            <el-button @click="handleReset">
+              <el-icon><Refresh /></el-icon>
+              重置
+            </el-button>
+          </div>
+        </div>
       </el-form>
     </el-card>
 
@@ -614,8 +616,34 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.filter-form {
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.filter-form .el-form-item {
   margin-bottom: 0;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 .horizontal-stat-cards {

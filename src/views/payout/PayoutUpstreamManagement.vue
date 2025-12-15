@@ -2,61 +2,63 @@
   <div class="page-container">
     <!-- 筛选区域 -->
     <el-card shadow="never" class="filter-card">
-      <el-form :model="filterForm" inline>
-        <el-form-item label="上游ID">
-          <el-input 
-            v-model="filterForm.upstreamId" 
-            placeholder="请输入" 
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="代付上游名称">
-          <el-input 
-            v-model="filterForm.upstreamName" 
-            placeholder="请输入" 
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="代付上游编码">
-          <el-input 
-            v-model="filterForm.upstreamCode" 
-            placeholder="请输入" 
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="商户号">
-          <el-input 
-            v-model="filterForm.merchantId" 
-            placeholder="请输入" 
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="启用状态">
-          <el-select 
-            v-model="filterForm.status" 
-            placeholder="请选择" 
-            style="width: 168px"
-            clearable
-          >
-            <el-option 
-              v-for="item in statusOptions" 
-              :key="item.value" 
-              :label="item.label" 
-              :value="item.value"
+      <el-form :model="filterForm" class="filter-form">
+        <div class="filter-grid">
+          <el-form-item label="上游ID">
+            <el-input 
+              v-model="filterForm.upstreamId" 
+              placeholder="请输入" 
+              style="width: 168px"
+              clearable
             />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>
-            搜索
-          </el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
+          </el-form-item>
+          <el-form-item label="代付上游名称">
+            <el-input 
+              v-model="filterForm.upstreamName" 
+              placeholder="请输入" 
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item label="代付上游编码">
+            <el-input 
+              v-model="filterForm.upstreamCode" 
+              placeholder="请输入" 
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item label="商户号">
+            <el-input 
+              v-model="filterForm.merchantId" 
+              placeholder="请输入" 
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          <el-form-item label="启用状态">
+            <el-select 
+              v-model="filterForm.status" 
+              placeholder="请选择" 
+              style="width: 168px"
+              clearable
+            >
+              <el-option 
+                v-for="item in statusOptions" 
+                :key="item.value" 
+                :label="item.label" 
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+          <div class="filter-buttons">
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </div>
+        </div>
       </el-form>
     </el-card>
 
@@ -409,6 +411,36 @@ function handleCurrentChange(val) {
 
 .filter-card {
   margin-bottom: 16px;
+}
+
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.filter-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 .filter-card :deep(.el-card__body) {

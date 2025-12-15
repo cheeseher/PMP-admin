@@ -3,81 +3,83 @@
   <div class="merchant-fund-flow-container">
     <!-- 筛选区域 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="filter-form">
-        <el-form-item label="交易单号">
-          <el-input
-            v-model="searchForm.transactionNo"
-            placeholder="请输入交易单号"
-            clearable
-            style="width: 200px"
-          />
-        </el-form-item>
-        
-        <el-form-item label="交易类型">
-          <el-select
-            v-model="searchForm.transactionType"
-            placeholder="请选择"
-            clearable
-            style="width: 168px"
-          >
-            <el-option
-              v-for="item in transactionTypeOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+      <el-form :model="searchForm" class="filter-form">
+        <div class="filter-grid">
+          <el-form-item label="交易单号">
+            <el-input
+              v-model="searchForm.transactionNo"
+              placeholder="请输入交易单号"
+              clearable
+              style="width: 200px"
             />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="商户账号">
-          <el-select
-            v-model="searchForm.merchant"
-            placeholder="请选择"
-            clearable
-            style="width: 168px"
-          >
-            <el-option
-              v-for="item in merchantOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+          </el-form-item>
+          
+          <el-form-item label="交易类型">
+            <el-select
+              v-model="searchForm.transactionType"
+              placeholder="请选择"
+              clearable
+              style="width: 168px"
+            >
+              <el-option
+                v-for="item in transactionTypeOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="商户账号">
+            <el-select
+              v-model="searchForm.merchant"
+              placeholder="请选择"
+              clearable
+              style="width: 168px"
+            >
+              <el-option
+                v-for="item in merchantOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="状态">
+            <el-select
+              v-model="searchForm.status"
+              placeholder="请选择"
+              clearable
+              style="width: 168px"
+            >
+              <el-option
+                v-for="item in statusOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="日期筛选">
+            <el-date-picker
+              v-model="searchForm.dateRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              format="YYYY-MM-DD"
+              value-format="YYYY-MM-DD"
+              style="width: 240px"
             />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="状态">
-          <el-select
-            v-model="searchForm.status"
-            placeholder="请选择"
-            clearable
-            style="width: 168px"
-          >
-            <el-option
-              v-for="item in statusOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="日期筛选">
-          <el-date-picker
-            v-model="searchForm.dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            format="YYYY-MM-DD"
-            value-format="YYYY-MM-DD"
-            style="width: 240px"
-          />
-        </el-form-item>
-        
-        <el-form-item>
-          <el-button plain @click="handleReset">重置</el-button>
-          <el-button type="primary" @click="handleSearch" :loading="loading">查询</el-button>
-        </el-form-item>
+          </el-form-item>
+          
+          <div class="filter-buttons">
+            <el-button type="primary" @click="handleSearch" :loading="loading">查询</el-button>
+            <el-button plain @click="handleReset">重置</el-button>
+          </div>
+        </div>
       </el-form>
     </el-card>
 
@@ -317,24 +319,34 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.filter-form {
+.filter-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 8px 12px;
 }
 
 .filter-form .el-form-item {
-  margin-right: 20px;
-  margin-bottom: 16px;
-}
-
-.filter-form .el-form-item:last-child {
-  margin-left: auto;
+  margin-bottom: 0;
   margin-right: 0;
+  display: flex;
+  align-items: center;
 }
 
-.filter-form .el-button + .el-button {
-  margin-left: 8px;
+.filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 .table-card {

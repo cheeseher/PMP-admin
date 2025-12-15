@@ -3,7 +3,7 @@
   <div class="supplier-channel-container">
     <!-- 搜索区域 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="multi-line-filter-form">
+      <el-form :model="searchForm" class="filter-form">
         <div class="filter-grid">
           <el-form-item label="供应商通道ID：">
             <el-input v-model="searchForm.id" placeholder="请输入供应商通道ID" style="width: 168px" clearable />
@@ -822,29 +822,33 @@ let feeRateTimer = null;
 }
 
 .filter-container {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.filter-form {
-  display: flex;
-  flex-direction: column;
-}
-
-.filter-row {
+.filter-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 8px 12px;
 }
 
-.filter-row .el-form-item {
+.filter-form .el-form-item {
   margin-bottom: 0;
-  margin-right: 20px;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
 }
 
 .filter-buttons {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
 }
 
 .filter-buttons .el-button + .el-button {

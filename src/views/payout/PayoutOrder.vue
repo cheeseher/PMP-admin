@@ -3,152 +3,154 @@
   <div class="page-container">
     <!-- 筛选区域 -->
     <el-card shadow="never" class="filter-card">
-      <el-form :model="filterForm" inline class="filter-form">
-        <el-form-item label="今日">
-          <el-select 
-            v-model="filterForm.todayFilter" 
-            placeholder="今日"
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="今日" value="today" />
-            <el-option label="昨日" value="yesterday" />
-            <el-option label="本周" value="thisWeek" />
-            <el-option label="本月" value="thisMonth" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item>
-          <el-date-picker
-            v-model="filterForm.dateRange"
-            type="datetimerange"
-            range-separator="至"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            style="width: 350px"
-          />
-        </el-form-item>
-        
-        <el-form-item label="完成时间">
-          <el-date-picker
-            v-model="filterForm.completeTime"
-            type="datetime"
-            placeholder="请选择完成时间"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            style="width: 200px"
-          />
-        </el-form-item>
-        
-        <el-form-item label="平台单号">
-          <el-input 
-            v-model="filterForm.platformOrderNo" 
-            placeholder="请输入平台单号"
-            style="width: 200px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="商户ID">
-          <el-input 
-            v-model="filterForm.merchantId" 
-            placeholder="请输入商户ID"
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="商户账号">
-          <el-input 
-            v-model="filterForm.merchantAccount" 
-            placeholder="请输入商户账号"
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="商户名称">
-          <el-input 
-            v-model="filterForm.merchantName" 
-            placeholder="请输入商户名称"
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="商户单号">
-          <el-input 
-            v-model="filterForm.merchantOrderNo" 
-            placeholder="请输入商户单号"
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="上游单号">
-          <el-input 
-            v-model="filterForm.upstreamOrderNo" 
-            placeholder="请输入上游单号"
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="产品">
-          <el-select 
-            v-model="filterForm.product" 
-            placeholder="产品"
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="产品A" value="产品A" />
-            <el-option label="产品B" value="产品B" />
-            <el-option label="产品C" value="产品C" />
-            <el-option label="产品D" value="产品D" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="产品编码">
-          <el-input 
-            v-model="filterForm.productCode" 
-            placeholder="请输入产品编码"
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="上游">
-          <el-select 
-            v-model="filterForm.upstream" 
-            placeholder="上游"
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="上游A" value="上游A" />
-            <el-option label="上游B" value="上游B" />
-            <el-option label="上游C" value="上游C" />
-            <el-option label="上游D" value="上游D" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="通道编码">
-          <el-input 
-            v-model="filterForm.channelCode" 
-            placeholder="请选择"
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>
-            搜索
-          </el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
+      <el-form :model="filterForm" class="filter-form">
+        <div class="filter-grid">
+          <el-form-item label="今日">
+            <el-select 
+              v-model="filterForm.todayFilter" 
+              placeholder="今日"
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="今日" value="today" />
+              <el-option label="昨日" value="yesterday" />
+              <el-option label="本周" value="thisWeek" />
+              <el-option label="本月" value="thisMonth" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item>
+            <el-date-picker
+              v-model="filterForm.dateRange"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              style="width: 350px"
+            />
+          </el-form-item>
+          
+          <el-form-item label="完成时间">
+            <el-date-picker
+              v-model="filterForm.completeTime"
+              type="datetime"
+              placeholder="请选择完成时间"
+              format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              style="width: 200px"
+            />
+          </el-form-item>
+          
+          <el-form-item label="平台单号">
+            <el-input 
+              v-model="filterForm.platformOrderNo" 
+              placeholder="请输入平台单号"
+              style="width: 200px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="商户ID">
+            <el-input 
+              v-model="filterForm.merchantId" 
+              placeholder="请输入商户ID"
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="商户账号">
+            <el-input 
+              v-model="filterForm.merchantAccount" 
+              placeholder="请输入商户账号"
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="商户名称">
+            <el-input 
+              v-model="filterForm.merchantName" 
+              placeholder="请输入商户名称"
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="商户单号">
+            <el-input 
+              v-model="filterForm.merchantOrderNo" 
+              placeholder="请输入商户单号"
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="上游单号">
+            <el-input 
+              v-model="filterForm.upstreamOrderNo" 
+              placeholder="请输入上游单号"
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="产品">
+            <el-select 
+              v-model="filterForm.product" 
+              placeholder="产品"
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="产品A" value="产品A" />
+              <el-option label="产品B" value="产品B" />
+              <el-option label="产品C" value="产品C" />
+              <el-option label="产品D" value="产品D" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="产品编码">
+            <el-input 
+              v-model="filterForm.productCode" 
+              placeholder="请输入产品编码"
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="上游">
+            <el-select 
+              v-model="filterForm.upstream" 
+              placeholder="上游"
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="上游A" value="上游A" />
+              <el-option label="上游B" value="上游B" />
+              <el-option label="上游C" value="上游C" />
+              <el-option label="上游D" value="上游D" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="通道编码">
+            <el-input 
+              v-model="filterForm.channelCode" 
+              placeholder="请选择"
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <div class="filter-buttons">
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </div>
+        </div>
       </el-form>
     </el-card>
 
@@ -764,8 +766,34 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.filter-form {
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.filter-form .el-form-item {
   margin-bottom: 0;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 .statistics-cards {

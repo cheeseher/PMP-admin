@@ -3,18 +3,18 @@
   <div class="payout-product">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="filter-form">
-        <div class="filter-row">
+      <el-form :model="searchForm" class="filter-form">
+        <div class="filter-grid">
           <el-form-item label="ID：">
             <el-input v-model="searchForm.id" placeholder="请输入" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="产品：">
             <el-input v-model="searchForm.productName" placeholder="请输入" style="width: 168px" clearable />
           </el-form-item>
-        </div>
-        <div class="filter-buttons">
-          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-          <el-button plain @click="handleReset">重置</el-button>
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button plain @click="handleReset">重置</el-button>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -587,21 +587,34 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.filter-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.filter-row {
+.filter-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.filter-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
 }
 
 .filter-buttons {
   display: flex;
-  gap: 12px;
+  justify-content: flex-end;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 .table-toolbar {

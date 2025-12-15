@@ -3,80 +3,82 @@
   <div class="page-container">
     <!-- 筛选区域 -->
     <el-card shadow="never" class="filter-card">
-      <el-form :model="filterForm" inline class="filter-form">
-        <el-form-item label="交易单号">
-          <el-input 
-            v-model="filterForm.transactionNo" 
-            placeholder="请输入交易单号"
-            style="width: 200px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="交易类型">
-          <el-select 
-            v-model="filterForm.transactionType" 
-            placeholder="请选择"
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="代付" value="payout" />
-            <el-option label="充值" value="recharge" />
-            <el-option label="提现" value="withdraw" />
-            <el-option label="退款" value="refund" />
-            <el-option label="手续费" value="fee" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="上游名称">
-          <el-select 
-            v-model="filterForm.upstreamName" 
-            placeholder="请选择"
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="上游A" value="上游A" />
-            <el-option label="上游B" value="上游B" />
-            <el-option label="上游C" value="上游C" />
-            <el-option label="上游D" value="上游D" />
-            <el-option label="上游E" value="上游E" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="状态">
-          <el-select 
-            v-model="filterForm.status" 
-            placeholder="请选择"
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="成功" value="success" />
-            <el-option label="失败" value="failed" />
-            <el-option label="处理中" value="processing" />
-            <el-option label="已取消" value="cancelled" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="日期范围">
-          <el-date-picker
-            v-model="filterForm.dateRange"
-            type="datetimerange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DD HH:mm:ss"
-            style="width: 350px"
-          />
-        </el-form-item>
-        
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>
-            搜索
-          </el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
+      <el-form :model="filterForm" class="filter-form">
+        <div class="filter-grid">
+          <el-form-item label="交易单号">
+            <el-input 
+              v-model="filterForm.transactionNo" 
+              placeholder="请输入交易单号"
+              style="width: 200px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="交易类型">
+            <el-select 
+              v-model="filterForm.transactionType" 
+              placeholder="请选择"
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="代付" value="payout" />
+              <el-option label="充值" value="recharge" />
+              <el-option label="提现" value="withdraw" />
+              <el-option label="退款" value="refund" />
+              <el-option label="手续费" value="fee" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="上游名称">
+            <el-select 
+              v-model="filterForm.upstreamName" 
+              placeholder="请选择"
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="上游A" value="上游A" />
+              <el-option label="上游B" value="上游B" />
+              <el-option label="上游C" value="上游C" />
+              <el-option label="上游D" value="上游D" />
+              <el-option label="上游E" value="上游E" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="状态">
+            <el-select 
+              v-model="filterForm.status" 
+              placeholder="请选择"
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="成功" value="success" />
+              <el-option label="失败" value="failed" />
+              <el-option label="处理中" value="processing" />
+              <el-option label="已取消" value="cancelled" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="日期范围">
+            <el-date-picker
+              v-model="filterForm.dateRange"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              style="width: 350px"
+            />
+          </el-form-item>
+          
+          <div class="filter-buttons">
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              搜索
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </div>
+        </div>
       </el-form>
     </el-card>
 
@@ -527,8 +529,34 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
-.filter-form {
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.filter-form .el-form-item {
   margin-bottom: 0;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 .table-toolbar {

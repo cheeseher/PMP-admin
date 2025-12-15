@@ -2,93 +2,95 @@
   <div class="page-container">
     <!-- 筛选区域 -->
     <el-card shadow="never" class="filter-card">
-      <el-form :model="filterForm" inline class="filter-form">
-        <el-form-item label="ID">
-          <el-input 
-            v-model="filterForm.id" 
-            placeholder="请输入"
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="代付通道名称">
-          <el-input 
-            v-model="filterForm.channelName" 
-            placeholder="请输入"
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="代付通道编码">
-          <el-input 
-            v-model="filterForm.channelCode" 
-            placeholder="请输入"
-            style="width: 168px"
-            clearable
-          />
-        </el-form-item>
-        
-        <el-form-item label="代付上游">
-          <el-select 
-            v-model="filterForm.upstreamName" 
-            placeholder="请选择"
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="融通代付" value="融通代付" />
-            <el-option label="熊猫代付" value="熊猫代付" />
-            <el-option label="流川枫代付" value="流川枫代付" />
-            <el-option label="红牛代付" value="红牛代付" />
-            <el-option label="KK备付金" value="KK备付金" />
-            <el-option label="小草代付" value="小草代付" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="支付类型">
-          <el-select 
-            v-model="filterForm.paymentType" 
-            placeholder="请选择"
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="银行卡" value="银行卡" />
-            <el-option label="支付宝H5" value="支付宝H5" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="分组">
-          <el-select 
-            v-model="filterForm.group" 
-            placeholder="请选择"
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="默认分组" value="默认分组" />
-            <el-option label="高级分组" value="高级分组" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item label="启用状态">
-          <el-select 
-            v-model="filterForm.status" 
-            placeholder="请选择"
-            style="width: 168px"
-            clearable
-          >
-            <el-option label="启用" value="1" />
-            <el-option label="禁用" value="0" />
-          </el-select>
-        </el-form-item>
-        
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>
-            查询
-          </el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
+      <el-form :model="filterForm" class="filter-form">
+        <div class="filter-grid">
+          <el-form-item label="ID">
+            <el-input 
+              v-model="filterForm.id" 
+              placeholder="请输入"
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="代付通道名称">
+            <el-input 
+              v-model="filterForm.channelName" 
+              placeholder="请输入"
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="代付通道编码">
+            <el-input 
+              v-model="filterForm.channelCode" 
+              placeholder="请输入"
+              style="width: 168px"
+              clearable
+            />
+          </el-form-item>
+          
+          <el-form-item label="代付上游">
+            <el-select 
+              v-model="filterForm.upstreamName" 
+              placeholder="请选择"
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="融通代付" value="融通代付" />
+              <el-option label="熊猫代付" value="熊猫代付" />
+              <el-option label="流川枫代付" value="流川枫代付" />
+              <el-option label="红牛代付" value="红牛代付" />
+              <el-option label="KK备付金" value="KK备付金" />
+              <el-option label="小草代付" value="小草代付" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="支付类型">
+            <el-select 
+              v-model="filterForm.paymentType" 
+              placeholder="请选择"
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="银行卡" value="银行卡" />
+              <el-option label="支付宝H5" value="支付宝H5" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="分组">
+            <el-select 
+              v-model="filterForm.group" 
+              placeholder="请选择"
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="默认分组" value="默认分组" />
+              <el-option label="高级分组" value="高级分组" />
+            </el-select>
+          </el-form-item>
+          
+          <el-form-item label="启用状态">
+            <el-select 
+              v-model="filterForm.status" 
+              placeholder="请选择"
+              style="width: 168px"
+              clearable
+            >
+              <el-option label="启用" value="1" />
+              <el-option label="禁用" value="0" />
+            </el-select>
+          </el-form-item>
+          
+          <div class="filter-buttons">
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>
+              查询
+            </el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </div>
+        </div>
       </el-form>
     </el-card>
 
@@ -537,19 +539,34 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.filter-form {
+.filter-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  align-items: center;
+  gap: 8px 12px;
 }
 
 .filter-form .el-form-item {
-  margin-bottom: 16px;
+  margin-bottom: 0;
   margin-right: 0;
+  display: flex;
+  align-items: center;
 }
 
-.filter-form .el-form-item:last-child {
-  margin-left: auto;
+.filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
 }
 
 .table-toolbar {

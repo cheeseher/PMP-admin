@@ -104,6 +104,12 @@ const router = createRouter({
               name: 'AgentList',
               component: () => import(/* webpackChunkName: "agent" */ '@/views/agent/AgentList.vue'),
               meta: { title: '代理商列表' }
+            },
+            {
+              path: 'withdraw',
+              name: 'AgentWithdraw',
+              component: () => import(/* webpackChunkName: "agent" */ '@/views/agent/AgentWithdraw.vue'),
+              meta: { title: '代理商提现订单' }
             }
           ]
         },

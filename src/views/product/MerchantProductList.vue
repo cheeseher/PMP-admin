@@ -3,29 +3,29 @@
   <div class="merchant-product-list-container">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="filter-form">
-        <div class="filter-row">
+      <el-form :model="searchForm" inline class="multi-line-filter-form">
+        <div class="filter-grid">
           <el-form-item label="商户ID：">
             <el-input v-model="searchForm.id" placeholder="请输入商户ID" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="商户账号：">
-            <el-input v-model="searchForm.merchantNo" placeholder="请输入商户账号" style="width: 220px" clearable />
+            <el-input v-model="searchForm.merchantNo" placeholder="请输入商户账号" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="商户名称：">
-            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 220px" clearable />
+            <el-input v-model="searchForm.merchantName" placeholder="请输入商户名称" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="支付产品名称：">
-            <el-input v-model="searchForm.product" placeholder="请输入支付产品名称" style="width: 220px" clearable />
+            <el-input v-model="searchForm.product" placeholder="请输入支付产品名称" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="自定义通道：">
-            <el-select v-model="searchForm.customOption" placeholder="请选择" style="width: 120px" clearable>
+            <el-select v-model="searchForm.customOption" placeholder="请选择" style="width: 168px" clearable>
               <el-option label="全部" :value="''" />
               <el-option label="是" :value="'true'" />
               <el-option label="否" :value="'false'" />
             </el-select>
           </el-form-item>
           <el-form-item label="轮询/权重：">
-            <el-select v-model="searchForm.balanceType" placeholder="请选择" style="width: 120px" clearable>
+            <el-select v-model="searchForm.balanceType" placeholder="请选择" style="width: 168px" clearable>
               <el-option label="全部" :value="''" />
               <el-option label="轮询" :value="'polling'" />
               <el-option label="权重" :value="'weight'" />
@@ -39,10 +39,10 @@
               <span>%</span>
             </div>
           </el-form-item>
-        </div>
-        <div class="filter-buttons">
-          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -475,27 +475,34 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.filter-form {
-  display: flex;
-  flex-direction: column;
-}
-
-.filter-row {
+.filter-grid {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 8px 12px;
 }
 
-.filter-row .el-form-item {
+.filter-container {
+  overflow: hidden;
+}
+
+.multi-line-filter-form .el-form-item {
   margin-bottom: 0;
   margin-right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.multi-line-filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
 }
 
 .filter-buttons {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
 }
 
 .filter-buttons .el-button + .el-button {

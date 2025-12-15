@@ -3,16 +3,16 @@
   <div class="supplier-channel-container">
     <!-- 搜索区域 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="filter-form">
-        <div class="filter-row">
+      <el-form :model="searchForm" inline class="multi-line-filter-form">
+        <div class="filter-grid">
           <el-form-item label="供应商通道ID：">
             <el-input v-model="searchForm.id" placeholder="请输入供应商通道ID" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="通道名称：">
-            <el-input v-model="searchForm.channelName" placeholder="请输入通道名称" style="width: 220px" clearable />
+            <el-input v-model="searchForm.channelName" placeholder="请输入通道名称" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="通道编码：">
-            <el-input v-model="searchForm.channelCode" placeholder="请输入通道编码" style="width: 220px" clearable />
+            <el-input v-model="searchForm.channelCode" placeholder="请输入通道编码" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="分组：">
             <el-select v-model="searchForm.category" placeholder="请选择分组" style="width: 168px" clearable>
@@ -21,17 +21,16 @@
             </el-select>
           </el-form-item>
           <el-form-item label="状态：">
-            <el-select v-model="searchForm.status" placeholder="请选择状态" style="width: 120px" clearable>
+            <el-select v-model="searchForm.status" placeholder="请选择状态" style="width: 168px" clearable>
               <el-option label="全部" value="" />
               <el-option label="启用" :value="true" />
               <el-option label="禁用" :value="false" />
             </el-select>
           </el-form-item>
-        </div>
-        
-        <div class="filter-buttons">
-          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          </div>
         </div>
       </el-form>
     </el-card>
@@ -965,5 +964,35 @@ let feeRateTimer = null;
 .channel-form .el-form-item {
   margin-bottom: 18px;
   margin-right: 20px;
+}
+
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.filter-container {
+  overflow: hidden;
+}
+
+.multi-line-filter-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.multi-line-filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
 }
 </style> 

@@ -2,76 +2,79 @@
 <template>
   <div class="operation-log-container">
     <!-- 筛选表单 -->
-    <el-card shadow="never" class="filter-card">
-      <el-form :model="filterForm" inline>
-        <el-form-item label="名称：">
-          <el-input v-model="filterForm.tgName" placeholder="请输入用户名称" clearable />
-        </el-form-item>
-        <el-form-item label="ID：">
-          <el-input v-model="filterForm.tgId" placeholder="请输入用户ID" clearable />
-        </el-form-item>
-        <el-form-item label="用户指令：">
-          <el-input v-model="filterForm.userCommand" placeholder="请输入用户指令关键词" clearable />
-        </el-form-item>
-        <el-form-item label="所属群组：">
-          <el-select
-            v-model="filterForm.groups"
-            multiple
-            filterable
-            collapse-tags
-            collapse-tags-tooltip
-            placeholder="请选择群组"
-            style="width: 240px"
-            clearable
-          >
-            <el-option
-              v-for="item in groupOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+    <el-card shadow="never" class="filter-card filter-container">
+      <el-form :model="filterForm" inline class="multi-line-filter-form">
+        <div class="filter-grid">
+          <el-form-item label="名称：">
+            <el-input v-model="filterForm.tgName" placeholder="请输入用户名称" clearable style="width: 168px" />
+          </el-form-item>
+          <el-form-item label="ID：">
+            <el-input v-model="filterForm.tgId" placeholder="请输入用户ID" clearable style="width: 168px" />
+          </el-form-item>
+          <el-form-item label="用户指令：">
+            <el-input v-model="filterForm.userCommand" placeholder="请输入用户指令关键词" clearable style="width: 168px" />
+          </el-form-item>
+          <el-form-item label="所属群组：">
+            <el-select
+              v-model="filterForm.groups"
+              multiple
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="请选择群组"
+              style="width: 168px"
+              clearable
+            >
+              <el-option
+                v-for="item in groupOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="关联机器人：">
+            <el-select
+              v-model="filterForm.bots"
+              multiple
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="请选择机器人"
+              style="width: 168px"
+              clearable
+            >
+              <el-option
+                v-for="item in botOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+          <!-- 新增：关联类型筛选（机器人 / 普通账号） -->
+          <el-form-item label="关联类型：">
+            <el-select v-model="filterForm.botType" placeholder="请选择关联类型" clearable style="width: 168px">
+              <el-option label="全部" value="" />
+              <el-option label="机器人" value="robot" />
+              <el-option label="普通账号" value="normal" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="操作时间：">
+            <el-date-picker
+              v-model="filterForm.dateRange"
+              type="datetimerange"
+              range-separator="至"
+              start-placeholder="开始时间"
+              end-placeholder="结束时间"
+              style="width: 420px"
             />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="关联机器人：">
-          <el-select
-            v-model="filterForm.bots"
-            multiple
-            filterable
-            collapse-tags
-            collapse-tags-tooltip
-            placeholder="请选择机器人"
-            style="width: 240px"
-            clearable
-          >
-            <el-option
-              v-for="item in botOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <!-- 新增：关联类型筛选（机器人 / 普通账号） -->
-        <el-form-item label="关联类型：">
-          <el-select v-model="filterForm.botType" placeholder="请选择关联类型" clearable style="width: 168px">
-            <el-option label="全部" value="" />
-            <el-option label="机器人" value="robot" />
-            <el-option label="普通账号" value="normal" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="操作时间：">
-          <el-date-picker
-            v-model="filterForm.dateRange"
-            type="datetimerange"
-            range-separator="至"
-            start-placeholder="开始时间"
-            end-placeholder="结束时间"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-          <el-button plain :icon="Refresh" @click="resetFilter">重置</el-button>
-        </el-form-item>
+          </el-form-item>
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button plain :icon="Refresh" @click="resetFilter">重置</el-button>
+          </div>
+        </div>
       </el-form>
     </el-card>
 
@@ -428,5 +431,35 @@ onMounted(() => {
 .group-tag {
   width: fit-content;
   margin-top: 3px;
+}
+
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.filter-container {
+  overflow: hidden;
+}
+
+.multi-line-filter-form .el-form-item {
+  margin-bottom: 0;
+  margin-right: 0;
+  display: flex;
+  align-items: center;
+}
+
+.multi-line-filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
+}
+
+.filter-buttons {
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

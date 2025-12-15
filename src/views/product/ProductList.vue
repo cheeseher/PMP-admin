@@ -3,28 +3,23 @@
   <div class="product-list-container">
     <!-- 搜索表单 -->
     <el-card shadow="never" class="filter-container">
-      <el-form :model="searchForm" inline class="filter-form">
-        <!-- 第一行筛选项 -->
-        <div class="filter-row">
+      <el-form :model="searchForm" label-position="left" inline class="multi-line-filter-form">
+        <div class="filter-grid">
           <el-form-item label="商户ID：">
             <el-input v-model="searchForm.id" placeholder="请输入商户ID" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="商户账号：">
-            <el-input v-model="searchForm.productId" placeholder="请输入商户账号" style="width: 220px" clearable />
+            <el-input v-model="searchForm.productId" placeholder="请输入商户账号" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="商户名称：">
-            <el-input v-model="searchForm.productName" placeholder="请输入商户名称" style="width: 220px" clearable />
+            <el-input v-model="searchForm.productName" placeholder="请输入商户名称" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="商户号：">
             <el-input v-model="searchForm.productNo" placeholder="请输入商户号" style="width: 168px" clearable />
           </el-form-item>
           <el-form-item label="钱包地址：">
-            <el-input v-model="searchForm.walletAddress" placeholder="请输入钱包地址" style="width: 220px" clearable />
+            <el-input v-model="searchForm.walletAddress" placeholder="请输入钱包地址" style="width: 168px" clearable />
           </el-form-item>
-        </div>
-        
-        <!-- 第二行筛选项 -->
-        <div class="filter-row">
           <el-form-item label="状态：">
             <el-select v-model="searchForm.verified" placeholder="请选择状态" style="width: 168px" clearable>
               <el-option label="开启" value="Y" />
@@ -43,12 +38,10 @@
               <el-option label="否" :value="false" />
             </el-select>
           </el-form-item>
-        </div>
-        
-        <!-- 按钮区域 -->
-        <div class="filter-buttons">
-          <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
-          <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          <el-form-item>
+            <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
+            <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
+          </el-form-item>
         </div>
       </el-form>
     </el-card>
@@ -1739,32 +1732,39 @@ onMounted(() => {
 
 .filter-container {
   margin-bottom: 16px;
+  overflow: hidden;
 }
 
-.filter-form {
+.multi-line-filter-form {
+  width: 100%;
+}
+
+.filter-grid {
   display: flex;
   flex-wrap: wrap;
-}
-
-.filter-row {
-  display: flex;
-  width: 100%;
-  margin-bottom: 16px;
   align-items: center;
+  gap: 8px 12px;
 }
 
-.filter-row:last-child {
+.multi-line-filter-form .el-form-item {
   margin-bottom: 0;
-}
-
-.filter-buttons {
-  margin-left: auto;
+  margin-right: 0;
   display: flex;
   align-items: center;
 }
 
-.filter-buttons .el-button + .el-button {
-  margin-left: 8px;
+.multi-line-filter-form .el-form-item__label {
+  line-height: 32px;
+  white-space: nowrap;
+  width: auto !important;
+  padding-right: 6px;
+}
+
+/* 确保筛选项不重叠 */
+.multi-line-filter-form .el-input,
+.multi-line-filter-form .el-select {
+  margin: 0;
+  flex-shrink: 0;
 }
 
 .table-toolbar {

@@ -84,6 +84,7 @@
               <span>代理商管理</span>
             </template>
             <el-menu-item index="/agent/list">代理商列表</el-menu-item>
+            <el-menu-item index="/agent/withdraw">代理商提现订单</el-menu-item>
           </el-sub-menu>
 
           <!-- 支付配置 -->

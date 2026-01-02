@@ -38,6 +38,12 @@
               <el-option label="否" :value="false" />
             </el-select>
           </el-form-item>
+          <el-form-item label="回调模式：">
+            <el-select v-model="searchForm.callbackMode" placeholder="请选择模式" style="width: 168px" clearable>
+              <el-option label="FORM" value="form" />
+              <el-option label="JSON" value="json" />
+            </el-select>
+          </el-form-item>
           <div class="filter-buttons">
             <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
             <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
@@ -90,6 +96,13 @@
               size="small"
             >
               {{ scope.row.enableDeposit ? '是' : '否' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="callbackMode" label="回调模式" width="100">
+          <template #default="scope">
+            <el-tag :type="scope.row.callbackMode === 'json' ? 'warning' : ''" size="small">
+              {{ scope.row.callbackMode === 'json' ? 'JSON' : 'FORM' }}
             </el-tag>
           </template>
         </el-table-column>
@@ -204,6 +217,12 @@
               <el-button @click="productForm.productNo = generateMerchantNo()">自动生成</el-button>
             </template>
           </el-input>
+        </el-form-item>
+        <el-form-item label="回调模式">
+          <el-select v-model="productForm.callbackMode" placeholder="请选择回调模式" style="width: 100%">
+            <el-option label="FORM" value="form" />
+            <el-option label="JSON" value="json" />
+          </el-select>
         </el-form-item>
         <el-form-item label="商户钱包地址" prop="walletAddress">
           <el-input v-model="productForm.walletAddress" placeholder="请输入商户钱包地址" />
@@ -706,7 +725,8 @@ const searchForm = reactive({
   walletAddress: '',
   verified: '',
   googleAuth: '',
-  enableDeposit: ''
+  enableDeposit: '',
+  callbackMode: ''
 })
 
 // 表格数据
@@ -769,6 +789,11 @@ const fetchData = () => {
         const isEnableDeposit = searchForm.enableDeposit === true || searchForm.enableDeposit === 'true'
         filteredData = filteredData.filter(item => 
           item.enableDeposit === isEnableDeposit)
+      }
+
+      if (searchForm.callbackMode) {
+        filteredData = filteredData.filter(item => 
+          (item.callbackMode || 'form') === searchForm.callbackMode)
       }
       
       total.value = filteredData.length
@@ -834,7 +859,8 @@ const productForm = reactive({
   walletAddress: '',
   verified: 'N',
   subAccounts: [],
-  enableDeposit: true
+  enableDeposit: true,
+  callbackMode: 'form'
 })
 
 const productRules = {
@@ -1507,6 +1533,7 @@ const handleAdd = () => {
 }
 
 const handleEdit = (row) => {
+  resetForm()
   dialogTitle.value = '编辑商户'
   // 填充表单
   Object.keys(productForm).forEach(key => {
@@ -1712,6 +1739,8 @@ const resetForm = () => {
       productForm[key] = true
     } else if (key === 'subAccounts') {
       productForm[key] = []
+    } else if (key === 'callbackMode') {
+      productForm[key] = 'form'
     } else {
       productForm[key] = ''
     }

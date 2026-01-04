@@ -96,7 +96,7 @@
             <component :is="isCollapse ? 'Expand' : 'Fold'" />
           </el-icon>
           <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/merchant/dashboard' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item :to="{ path: '/merchant/dashboard', query: { merchant: currentMerchantId } }">首页</el-breadcrumb-item>
             <el-breadcrumb-item>{{ route.meta.title || '商户中心' }}</el-breadcrumb-item>
           </el-breadcrumb>
         </div>
@@ -122,7 +122,7 @@
       <el-main class="main">
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
-            <component :is="Component" />
+            <component :is="Component" :key="currentMerchantId" />
           </transition>
         </router-view>
       </el-main>
@@ -182,8 +182,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { productList } from '@/data/productData'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   DataLine, 
@@ -220,27 +221,40 @@ const userInfo = ref({
   avatar: ''
 })
 
+// 当前商户ID
+const currentMerchantId = ref('')
+
 // 获取商户信息
 const fetchMerchantInfo = () => {
   // 从URL参数中获取商户ID
   const merchantId = route.query.merchant
   const token = route.query.token
   
-  if (!merchantId || !token) {
-    ElMessage.error('无效的登录信息')
-    router.push('/login')
+  if (!merchantId) {
     return
   }
   
+  currentMerchantId.value = merchantId
+  
   // 模拟从API获取商户信息
   setTimeout(() => {
-    userInfo.value = {
-      productId: merchantId,
-      productName: `商户${merchantId}`,
-      avatar: ''
+    const currentMerchant = productList.find(p => String(p.id) === String(merchantId))
+    if (currentMerchant) {
+      userInfo.value = {
+        productId: currentMerchant.productId,
+        productName: currentMerchant.productName,
+        avatar: ''
+      }
     }
-  }, 300)
+  }, 100)
 }
+
+// 监听路由参数变化
+watch(() => route.query.merchant, (newVal) => {
+  if (newVal && newVal !== currentMerchantId.value) {
+    fetchMerchantInfo()
+  }
+})
 
 // 修改密码弹窗状态
 const passwordDialogVisible = ref(false)
@@ -363,6 +377,8 @@ onMounted(() => {
   transition: width 0.3s;
   z-index: 10;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .logo {
@@ -372,6 +388,7 @@ onMounted(() => {
   padding: 0 20px;
   overflow: hidden;
   background-color: #002140;
+  flex-shrink: 0;
 }
 
 .logo img {
@@ -388,8 +405,7 @@ onMounted(() => {
 }
 
 .menu-scrollbar {
-  height: calc(100vh - 60px);
-  overflow-x: hidden;
+  flex-grow: 1;
 }
 
 .el-menu-vertical {
@@ -455,6 +471,9 @@ onMounted(() => {
   display: flex;
   align-items: center;
 }
+
+/* 账户选择下拉框样式 */
+/* Removed */
 
 .user-info {
   display: flex;

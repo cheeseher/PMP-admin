@@ -5,6 +5,17 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" class="filter-form">
         <div class="filter-grid">
+          <el-form-item label="商户：" v-if="subAccounts.length > 0">
+            <el-select v-model="searchForm.merchantId" placeholder="全部" style="width: 150px" clearable>
+              <el-option label="全部" value="" />
+              <el-option 
+                v-for="account in subAccounts" 
+                :key="account.id" 
+                :label="`${account.productName} (${account.id})`" 
+                :value="account.id" 
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="流水类型：">
             <el-select v-model="searchForm.type" placeholder="请选择流水类型" style="width: 168px" clearable>
               <el-option label="全部" value="" />
@@ -66,7 +77,8 @@
         stripe
         style="width: 100%"
         >
-          <el-table-column prop="auditId" label="流水订单号" min-width="200" />
+                  <el-table-column prop="merchantName" label="商户名称" min-width="120" />
+        <el-table-column prop="auditId" label="流水订单号" min-width="200" />
           <el-table-column prop="systemOrderId" label="平台订单号" min-width="200" />
           <el-table-column prop="merchantOrderId" label="商户订单号" min-width="200" />
           <el-table-column prop="type" label="流水类型" width="120">
@@ -103,7 +115,6 @@
             ¥{{ formatAmount(scope.row.merchantFee) }}
           </template>
         </el-table-column>
-        <el-table-column prop="remark" label="备注" min-width="120" />
         <el-table-column prop="createTime" label="完成时间" width="180" />
       </el-table>
       
@@ -127,6 +138,39 @@
 import { ref, reactive, onMounted } from 'vue'
 import { Search, Refresh, Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useRoute } from 'vue-router'
+import { productList } from '@/data/productData'
+
+const route = useRoute()
+
+// 商户筛选
+const subAccounts = ref([])
+const currentLoginMerchantId = ref('')
+
+// 获取当前登录商户的子账户
+const fetchSubAccounts = () => {
+  const merchantId = route.query.merchant || '2'
+  if (!merchantId) return "currentLoginMerchantId.value"
+
+  currentLoginMerchantId.value = merchantId
+  
+  // 查找当前商户
+  const currentMerchant = productList.find(p => String(p.id) === String(merchantId))
+  
+  if (currentMerchant && currentMerchant.subAccounts && currentMerchant.subAccounts.length > 0) {
+    // 获取子账户详情
+    const accounts = []
+    currentMerchant.subAccounts.forEach(subId => {
+      const sub = productList.find(p => p.id === subId)
+      if (sub) {
+        accounts.push(sub)
+      }
+    })
+    subAccounts.value = accounts
+  } else {
+    subAccounts.value = []
+  }
+}
 
 // 日期快捷选项
 const dateShortcuts = [
@@ -168,6 +212,7 @@ const dateShortcuts = [
 
 // 搜索表单
 const searchForm = reactive({
+  merchantId: '', // Added merchant filter
   type: '',
   merchantOrderId: '',
   platformOrderId: '',
@@ -177,6 +222,7 @@ const searchForm = reactive({
 // 表格数据
 const tableData = ref([
   {
+    merchantName: '商户B',
     type: '修改金额',
     beforeAmount: 205.00,
     changeAmount: 120.00,
@@ -191,6 +237,7 @@ const tableData = ref([
     createTime: '2025/03/30 14:25:00'
   },
   {
+    merchantName: '商户B',
     type: '修改金额冲账',
     beforeAmount: 305.00,
     changeAmount: -100.00,
@@ -205,6 +252,7 @@ const tableData = ref([
     createTime: '2025/03/30 14:24:00'
   },
   {
+    merchantName: '商户E',
     type: '收款',
     beforeAmount: 235.00,
     changeAmount: 70.00,
@@ -219,6 +267,7 @@ const tableData = ref([
     createTime: '2025/03/29 12:23:51'
   },
   {
+    merchantName: '商户B',
     type: '交易撤销',
     beforeAmount: 335.00,
     changeAmount: -100.00,
@@ -233,6 +282,7 @@ const tableData = ref([
     createTime: '2025/03/28 11:27:26'
   },
   {
+    merchantName: '商户E',
     type: '修改金额',
     beforeAmount: 235.00,
     changeAmount: 100.00,
@@ -247,6 +297,7 @@ const tableData = ref([
     createTime: '2025/03/28 09:50:50'
   },
   {
+    merchantName: '商户B',
     type: '余额增加',
     beforeAmount: 135.00,
     changeAmount: 100.00,
@@ -261,6 +312,7 @@ const tableData = ref([
     createTime: '2025/03/28 09:30:12'
   },
   {
+    merchantName: '商户B',
     type: '余额扣减',
     beforeAmount: 100.00,
     changeAmount: -65.00,
@@ -326,6 +378,7 @@ const handleCurrentChange = (val) => {
 
 // 页面加载时获取数据
 onMounted(() => {
+  fetchSubAccounts()
   handleSearch()
 })
 </script>

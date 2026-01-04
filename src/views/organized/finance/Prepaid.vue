@@ -4,6 +4,17 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" label-position="left" class="filter-form">
         <div class="filter-grid">
+          <el-form-item label="商户：" v-if="subAccounts.length > 0">
+            <el-select v-model="searchForm.merchantId" placeholder="全部" style="width: 150px" clearable>
+              <el-option label="全部" value="" />
+              <el-option 
+                v-for="account in subAccounts" 
+                :key="account.id" 
+                :label="`${account.productName} (${account.id})`" 
+                :value="account.id" 
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="备注：">
             <el-input
               v-model="searchForm.remark"
@@ -55,7 +66,7 @@
         @selection-change="handleSelectionChange"
         v-show="tableData.length > 0"
       >
-        <el-table-column type="selection" width="55" fixed="left" />
+        <el-table-column prop="merchantName" label="商户名称" min-width="120" fixed="left" />
         <el-table-column prop="transactionNo" label="流水单号" min-width="180" />
         <el-table-column prop="prePaidAmount" label="变更前预付" min-width="120" align="right">
           <template #default="scope">
@@ -93,6 +104,39 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { Download } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useRoute } from 'vue-router'
+import { productList } from '@/data/productData'
+
+const route = useRoute()
+
+// 商户筛选
+const subAccounts = ref([])
+const currentLoginMerchantId = ref('')
+
+// 获取当前登录商户的子账户
+const fetchSubAccounts = () => {
+  const merchantId = route.query.merchant || '2'
+  if (!merchantId) {
+     return
+  } currentLoginMerchantId.value = merchantId
+  
+  // 查找当前商户
+  const currentMerchant = productList.find(p => String(p.id) === String(merchantId))
+  
+  if (currentMerchant && currentMerchant.subAccounts && currentMerchant.subAccounts.length > 0) {
+    // 获取子账户详情
+    const accounts = []
+    currentMerchant.subAccounts.forEach(subId => {
+      const sub = productList.find(p => p.id === subId)
+      if (sub) {
+        accounts.push(sub)
+      }
+    })
+    subAccounts.value = accounts
+  } else {
+    subAccounts.value = []
+  }
+}
 
 // 日期快捷选项
 const dateShortcuts = [
@@ -134,6 +178,7 @@ const dateShortcuts = [
 
 // 搜索表单
 const searchForm = ref({
+  merchantId: '', // Added merchant filter
   remark: '',
   dateRange: []
 })
@@ -144,6 +189,7 @@ const loading = ref(false)
 // 表格数据
 const tableData = ref([
   {
+    merchantName: '商户B',
     transactionNo: 'MJK202503251415301001',
     prePaidAmount: 5000.00,
     changeAmount: -1000.00,
@@ -153,6 +199,7 @@ const tableData = ref([
     operateTime: '2025-03-25 14:15:30'
   },
   {
+    merchantName: '商户E',
     transactionNo: 'MJK202503260922151002',
     prePaidAmount: 3000.00,
     changeAmount: 2000.00,
@@ -162,6 +209,7 @@ const tableData = ref([
     operateTime: '2025-03-26 09:22:15'
   },
   {
+    merchantName: '商户B',
     transactionNo: 'MJK202503271635421003',
     prePaidAmount: 10000.00,
     changeAmount: -3000.00,
@@ -232,6 +280,7 @@ const handleExport = () => {
 
 // 页面加载时初始化
 onMounted(() => {
+  fetchSubAccounts()
   // 默认今天
   searchForm.value.dateRange = dateShortcuts[0].value()
 })

@@ -5,29 +5,41 @@
       <template #header>
         <div class="card-header">
           <span class="header-title">商户信息</span>
+          
+          <div class="header-filter" v-if="subAccounts.length > 0">
+             <el-select v-model="selectedMerchantId" :placeholder="`${merchantInfo.name} (${merchantInfo.id})`" style="width: 200px" clearable>
+              <el-option :label="`${merchantInfo.name} (${merchantInfo.id})`" value="" />
+              <el-option 
+                v-for="account in subAccounts" 
+                :key="account.id" 
+                :label="`${account.productName} (${account.id})`" 
+                :value="account.id" 
+              />
+            </el-select>
+          </div>
         </div>
       </template>
       
       <div class="info-content">
         <div class="info-item">
           <span class="label">商户名称：</span>
-          <span class="value">{{ merchantInfo.name }}</span>
+          <span class="value">{{ displayedMerchantInfo.name }}</span>
         </div>
         
         <div class="info-item">
           <span class="label">登录账号：</span>
-          <span class="value">{{ merchantInfo.username }}</span>
+          <span class="value">{{ displayedMerchantInfo.username }}</span>
         </div>
         
         <div class="info-item">
           <span class="label">商户号：</span>
-          <span class="value">{{ merchantInfo.id }}</span>
-          <el-button link type="primary" @click="handleCopy(merchantInfo.id)">复制</el-button>
+          <span class="value">{{ displayedMerchantInfo.id }}</span>
+          <el-button link type="primary" @click="handleCopy(displayedMerchantInfo.id)">复制</el-button>
         </div>
         
         <div class="info-item">
           <span class="label">商户秘钥：</span>
-          <span class="value">{{ showToken ? merchantInfo.token : '************************' }}</span>
+          <span class="value">{{ showToken ? displayedMerchantInfo.token : '************************' }}</span>
           <el-button link type="primary" @click="handleResetToken">重置</el-button>
           <el-button link type="primary" @click="handleShowToken">{{ showToken ? '隐藏' : '显示' }}</el-button>
         </div>
@@ -39,7 +51,7 @@
               <span>后台白名单</span>
               <el-button link type="primary" @click="handleAddWhitelist">+ 添加白名单</el-button>
             </div>
-            <div v-if="merchantInfo.whitelist.length === 0" class="empty-whitelist">
+            <div v-if="displayedMerchantInfo.whitelist.length === 0" class="empty-whitelist">
               暂无白名单配置
             </div>
             <div v-else class="whitelist-list">
@@ -47,9 +59,9 @@
                 <span>{{ item }}</span>
                 <el-button link type="danger" size="small" @click="handleRemoveWhitelist(index)">移除</el-button>
               </div>
-              <div v-if="merchantInfo.whitelist.length > displayLimit" class="more-button-container">
+              <div v-if="displayedMerchantInfo.whitelist.length > displayLimit" class="more-button-container">
                 <el-button type="primary" plain size="small" @click="showAllWhitelist">
-                  查看更多 ({{ merchantInfo.whitelist.length - displayLimit }}项)
+                  查看更多 ({{ displayedMerchantInfo.whitelist.length - displayLimit }}项)
                 </el-button>
               </div>
             </div>
@@ -59,21 +71,21 @@
         <div class="info-item">
           <span class="label">谷歌验证：</span>
           <div class="google-auth">
-            <el-tag v-if="merchantInfo.googleAuthEnabled" type="success">已验证</el-tag>
+            <el-tag v-if="displayedMerchantInfo.googleAuthEnabled" type="success">已验证</el-tag>
             <el-tag v-else type="warning">未验证</el-tag>
-            <el-button v-if="!merchantInfo.googleAuthEnabled" type="primary" size="small" @click="handleGoogleAuth" style="margin-left: 12px">立即验证</el-button>
+            <el-button v-if="!displayedMerchantInfo.googleAuthEnabled" type="primary" size="small" @click="handleGoogleAuth" style="margin-left: 12px">立即验证</el-button>
           </div>
         </div>
         
         <div class="info-item">
           <span class="label">注册时间：</span>
-          <span class="value">{{ merchantInfo.registerTime }}</span>
+          <span class="value">{{ displayedMerchantInfo.registerTime }}</span>
         </div>
         
         <div class="info-item">
           <span class="label">上次登录：</span>
-          <span class="value">{{ merchantInfo.lastLoginTime }}</span>
-          <span class="ip-info">(IP: {{ merchantInfo.lastLoginIp }} {{ merchantInfo.lastLoginLocation }})</span>
+          <span class="value">{{ displayedMerchantInfo.lastLoginTime }}</span>
+          <span class="ip-info">(IP: {{ displayedMerchantInfo.lastLoginIp }} {{ displayedMerchantInfo.lastLoginLocation }})</span>
         </div>
       </div>
     </el-card>
@@ -110,11 +122,11 @@
       width="600px"
       :close-on-click-modal="false"
     >
-      <div v-if="merchantInfo.whitelist.length === 0" class="empty-whitelist">
+      <div v-if="displayedMerchantInfo.whitelist.length === 0" class="empty-whitelist">
         暂无白名单配置
       </div>
       <div v-else class="whitelist-dialog-list">
-        <div v-for="(item, index) in merchantInfo.whitelist" :key="index" class="whitelist-dialog-item">
+        <div v-for="(item, index) in displayedMerchantInfo.whitelist" :key="index" class="whitelist-dialog-item">
           <span>{{ item }}</span>
           <el-button link type="danger" size="small" @click="handleRemoveWhitelistFromDialog(index)">移除</el-button>
         </div>
@@ -208,29 +220,133 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { CircleCheckFilled, Close } from '@element-plus/icons-vue'
+import { useRoute } from 'vue-router'
+import { productList } from '@/data/productData'
 
-// 商户信息
-const merchantInfo = reactive({
-  name: '优速付',
-  username: 'yousufu',
-  id: 'M2407181032ABCDE000001',
-  token: 'xMcHx7Z4NyRpUjV8W2bT5sQfGhK9LaPz',
-  whitelist: ['192.168.1.100', '202.106.48.12'],
+const route = useRoute()
+
+// 商户筛选
+const subAccounts = ref([])
+const selectedMerchantId = ref('')
+const currentLoginMerchantId = ref('')
+
+// 获取当前登录商户的子账户
+const fetchSubAccounts = () => {
+  const merchantId = route.query.merchant || '2'
+  if (!merchantId) return
+
+  currentLoginMerchantId.value = merchantId
+  
+  // 查找当前商户
+  const currentMerchant = productList.find(p => String(p.id) === String(merchantId))
+  
+  if (currentMerchant) {
+    // Populate main merchant info
+    merchantInfo.value = {
+      name: currentMerchant.productName,
+      username: `admin_${currentMerchant.id}`,
+      id: currentMerchant.id,
+      token: `sk_live_${currentMerchant.id}_token`,
+      whitelist: ['192.168.1.100'],
+      googleAuthEnabled: true,
+      registerTime: currentMerchant.registerTime,
+      lastLoginTime: '2024-06-03 10:30:25',
+      lastLoginIp: currentMerchant.authIp || '192.168.1.101',
+      lastLoginLocation: '中国上海'
+    }
+    // Initialize displayed info
+    displayedMerchantInfo.value = { ...merchantInfo.value }
+  }
+
+  if (currentMerchant && currentMerchant.subAccounts && currentMerchant.subAccounts.length > 0) {
+    // 获取子账户详情
+    const accounts = []
+    currentMerchant.subAccounts.forEach(subId => {
+      const sub = productList.find(p => p.id === subId)
+      if (sub) {
+        accounts.push(sub)
+      }
+    })
+    subAccounts.value = accounts
+  } else {
+    subAccounts.value = []
+  }
+}
+
+// 监听商户ID变化
+watch(() => route.query.merchant, (newId) => {
+  if (newId) {
+    selectedMerchantId.value = ''
+    fetchSubAccounts()
+  }
+})
+
+// 默认商户信息 (Ref)
+const merchantInfo = ref({
+  name: '',
+  username: '',
+  id: '',
+  token: '',
+  whitelist: [],
   googleAuthEnabled: false,
-  registerTime: '2024/01/15 10:23:45',
-  lastLoginTime: '2024/07/18 08:32:11',
-  lastLoginIp: '118.88.123.45',
-  lastLoginLocation: '中国上海电信'
+  registerTime: '',
+  lastLoginTime: '',
+  lastLoginIp: '',
+  lastLoginLocation: ''
+})
+
+// Current displayed merchant info
+const displayedMerchantInfo = ref({
+  name: '',
+  username: '',
+  id: '',
+  token: '',
+  whitelist: [],
+  googleAuthEnabled: false,
+  registerTime: '',
+  lastLoginTime: '',
+  lastLoginIp: '',
+  lastLoginLocation: ''
+})
+
+// Update displayed info when filter changes
+watch(selectedMerchantId, (newId) => {
+  if (newId) {
+    const sub = subAccounts.value.find(a => String(a.id) === String(newId))
+    if (sub) {
+      displayedMerchantInfo.value = {
+        name: sub.productName,
+        username: `user_${sub.id}`,
+        id: sub.id,
+        token: `sub_token_${sub.id}_xyz_mocked`,
+        whitelist: ['192.168.1.1', '10.0.0.1'],
+        googleAuthEnabled: false,
+        registerTime: sub.registerTime || '2024/05/20 10:00:00',
+        lastLoginTime: '2024/06/01 12:30:45',
+        lastLoginIp: '183.14.132.88',
+        lastLoginLocation: '中国广东深圳'
+      }
+    }
+  } else {
+    // Reset to main
+    displayedMerchantInfo.value = { ...merchantInfo.value }
+  }
 })
 
 // 白名单显示限制
 const displayLimit = 3
 const displayedWhitelist = computed(() => {
-  return merchantInfo.whitelist.slice(0, displayLimit)
+  return displayedMerchantInfo.value.whitelist.slice(0, displayLimit)
 })
+
+// ... (rest of the code)
+
+// 重置Token
+
+
 
 // 是否显示Token
 const showToken = ref(false)
@@ -252,6 +368,10 @@ const authForm = reactive({
   code: ''
 })
 
+onMounted(() => {
+  fetchSubAccounts()
+})
+
 // 复制功能
 const handleCopy = (text) => {
   navigator.clipboard.writeText(text).then(() => {
@@ -269,7 +389,7 @@ const handleShowToken = () => {
 // 重置Token
 const handleResetToken = () => {
   // 判断是否已绑定谷歌验证器
-  if (!merchantInfo.googleAuthEnabled) {
+  if (!displayedMerchantInfo.value.googleAuthEnabled) {
     ElMessageBox.alert('重置商户秘钥需要先绑定谷歌验证器', '提示', {
       confirmButtonText: '知道了',
       type: 'warning',
@@ -301,7 +421,7 @@ const handleResetToken = () => {
       for (let i = 0; i < 32; i++) {
         newToken += chars.charAt(Math.floor(Math.random() * chars.length))
       }
-      merchantInfo.token = newToken
+      displayedMerchantInfo.value.token = newToken
       showToken.value = true
       ElMessage.success('商户秘钥重置成功')
     }).catch(() => {})
@@ -325,7 +445,7 @@ const handleAddWhitelistConfirm = () => {
     return
   }
   // TODO: 调用API添加白名单
-  merchantInfo.whitelist.push(whitelistForm.ip)
+  displayedMerchantInfo.value.whitelist.push(whitelistForm.ip)
   whitelistDialogVisible.value = false
   ElMessage.success('添加成功')
 }
@@ -338,7 +458,7 @@ const handleRemoveWhitelist = (index) => {
     type: 'warning'
   }).then(() => {
     // TODO: 调用API移除白名单
-    merchantInfo.whitelist.splice(index, 1)
+    displayedMerchantInfo.value.whitelist.splice(index, 1)
     ElMessage.success('移除成功')
   }).catch(() => {})
 }
@@ -356,7 +476,7 @@ const handleRemoveWhitelistFromDialog = (index) => {
     type: 'warning'
   }).then(() => {
     // TODO: 调用API移除白名单
-    merchantInfo.whitelist.splice(index, 1)
+    displayedMerchantInfo.value.whitelist.splice(index, 1)
     ElMessage.success('移除成功')
   }).catch(() => {})
 }
@@ -384,7 +504,7 @@ const handleVerifyCode = () => {
 // 完成设置
 const handleFinishSetup = () => {
   googleAuthDialogVisible.value = false
-  merchantInfo.googleAuthEnabled = true
+  displayedMerchantInfo.value.googleAuthEnabled = true
   ElMessage.success('谷歌验证器设置成功')
 }
 
@@ -418,8 +538,13 @@ const handleCloseGoogleAuth = () => {
 
 .card-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding: 16px 0;
+}
+
+.header-filter {
+  margin-left: auto;
 }
 
 .header-title {

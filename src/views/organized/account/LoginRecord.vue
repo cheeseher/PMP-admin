@@ -4,6 +4,17 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="filterForm" class="filter-form">
         <div class="filter-grid">
+          <el-form-item label="商户：" prop="merchantId" v-if="subAccounts.length > 0">
+            <el-select v-model="filterForm.merchantId" placeholder="全部" style="width: 150px" clearable>
+              <el-option label="全部" value="" />
+              <el-option 
+                v-for="account in subAccounts" 
+                :key="account.id" 
+                :label="`${account.productName} (${account.id})`" 
+                :value="account.id" 
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="登录IP：" prop="loginIp">
             <el-input
               v-model="filterForm.loginIp"
@@ -44,6 +55,7 @@
         style="width: 100%"
       >
         <el-table-column type="index" label="序号" width="80" />
+        <el-table-column prop="merchantName" label="商户名称" min-width="120" />
         <el-table-column prop="loginTime" label="登录时间" min-width="180" />
         <el-table-column prop="loginIp" label="登录IP" min-width="140" />
         <el-table-column prop="loginStatus" label="登录状态" width="100">
@@ -74,10 +86,52 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { productList } from '@/data/productData'
+
+const route = useRoute()
+
+// 商户筛选
+const subAccounts = ref([])
+const currentLoginMerchantId = ref('')
+
+// 获取当前登录商户的子账户
+const fetchSubAccounts = () => {
+  const merchantId = route.query.merchant || '2'
+  if (!merchantId) return
+
+  currentLoginMerchantId.value = merchantId
+  
+  // 查找当前商户
+  const currentMerchant = productList.find(p => String(p.id) === String(merchantId))
+  
+  if (currentMerchant && currentMerchant.subAccounts && currentMerchant.subAccounts.length > 0) {
+    // 获取子账户详情
+    const accounts = []
+    currentMerchant.subAccounts.forEach(subId => {
+      const sub = productList.find(p => p.id === subId)
+      if (sub) {
+        accounts.push(sub)
+      }
+    })
+    subAccounts.value = accounts
+  } else {
+    subAccounts.value = []
+  }
+}
+
+// 监听商户ID变化
+watch(() => route.query.merchant, (newId) => {
+  if (newId) {
+    filterForm.merchantId = ''
+    fetchSubAccounts()
+  }
+})
 
 // 筛选表单数据
 const filterForm = reactive({
+  merchantId: '',
   loginIp: '',
   loginStatus: ''
 })
@@ -176,6 +230,7 @@ const handleSearch = () => {
 // 重置搜索
 const resetSearch = () => {
   // 重置表单
+  filterForm.merchantId = ''
   filterForm.loginIp = ''
   filterForm.loginStatus = ''
   // 重新加载数据
@@ -196,6 +251,7 @@ const handleCurrentChange = (val) => {
 
 // 组件挂载后加载数据
 onMounted(() => {
+  fetchSubAccounts()
   handleSearch()
 })
 </script>

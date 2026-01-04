@@ -1,8 +1,23 @@
 <template>
   <div class="payment-channel-container">
     <el-card shadow="never">
+      <!-- 筛选区域 -->
+      <el-form class="filter-form" style="margin-bottom: 20px;" v-if="subAccounts.length > 0">
+        <el-form-item label="商户筛选：">
+          <el-select v-model="selectedMerchantId" placeholder="全部" style="width: 200px" clearable @change="handleMerchantChange">
+            <el-option label="全部" value="" />
+            <el-option 
+              v-for="account in subAccounts" 
+              :key="account.id" 
+              :label="`${account.productName} (${account.id})`" 
+              :value="account.id" 
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
       <el-table
-        :data="channelList"
+        :data="filteredChannelList"
         border
         stripe
         style="width: 100%">
@@ -12,12 +27,11 @@
           width="70" 
           align="center" />
         <el-table-column 
-          prop="id" 
-          label="支付产品编码" 
-          width="120">
-          <template #default="scope">
-            <div class="code-cell">
-              <span>{{ scope.row.id }}</span>
+          prop="merchantName" 
+          label="商户名称" 
+          min-width="120" />
+
+        <el-table-column 
               <el-tooltip content="复制编码" placement="top">
                 <el-icon class="copy-icon" @click="copyContent(scope.row.id)"><CopyDocument /></el-icon>
               </el-tooltip>
@@ -123,15 +137,67 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { CopyDocument, InfoFilled, ArrowDown } from '@element-plus/icons-vue'
+import { useRoute } from 'vue-router'
+import { productList } from '@/data/productData'
+
+const route = useRoute()
+
+// 商户筛选
+const subAccounts = ref([])
+const selectedMerchantId = ref('')
+const currentLoginMerchantId = ref('')
+
+// 获取当前登录商户的子账户
+const fetchSubAccounts = () => {
+  const merchantId = route.query.merchant || '2'
+  if (!merchantId) return
+
+  currentLoginMerchantId.value = merchantId
+  
+  // 查找当前商户
+  const currentMerchant = productList.find(p => String(p.id) === String(merchantId))
+  
+  if (currentMerchant && currentMerchant.subAccounts && currentMerchant.subAccounts.length > 0) {
+    // 获取子账户详情
+    const accounts = []
+    currentMerchant.subAccounts.forEach(subId => {
+      const sub = productList.find(p => p.id === subId)
+      if (sub) {
+        accounts.push(sub)
+      }
+    })
+    subAccounts.value = accounts
+  } else {
+    subAccounts.value = []
+  }
+}
+
+// 监听商户ID变化
+watch(() => route.query.merchant, (newId) => {
+  if (newId) {
+    selectedMerchantId.value = ''
+    fetchSubAccounts()
+  }
+})
+
+const handleMerchantChange = () => {
+  // 实际项目中会重新请求数据
+}
+
+onMounted(() => {
+  fetchSubAccounts()
+})
 
 // 支付通道数据
 const channelList = ref([
   {
     id: '1119',
     name: '支付产品A',
+    merchantName: '商户B',
+    merchantId: '1001',
     status: '禁用',
     limitRange: '¥300.00 ~ ¥2000.00',
     merchantFee: '4.00'
@@ -139,6 +205,8 @@ const channelList = ref([
   {
     id: '119',
     name: '支付产品B',
+    merchantName: '商户E',
+    merchantId: '1002',
     status: '启用',
     limitRange: '¥50.00 ~ ¥1000.00',
     merchantFee: '4.00'
@@ -146,6 +214,8 @@ const channelList = ref([
   {
     id: '1111',
     name: '支付产品C',
+    merchantName: '商户B',
+    merchantId: '1001',
     status: '启用',
     limitRange: '¥100.00 ~ ¥5000.00',
     merchantFee: '4.00'
@@ -153,6 +223,8 @@ const channelList = ref([
   {
     id: '1112',
     name: '支付产品D',
+    merchantName: '商户B',
+    merchantId: '1001',
     status: '启用',
     limitRange: '¥200.00 ~ ¥3000.00',
     merchantFee: '4.00'
@@ -160,6 +232,8 @@ const channelList = ref([
   {
     id: '1115',
     name: '支付产品E',
+    merchantName: '商户E',
+    merchantId: '1002',
     status: '启用',
     limitRange: '¥2000.00 ~ ¥20000.00',
     merchantFee: '4.00'
@@ -167,6 +241,8 @@ const channelList = ref([
   {
     id: '1114',
     name: '支付产品F',
+    merchantName: '商户B',
+    merchantId: '1001',
     status: '启用',
     limitRange: '¥800.00 ~ ¥20000.00',
     merchantFee: '4.00'
@@ -174,6 +250,8 @@ const channelList = ref([
   {
     id: '1128',
     name: '支付产品G',
+    merchantName: '商户E',
+    merchantId: '1002',
     status: '启用',
     limitRange: '¥100.00 ~ ¥2000.00',
     merchantFee: '4.00'
@@ -181,6 +259,8 @@ const channelList = ref([
   {
     id: '1117',
     name: '支付产品H',
+    merchantName: '商户B',
+    merchantId: '1001',
     status: '启用',
     limitRange: '¥300.00 ~ ¥20000.00',
     merchantFee: '4.00'
@@ -188,6 +268,8 @@ const channelList = ref([
   {
     id: '116',
     name: '支付产品I',
+    merchantName: '商户B',
+    merchantId: '1001',
     status: '禁用',
     limitRange: '¥800.00 ~ ¥20000.00',
     merchantFee: '4.00'
@@ -195,11 +277,19 @@ const channelList = ref([
   {
     id: '1113',
     name: '支付产品J',
+    merchantName: '商户E',
+    merchantId: '1002',
     status: '启用',
     limitRange: '¥500.00 ~ ¥20000.00',
     merchantFee: '4.00'
   }
 ])
+
+// 过滤后的列表
+const filteredChannelList = computed(() => {
+  if (!selectedMerchantId.value) return channelList.value
+  return channelList.value.filter(item => String(item.merchantId) === String(selectedMerchantId.value))
+})
 
 // 支付弹窗相关
 const paymentDialogVisible = ref(false)

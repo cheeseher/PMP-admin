@@ -4,6 +4,17 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" label-position="left" class="filter-form">
         <div class="filter-grid">
+          <el-form-item label="商户：" v-if="subAccounts.length > 0">
+            <el-select v-model="searchForm.merchantId" placeholder="全部" style="width: 150px" clearable>
+              <el-option label="全部" value="" />
+              <el-option 
+                v-for="account in subAccounts" 
+                :key="account.id" 
+                :label="`${account.productName} (${account.id})`" 
+                :value="account.id" 
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="支付通道：">
             <el-select 
               v-model="searchForm.channels" 
@@ -70,7 +81,8 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" fixed="left" />
+        <el-table-column prop="merchantName" label="商户名称" min-width="120" fixed="left" />
+        <el-table-column prop="merchantName" label="商户名称" min-width="120" fixed="left" />
         <el-table-column prop="channelName" label="通道名称" min-width="150" />
         <el-table-column prop="channelCode" label="通道编码" min-width="120">
           <template #default="scope">
@@ -132,6 +144,39 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { Download, CopyDocument } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useRoute } from 'vue-router'
+import { productList } from '@/data/productData'
+
+const route = useRoute()
+
+// 商户筛选
+const subAccounts = ref([])
+const currentLoginMerchantId = ref('')
+
+// 获取当前登录商户的子账户
+const fetchSubAccounts = () => {
+  const merchantId = route.query.merchant || '2'
+  if (!merchantId) return
+
+  currentLoginMerchantId.value = merchantId
+  
+  // 查找当前商户
+  const currentMerchant = productList.find(p => String(p.id) === String(merchantId))
+  
+  if (currentMerchant && currentMerchant.subAccounts && currentMerchant.subAccounts.length > 0) {
+    // 获取子账户详情
+    const accounts = []
+    currentMerchant.subAccounts.forEach(subId => {
+      const sub = productList.find(p => p.id === subId)
+      if (sub) {
+        accounts.push(sub)
+      }
+    })
+    subAccounts.value = accounts
+  } else {
+    subAccounts.value = []
+  }
+}
 
 // 根据时间类型获取日期范围
 const getDateRangeByType = (type) => {
@@ -200,6 +245,7 @@ const tableData = ref([
   {
     channelName: 'UID支付-小额',
     channelCode: '1001',
+    merchantName: '商户B',
     orderAmount: 35352.00,
     successAmount: 1700.00,
     merchantIncome: 1609.90,
@@ -213,6 +259,7 @@ const tableData = ref([
   {
     channelName: 'UID支付-中额',
     channelCode: '1002',
+    merchantName: '商户E',
     orderAmount: 14800.00,
     successAmount: null,
     merchantIncome: null,
@@ -249,19 +296,7 @@ const tableData = ref([
     refundOrders: 0,
     refundAmount: 0.00
   },
-  {
-    channelName: '合计',
-    channelCode: '合计',
-    orderAmount: 220052.00,
-    successAmount: 4700.00,
-    merchantIncome: 4519.90,
-    merchantFee: 180.10,
-    totalOrders: 233,
-    successOrders: 7,
-    successRate: 3.00,
-    refundOrders: 0,
-    refundAmount: 0.00
-  }
+
 ])
 
 // 选中行
@@ -329,7 +364,19 @@ watch(() => searchForm.value.timeType, (newType) => {
 
 // 页面加载时执行一次搜索
 onMounted(() => {
+  fetchSubAccounts()
+  // Set default date range
+  searchForm.value.dateRange = getDateRangeByType('today')
   handleSearch()
+})
+
+// 监听商户ID变化 (Removed redundant route declaration)
+watch(() => route.query.merchant, (newId) => {
+  if (newId) {
+    console.log('Merchant ID changed:', newId)
+    fetchSubAccounts() // Also refresh sub-accounts if context changes
+    handleSearch()
+  }
 })
 
 // 复制内容

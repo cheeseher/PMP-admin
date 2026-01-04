@@ -4,6 +4,17 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="searchForm" label-position="left" class="filter-form">
         <div class="filter-grid">
+          <el-form-item label="商户：" v-if="subAccounts.length > 0">
+            <el-select v-model="searchForm.merchantId" placeholder="全部" style="width: 150px" clearable>
+              <el-option label="全部" value="" />
+              <el-option 
+                v-for="account in subAccounts" 
+                :key="account.id" 
+                :label="`${account.productName} (${account.id})`" 
+                :value="account.id" 
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="商户订单号：">
             <el-input v-model="searchForm.merchantOrderNo" placeholder="请输入商户订单号" clearable style="width: 220px" />
           </el-form-item>
@@ -128,7 +139,8 @@
         style="width: 100%"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55" fixed="left" />
+
+        <el-table-column prop="merchantName" label="商户名称" min-width="120" fixed="left" />
         <el-table-column prop="merchantOrderNo" label="商户订单号" min-width="180">
           <template #default="scope">
             <div class="copy-cell">
@@ -224,10 +236,51 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Download, CopyDocument } from '@element-plus/icons-vue'
+import { useRoute } from 'vue-router'
+import { productList } from '@/data/productData'
 import dayjs from 'dayjs'
+
+const route = useRoute()
+
+// 商户筛选
+const subAccounts = ref([])
+const currentLoginMerchantId = ref('')
+
+// 获取当前登录商户的子账户
+const fetchSubAccounts = () => {
+  const merchantId = route.query.merchant || '2'
+  if (!merchantId) return
+
+  currentLoginMerchantId.value = merchantId
+  
+  // 查找当前商户
+  const currentMerchant = productList.find(p => String(p.id) === String(merchantId))
+  
+  if (currentMerchant && currentMerchant.subAccounts && currentMerchant.subAccounts.length > 0) {
+    // 获取子账户详情
+    const accounts = []
+    currentMerchant.subAccounts.forEach(subId => {
+      const sub = productList.find(p => p.id === subId)
+      if (sub) {
+        accounts.push(sub)
+      }
+    })
+    subAccounts.value = accounts
+  } else {
+    subAccounts.value = []
+  }
+}
+
+// 监听商户ID变化
+watch(() => route.query.merchant, (newId) => {
+  if (newId) {
+    searchForm.merchantId = ''
+    fetchSubAccounts()
+  }
+})
 
 // 加载状态
 const loading = ref(false)
@@ -350,6 +403,7 @@ const dateShortcuts = [
 
 // 搜索表单
 const searchForm = reactive({
+  merchantId: '',
   merchantOrderNo: '',
   systemOrderNo: '',
   paymentChannel: [],
@@ -371,6 +425,7 @@ onMounted(() => {
   searchForm.dateRange = [todayStart.toDate(), todayEnd.toDate()]
   searchForm.createStartTime = todayStart.format('YYYY-MM-DD HH:mm')
   searchForm.createEndTime = todayEnd.format('YYYY-MM-DD HH:mm')
+  fetchSubAccounts()
 })
 
 // 处理日期范围变化
@@ -394,6 +449,7 @@ const pagination = reactive({
 // 表格数据
 const tableData = ref([
   {
+    merchantName: '商户B',
     merchantOrderNo: 'MORD202406030001',
     systemOrderNo: 'PAY2024060300918273',
     paymentChannel: '支付产品D',
@@ -408,6 +464,7 @@ const tableData = ref([
     completeTime: ''
   },
   {
+    merchantName: '商户E',
     merchantOrderNo: 'MORD202406030002',
     systemOrderNo: 'PAY2024060300918274',
     paymentChannel: '支付产品H',
@@ -422,6 +479,7 @@ const tableData = ref([
     completeTime: '2024-06-03 10:48:30'
   },
   {
+    merchantName: '商户B',
     merchantOrderNo: 'MORD202406030003',
     systemOrderNo: 'PAY2024060300918275',
     paymentChannel: '支付产品I',
@@ -436,6 +494,7 @@ const tableData = ref([
     completeTime: '2024-06-03 10:21:11'
   },
   {
+    merchantName: '商户A',
     merchantOrderNo: 'P202503280951...',
     systemOrderNo: 'MM03280951...',
     paymentChannelCode: '[1112]',
@@ -450,6 +509,7 @@ const tableData = ref([
     completeTime: '2025/03/28 10:21:39'
   },
   {
+    merchantName: '商户A',
     merchantOrderNo: 'P202503280949...',
     systemOrderNo: 'MM03280949...',
     paymentChannelCode: '[1112]',
@@ -464,6 +524,7 @@ const tableData = ref([
     completeTime: '2025/03/28 09:51:00'
   },
   {
+    merchantName: '商户A',
     merchantOrderNo: 'P202503280947...',
     systemOrderNo: 'MM03280947...',
     paymentChannelCode: '[1112]',
@@ -478,6 +539,7 @@ const tableData = ref([
     completeTime: '2025/03/28 10:17:03'
   },
   {
+    merchantName: '商户A',
     merchantOrderNo: 'P202503280936...',
     systemOrderNo: 'MM03280936...',
     paymentChannelCode: '[1112]',
@@ -492,6 +554,7 @@ const tableData = ref([
     completeTime: '2025/03/28 10:06:18'
   },
   {
+    merchantName: '商户B',
     merchantOrderNo: 'P202503280908...',
     systemOrderNo: 'MM03280908...',
     paymentChannelCode: '[1114]',
@@ -506,6 +569,7 @@ const tableData = ref([
     completeTime: '-'
   },
   {
+    merchantName: '商户A',
     merchantOrderNo: 'P202503280905...',
     systemOrderNo: 'MM03280905...',
     paymentChannelCode: '[1112]',
@@ -520,6 +584,7 @@ const tableData = ref([
     completeTime: '2025/03/28 09:07:00'
   },
   {
+    merchantName: '商户B',
     merchantOrderNo: 'MORD202406030004',
     systemOrderNo: 'PAY2024060300918276',
     paymentChannel: '支付产品H',
@@ -534,6 +599,7 @@ const tableData = ref([
     completeTime: '2024-06-03 10:28:30'
   },
   {
+    merchantName: '商户C',
     merchantOrderNo: 'MORD202406030005',
     systemOrderNo: 'PAY2024060300918277',
     paymentChannel: '支付产品E',
@@ -548,6 +614,7 @@ const tableData = ref([
     completeTime: '2024-06-03 10:55:18'
   },
   {
+    merchantName: '商户A',
     merchantOrderNo: 'MORD202406030006',
     systemOrderNo: 'PAY2024060300918278',
     paymentChannel: '支付产品G',
@@ -562,6 +629,7 @@ const tableData = ref([
     completeTime: ''
   },
   {
+    merchantName: '商户F',
     merchantOrderNo: 'MORD202406030007',
     systemOrderNo: 'PAY2024060300918279',
     paymentChannel: '支付产品F',
@@ -626,8 +694,10 @@ const copyContent = (content) => {
 const handleSearch = () => {
   loading.value = true
   
+  
   // 示例：构建请求参数
   const params = {
+    merchantId: searchForm.merchantId,
     merchantOrderNo: searchForm.merchantOrderNo,
     systemOrderNo: searchForm.systemOrderNo,
     paymentChannel: searchForm.paymentChannel,
@@ -655,6 +725,8 @@ const handleReset = () => {
       searchForm[key] = []
     } else if (key === 'minAmount' || key === 'maxAmount') {
       searchForm[key] = null
+    } else if (key === 'merchantId') {
+      searchForm[key] = ''
     } else {
       searchForm[key] = ''
     }

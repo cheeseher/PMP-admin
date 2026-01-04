@@ -82,7 +82,7 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column prop="merchantName" label="商户名称" min-width="120" fixed="left" />
-        <el-table-column prop="merchantName" label="商户名称" min-width="120" fixed="left" />
+
         <el-table-column prop="channelName" label="通道名称" min-width="150" />
         <el-table-column prop="channelCode" label="通道编码" min-width="120">
           <template #default="scope">

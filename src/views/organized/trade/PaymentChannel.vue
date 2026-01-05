@@ -32,6 +32,11 @@
           min-width="120" />
 
         <el-table-column 
+          label="通道ID" 
+          min-width="120">
+          <template #default="scope">
+            <div class="code-cell">
+              <span>{{ scope.row.id }}</span>
               <el-tooltip content="复制编码" placement="top">
                 <el-icon class="copy-icon" @click="copyContent(scope.row.id)"><CopyDocument /></el-icon>
               </el-tooltip>

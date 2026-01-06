@@ -23,6 +23,40 @@
           <el-form-item label="支付产品名称：">
             <el-input v-model="searchForm.productName" placeholder="请输入支付产品名称" style="width: 220px" clearable />
           </el-form-item>
+          <el-form-item label="商户：">
+            <el-select
+              v-model="searchForm.merchantIds"
+              multiple
+              filterable
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="请选择商户"
+              style="width: 220px"
+              clearable
+            >
+              <el-option
+                v-for="item in productList"
+                :key="item.id"
+                :label="item.productName"
+                :value="item.id"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="商户组：">
+            <el-select
+              v-model="searchForm.merchantGroupId"
+              placeholder="请选择商户组"
+              style="width: 220px"
+              clearable
+            >
+              <el-option
+                v-for="group in merchantGroupList"
+                :key="group.id"
+                :label="group.groupName"
+                :value="group.id"
+              />
+            </el-select>
+          </el-form-item>
           
           <div class="filter-buttons">
             <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
@@ -97,6 +131,8 @@
         v-loading="loading"
         stripe
         style="width: 100%"
+        show-summary
+        :summary-method="getSummaries"
       >
         <el-table-column type="selection" width="50" align="center" />
         <el-table-column prop="productId" label="支付产品ID" width="90" align="center" />
@@ -114,6 +150,18 @@
         <el-table-column prop="netAmount" label="入账金额" width="150" align="right">
           <template #default="{ row }">
             <span class="amount-cell">{{ formatAmount(row.netAmount) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="channelCost" label="上游通道成本" width="150" align="right">
+          <template #default="{ row }">
+            <span class="amount-cell">{{ formatAmount(row.channelCost) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="profit" label="利润" width="150" align="right">
+          <template #default="{ row }">
+            <span class="amount-cell" :style="{ color: row.profit >= 0 ? '#67C23A' : '#F56C6C' }">
+              {{ formatAmount(row.profit) }}
+            </span>
           </template>
         </el-table-column>
         <el-table-column prop="orderCount" label="成功单数/总笔数" width="150" align="center">
@@ -150,7 +198,8 @@ import { Search, Refresh, Download, Money, Discount, Wallet, Document } from '@e
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
 
-// 商户相关选项已删除
+import { productList } from '@/data/productData'
+import { merchantGroupList } from '@/data/merchantGroupData'
 
 // 日期快捷选项
 const dateShortcuts = [
@@ -243,6 +292,8 @@ const dateShortcuts = [
 // 搜索表单数据
 const searchForm = reactive({
   productName: '',
+  merchantIds: [],
+  merchantGroupId: '',
   dateRange: [] // 初始化为空
 })
 
@@ -260,6 +311,8 @@ const tableData = ref([
     successRate: 0.98,
     feeAmount: 490.00,
     netAmount: 48510.00,
+    channelCost: 245.00,
+    profit: 245.00,
     remark: ''
   },
   {
@@ -274,6 +327,8 @@ const tableData = ref([
     successRate: 0.97,
     feeAmount: 412.50,
     netAmount: 40837.50,
+    channelCost: 206.25,
+    profit: 206.25,
     remark: ''
   },
   {
@@ -288,6 +343,8 @@ const tableData = ref([
     successRate: 0.97,
     feeAmount: 727.50,
     netAmount: 72022.50,
+    channelCost: 363.75,
+    profit: 363.75,
     remark: ''
   }
 ])
@@ -385,6 +442,48 @@ const formatAmount = (amount) => {
 // 格式化数字
 const formatNumber = (num) => {
   return num.toLocaleString('zh-CN')
+}
+
+// 合计行计算
+const getSummaries = (param) => {
+  const { columns, data } = param
+  const sums = []
+
+  columns.forEach((column, index) => {
+    if (index === 0) {
+      sums[index] = '合计'
+      return
+    }
+
+    // 不计算合计的列
+    if (['productId', 'productName', 'successRate', 'refundCount', 'refundAmount', 'merchantName', 'orderCount'].includes(column.property)) {
+      sums[index] = ''
+      return
+    }
+
+    const values = data.map((item) => Number(item[column.property]))
+    if (!values.every((value) => Number.isNaN(value))) {
+      const sum = values.reduce((prev, curr) => {
+        const value = Number(curr)
+        if (!Number.isNaN(value)) {
+          return prev + curr
+        } else {
+          return prev
+        }
+      }, 0)
+      
+      // 金额格式化
+      if (['orderAmount', 'successAmount', 'feeAmount', 'netAmount', 'channelCost', 'profit'].includes(column.property)) {
+        sums[index] = formatAmount(sum)
+      } else {
+        sums[index] = formatNumber(sum)
+      }
+    } else {
+      sums[index] = ''
+    }
+  })
+
+  return sums
 }
 </script>
 

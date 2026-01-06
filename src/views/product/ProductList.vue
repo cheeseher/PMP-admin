@@ -58,6 +58,7 @@
       <div class="table-toolbar">
         <div class="left">
           <el-button type="primary" :icon="Plus" @click="handleAdd">新增商户</el-button>
+          <el-button type="primary" :icon="Setting" @click="openMerchantGroupConfig">商户组配置</el-button>
           <el-button :icon="Delete" plain :disabled="!selectedRows.length" @click="handleBatchDelete">批量删除</el-button>
           <el-button :icon="Setting" plain :disabled="!selectedRows.length" @click="handleBatchConfig">批量配置产品</el-button>
         </div>
@@ -700,6 +701,102 @@
         </div>
       </template>
     </el-dialog>
+
+
+    <!-- 商户组配置对话框 -->
+    <el-dialog
+      title="商户组配置"
+      v-model="merchantGroupVisible"
+      width="800px"
+      destroy-on-close
+      class="merchant-group-dialog"
+    >
+      <div class="merchant-group-container" style="display: flex; height: 500px; border: 1px solid #dcdfe6; border-radius: 4px;">
+        <!-- 左侧：商户组列表 -->
+        <div class="group-list-panel" style="width: 250px; border-right: 1px solid #dcdfe6; display: flex; flex-direction: column;">
+          <div class="panel-header" style="padding: 10px; border-bottom: 1px solid #ebeef5; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: bold;">商户组列表</span>
+            <el-button type="primary" link size="small" :icon="Plus" @click="handleAddGroup">新增</el-button>
+          </div>
+          <div class="group-list" style="flex: 1; overflow-y: auto; padding: 10px;">
+            <div 
+              v-for="(group, index) in localMerchantGroups" 
+              :key="group.id"
+              class="group-item"
+              :class="{ active: currentGroup && currentGroup.id === group.id }"
+              style="padding: 8px 10px; cursor: pointer; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;"
+              @click="handleSelectGroup(group)"
+            >
+              <span class="group-name" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ group.groupName }}</span>
+              <el-icon 
+                class="delete-icon" 
+                @click.stop="handleDeleteGroup(index)"
+                style="color: #f56c6c; display: none;"
+              ><Delete /></el-icon>
+            </div>
+            <div v-if="localMerchantGroups.length === 0" style="text-align: center; color: #909399; margin-top: 20px;">
+              暂无商户组
+            </div>
+          </div>
+        </div>
+
+        <!-- 右侧：组配置详情 -->
+        <div class="group-detail-panel" style="flex: 1; padding: 20px; display: flex; flex-direction: column;" v-if="currentGroup">
+          <el-form label-width="80px">
+            <el-form-item label="组名称">
+              <el-input v-model="currentGroup.groupName" placeholder="请输入商户组名称" />
+            </el-form-item>
+            <el-form-item label="包含商户">
+               <el-select
+                v-model="currentGroup.merchantIds"
+                multiple
+                filterable
+                placeholder="请选择商户"
+                style="width: 100%"
+                collapse-tags
+                collapse-tags-tooltip
+              >
+                <el-option
+                  v-for="item in productList"
+                  :key="item.id"
+                  :label="item.productName"
+                  :value="item.id"
+                />
+              </el-select>
+              <div class="form-tip" style="margin-top: 5px; color: #909399; font-size: 12px;">
+                已选择 {{ currentGroup.merchantIds.length }} 个商户
+              </div>
+            </el-form-item>
+          </el-form>
+          
+          <div class="selected-merchants-preview" style="flex: 1; margin-top: 10px; border: 1px solid #ebeef5; border-radius: 4px; padding: 10px; overflow-y: auto;">
+            <div style="margin-bottom: 10px; font-weight: bold; color: #606266;">已选商户预览：</div>
+            <el-tag
+              v-for="mid in currentGroup.merchantIds"
+              :key="mid"
+              class="merchant-preview-tag"
+              closable
+              style="margin-right: 5px; margin-bottom: 5px;"
+              @close="removeMerchantFromGroup(mid)"
+            >
+              {{ getMerchantName(mid) }}
+            </el-tag>
+            <div v-if="currentGroup.merchantIds.length === 0" style="color: #909399; text-align: center; margin-top: 20px;">
+              未选择任何商户
+            </div>
+          </div>
+        </div>
+        <div class="empty-selection" v-else style="flex: 1; display: flex; justify-content: center; align-items: center; color: #909399;">
+          请选择或创建一个商户组
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="merchantGroupVisible = false">关闭</el-button>
+          <el-button type="primary" @click="saveMerchantGroups">保存配置</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -713,6 +810,7 @@ import { useRouter } from 'vue-router'
 import { formatAmount } from '@/utils/formatUtils'
 import { generateMerchantNo, generateApiKey, generatePassword } from '@/utils/generatorUtils'
 import { paymentProducts, supplierChannels } from '@/data/productRelatedData'
+import { merchantGroupList } from '@/data/merchantGroupData'
 
 const router = useRouter()
 
@@ -797,6 +895,84 @@ const fetchData = () => {
       }
       
       total.value = filteredData.length
+      
+// 商户组配置相关
+const merchantGroupVisible = ref(false)
+const localMerchantGroups = ref([])
+const currentGroup = ref(null)
+
+// 打开商户组配置
+const openMerchantGroupConfig = () => {
+  // 深拷贝数据，避免直接修改源数据
+  localMerchantGroups.value = JSON.parse(JSON.stringify(merchantGroupList))
+  merchantGroupVisible.value = true
+  if (localMerchantGroups.value.length > 0) {
+    currentGroup.value = localMerchantGroups.value[0]
+  } else {
+    currentGroup.value = null
+  }
+}
+
+// 新增商户组
+const handleAddGroup = () => {
+  const newGroup = {
+    id: Date.now(), // 临时ID
+    groupName: '新商户组',
+    merchantIds: []
+  }
+  localMerchantGroups.value.push(newGroup)
+  currentGroup.value = newGroup
+}
+
+// 选择商户组
+const handleSelectGroup = (group) => {
+  currentGroup.value = group
+}
+
+// 删除商户组
+const handleDeleteGroup = (index) => {
+  ElMessageBox.confirm(
+    '确定要删除该商户组吗？',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(() => {
+    if (currentGroup.value && localMerchantGroups.value[index].id === currentGroup.value.id) {
+      currentGroup.value = null
+    }
+    localMerchantGroups.value.splice(index, 1)
+    ElMessage.success('删除成功')
+  }).catch(() => {})
+}
+
+// 从当前组移除商户
+const removeMerchantFromGroup = (merchantId) => {
+  if (currentGroup.value) {
+    currentGroup.value.merchantIds = currentGroup.value.merchantIds.filter(id => id !== merchantId)
+  }
+}
+
+// 获取商户名称
+const getMerchantName = (merchantId) => {
+  const merchant = productList.find(m => m.id === merchantId)
+  return merchant ? merchant.productName : `Unknown(${merchantId})`
+}
+
+// 保存商户组配置
+const saveMerchantGroups = () => {
+  // 这里应该调用API保存，目前仅更新本地模拟数据
+  // 实际项目中应替换为真实API调用
+  
+  // 更新源数据（模拟保存）
+  merchantGroupList.length = 0
+  merchantGroupList.push(...JSON.parse(JSON.stringify(localMerchantGroups.value)))
+  
+  ElMessage.success('保存成功')
+  merchantGroupVisible.value = false
+}
       
       // 分页处理
       const start = (currentPage.value - 1) * pageSize.value
@@ -1747,6 +1923,81 @@ const resetForm = () => {
   })
 }
 
+// 商户组配置相关
+const merchantGroupVisible = ref(false)
+const localMerchantGroups = ref([])
+const currentGroup = ref(null)
+
+// 打开商户组配置
+const openMerchantGroupConfig = () => {
+  // 深拷贝数据，避免直接修改源数据
+  localMerchantGroups.value = JSON.parse(JSON.stringify(merchantGroupList))
+  merchantGroupVisible.value = true
+  if (localMerchantGroups.value.length > 0) {
+    currentGroup.value = localMerchantGroups.value[0]
+  } else {
+    currentGroup.value = null
+  }
+}
+
+// 新增商户组
+const handleAddGroup = () => {
+  const newGroup = {
+    id: Date.now(), // 临时ID
+    groupName: '新商户组',
+    merchantIds: []
+  }
+  localMerchantGroups.value.push(newGroup)
+  currentGroup.value = newGroup
+}
+
+// 选择商户组
+const handleSelectGroup = (group) => {
+  currentGroup.value = group
+}
+
+// 删除商户组
+const handleDeleteGroup = (index) => {
+  ElMessageBox.confirm(
+    '确定要删除该商户组吗？',
+    '警告',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(() => {
+    if (currentGroup.value && localMerchantGroups.value[index].id === currentGroup.value.id) {
+      currentGroup.value = null
+    }
+    localMerchantGroups.value.splice(index, 1)
+    ElMessage.success('删除成功')
+  }).catch(() => {})
+}
+
+// 从当前组移除商户
+const removeMerchantFromGroup = (merchantId) => {
+  if (currentGroup.value) {
+    currentGroup.value.merchantIds = currentGroup.value.merchantIds.filter(id => id !== merchantId)
+  }
+}
+
+// 获取商户名称
+const getMerchantName = (merchantId) => {
+  const merchant = productList.find(m => m.id === merchantId)
+  return merchant ? merchant.productName : `Unknown(${merchantId})`
+}
+
+// 保存商户组配置
+const saveMerchantGroups = () => {
+  // 更新源数据（模拟保存）
+  merchantGroupList.length = 0
+  merchantGroupList.push(...JSON.parse(JSON.stringify(localMerchantGroups.value)))
+  
+  ElMessage.success('保存成功')
+  merchantGroupVisible.value = false
+}
+
 // 组件挂载时获取数据
 onMounted(() => {
   fetchData()
@@ -1908,5 +2159,41 @@ onMounted(() => {
 /* 轮询选项样式 */
 .polling-option {
   margin-bottom: 12px;
+}
+
+/* 商户组配置样式 */
+.merchant-group-container {
+  overflow: hidden;
+}
+.group-list-panel {
+  background-color: #fff;
+}
+.group-list::-webkit-scrollbar {
+  width: 6px;
+}
+.group-list::-webkit-scrollbar-thumb {
+  background-color: #dcdfe6;
+  border-radius: 3px;
+}
+.group-list .group-item {
+  transition: all 0.2s;
+}
+.group-list .group-item:hover {
+  background-color: #f5f7fa;
+}
+.group-list .group-item.active {
+  background-color: #ecf5ff;
+  color: #409eff;
+}
+.group-list .group-item:hover .delete-icon {
+  display: block !important;
+}
+
+.selected-merchants-preview::-webkit-scrollbar {
+  width: 6px;
+}
+.selected-merchants-preview::-webkit-scrollbar-thumb {
+  background-color: #dcdfe6;
+  border-radius: 3px;
 }
 </style>

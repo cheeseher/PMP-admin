@@ -124,6 +124,7 @@
             <el-menu-item index="/bot/group">群组管理</el-menu-item>
             <el-menu-item index="/bot/mass-message">群发消息</el-menu-item>
             <el-menu-item index="/bot/operation-log">操作记录</el-menu-item>
+            <el-menu-item index="/bot/other-settings">其他设置</el-menu-item>
           </el-sub-menu>
 
           <!-- 系统管理 -->

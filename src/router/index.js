@@ -188,6 +188,7 @@ const router = createRouter({
           ]
         },
         
+
         // 机器人管理
         {
           path: '/bot',
@@ -230,6 +231,12 @@ const router = createRouter({
               name: 'BotOperationLog',
               component: OperationLog,
               meta: { title: '操作记录' }
+            },
+            {
+              path: 'other-settings',
+              name: 'BotOtherSettings',
+              component: () => import('@/views/bot/OtherSettings.vue'),
+              meta: { title: '其他设置' }
             }
           ]
         },

@@ -330,6 +330,20 @@
           </div>
           <div class="form-tip">已选择 {{ selectedRows.length }} 个商户</div>
         </el-form-item>
+        <el-form-item label="配置模式" prop="configMode">
+          <div>
+            <el-radio-group v-model="batchConfigForm.configMode">
+              <el-radio label="append">追加模式</el-radio>
+              <el-radio label="overwrite">覆盖模式</el-radio>
+            </el-radio-group>
+            <div class="form-tip" v-if="batchConfigForm.configMode === 'append'">
+              在现有配置基础上增加新产品，若产品已存在则忽略
+            </div>
+            <div class="form-tip" v-else>
+              清空商户原有所有配置，仅保留当前选择的产品
+            </div>
+          </div>
+        </el-form-item>
         <el-form-item label="支付产品" prop="selectedProduct">
           <el-select 
             v-model="batchConfigForm.selectedProduct" 
@@ -1278,6 +1292,7 @@ const submitBatchConfig = () => {
   // 构造提交数据
   const submitData = {
     merchantIds: selectedRows.value.map(row => row.id),
+    configMode: batchConfigForm.configMode,
     products: batchConfigForm.productRates.map(item => ({
       productId: item.productId,
       productName: item.productName,
@@ -1288,12 +1303,53 @@ const submitBatchConfig = () => {
   
   console.log('提交的批量配置数据:', submitData)
   
-  // 这里应该是调用API保存数据
-  // saveBatchConfig(submitData)
+  // 模拟后端处理逻辑
+  selectedRows.value.forEach(merchant => {
+    // 覆盖模式：先删除该商户的所有产品
+    if (batchConfigForm.configMode === 'overwrite') {
+      const indicesToRemove = []
+      merchantProductList.forEach((item, index) => {
+        if (item.merchantNo === merchant.productNo || item.merchantName === merchant.productName) {
+          indicesToRemove.push(index)
+        }
+      })
+      // 从后往前删，避免索引偏移
+      for (let i = indicesToRemove.length - 1; i >= 0; i--) {
+        merchantProductList.splice(indicesToRemove[i], 1)
+      }
+    }
+    
+    // 添加新配置
+    batchConfigForm.productRates.forEach(newProduct => {
+      // 检查是否已存在（仅追加模式需要检查，覆盖模式已清空必定不存在）
+      const exists = merchantProductList.find(item => 
+        (item.merchantNo === merchant.productNo || item.merchantName === merchant.productName) &&
+        item.productName === newProduct.productName
+      )
+      
+      if (!exists) {
+        // 生成新的ID
+        const newId = Math.max(...merchantProductList.map(m => m.id), 0) + 1 + Math.floor(Math.random() * 1000)
+        
+        merchantProductList.push({
+          id: newId,
+          merchantNo: merchant.productNo,
+          merchantName: merchant.productName,
+          productName: newProduct.productName,
+          productCode: newProduct.productCode, // 注意：批量配置时所有商户使用相同的产品代码，可能需要改为随机生成
+          rate: newProduct.rate,
+           weight: 10,
+          remark: '批量配置',
+          customOption: false,
+          selectedChannels: []
+        })
+      }
+    })
+  })
   
   // 模拟提交成功
   setTimeout(() => {
-    ElMessage.success('批量配置保存成功 (模拟操作)')
+    ElMessage.success('批量配置保存成功')
     batchConfigVisible.value = false
     // 刷新表格
     fetchData()
@@ -1565,7 +1621,8 @@ const batchConfigFormRef = ref(null)
 const batchConfigForm = reactive({
   selectedProduct: [],
   productRates: [],
-  rate: 3.00
+  rate: 3.00,
+  configMode: 'append'
 })
 
 // 批量设置费率
@@ -1594,6 +1651,7 @@ const handleBatchConfig = () => {
   batchConfigForm.selectedProduct = []
   batchConfigForm.productRates = []
   batchConfigForm.rate = 3.00
+  batchConfigForm.configMode = 'append'
   
   batchConfigVisible.value = true
 }

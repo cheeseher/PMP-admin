@@ -127,6 +127,13 @@
             <el-table-column prop="tgid" label="TGID" min-width="160" />
             <el-table-column prop="phone" label="手机号" min-width="180" />
             <el-table-column prop="apiid" label="apiid" min-width="160" />
+            <el-table-column label="备注" min-width="180">
+              <template #default="{ row }">
+                <div v-if="row.errorMessage">
+                  <span style="color: #F56C6C">限制</span>：{{ row.errorMessage }}
+                </div>
+              </template>
+            </el-table-column>
             <el-table-column prop="creator" label="创建人" width="120" />
             <el-table-column prop="createdAt" label="创建时间" width="180" />
             <el-table-column fixed="right" label="操作" width="120" align="center">
@@ -565,7 +572,10 @@ const getStatusLabel = (status) => {
 // 新增：普通账号数据源与渲染数据
 const normalTableData = ref([
   { id: 101, name: '普通账号A', tgid: '100000001', phone: '+661380000001', apiid: '123456', apiHash: 'hashA', secondPassword: '', status: 'enabled', creator: 'admin', createdAt: '2023-10-02 09:00:00' },
-  { id: 102, name: '普通账号B', tgid: '100000002', phone: '+661380000002', apiid: '234567', apiHash: 'hashB', secondPassword: '', status: 'disabled', creator: 'admin', createdAt: '2023-10-03 11:20:00' }
+  { id: 102, name: '普通账号B', tgid: '100000002', phone: '+661380000002', apiid: '234567', apiHash: 'hashB', secondPassword: '', status: 'disabled', creator: 'admin', createdAt: '2023-10-03 11:20:00', errorMessage: 'rpcDoRequest: rpc error code 428: FLOOD_WAIT (11)' },
+  { id: 103, name: '普通账号C', tgid: '100000003', phone: '+661380000003', apiid: '345678', apiHash: 'hashC', secondPassword: '', status: 'enabled', creator: 'test', createdAt: '2023-10-04 14:15:30' },
+  { id: 104, name: '普通账号D', tgid: '100000004', phone: '+661380000004', apiid: '456789', apiHash: 'hashD', secondPassword: '', status: 'disabled', creator: 'admin', createdAt: '2023-10-05 16:45:00', errorMessage: 'rpcDoRequest: rpc error code 428: FLOOD_WAIT (11)' },
+  { id: 105, name: '普通账号E', tgid: '100000005', phone: '+661380000005', apiid: '567890', apiHash: 'hashE', secondPassword: '', status: 'enabled', creator: 'user1', createdAt: '2023-10-06 09:10:20' }
 ])
 const displayNormalData = ref([...normalTableData.value])
 

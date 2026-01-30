@@ -19,6 +19,17 @@
             </el-select>
           </el-form-item>
           
+          <el-form-item label="来源类型：">
+            <el-select v-model="searchForm.sourceType" placeholder="请选择" style="width: 220px" clearable>
+              <el-option 
+                v-for="item in sourceTypeOptions" 
+                :key="item.value" 
+                :label="item.label" 
+                :value="item.value" 
+              />
+            </el-select>
+          </el-form-item>
+          
           <el-form-item label="供应商名称：">
             <el-select 
               v-model="searchForm.upstreamNames" 
@@ -95,6 +106,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="transactionType" label="交易类型" min-width="100" />
+        <el-table-column prop="sourceType" label="来源类型" min-width="120" />
         <el-table-column label="交易后" min-width="180">
           <template #default="scope">
             <div>余额: {{ formatAmount(scope.row.afterTotal) }}</div>
@@ -128,6 +140,7 @@ import { ElMessage } from 'element-plus'
 const searchForm = reactive({
   transactionNo: '',
   transactionType: '',
+  sourceType: '',
   upstreamNames: [],
   dateRange: []
 })
@@ -136,6 +149,13 @@ const searchForm = reactive({
 const transactionTypeOptions = [
   { label: '余额增加', value: 'add' },
   { label: '余额扣减', value: 'reduce' }
+]
+
+// 来源类型选项 (不包含下发)
+const sourceTypeOptions = [
+  { label: '后台人工余额修改', value: '后台人工余额修改' },
+  { label: 'YF指令余额修改', value: 'YF指令余额修改' },
+  { label: 'YE指令余额修改(手动校正)', value: 'YE指令余额修改(手动校正)' }
 ]
 
 // 供应商选项
@@ -188,6 +208,7 @@ const tableData = ref([
     beforeFrozen: 0.00,
     transactionAmount: 1000.00,
     transactionType: '余额增加',
+    sourceType: '后台人工余额修改',
     fee: 0.00,
     freezeAmount: 0.00,
     afterTotal: 6000.00,
@@ -204,6 +225,7 @@ const tableData = ref([
     beforeFrozen: 0.00,
     transactionAmount: -2500.00,
     transactionType: '余额扣减',
+    sourceType: 'YF指令余额修改',
     fee: 0.00,
     freezeAmount: 0.00,
     afterTotal: 6000.00,

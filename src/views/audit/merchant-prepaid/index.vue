@@ -13,6 +13,11 @@
               <el-option v-for="item in transactionTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
+          <el-form-item label="来源类型：">
+            <el-select v-model="searchForm.sourceType" placeholder="请选择" style="width: 220px" clearable>
+              <el-option v-for="item in sourceTypeOptions" :key="item.value" :label="item.label" :value="item.value" />
+            </el-select>
+          </el-form-item>
           <el-form-item label="商户账号：">
             <el-select 
               v-model="searchForm.merchantIds" 
@@ -86,6 +91,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="transactionType" label="交易类型" min-width="100" />
+        <el-table-column prop="sourceType" label="来源类型" min-width="120" />
         <el-table-column label="交易后" min-width="180">
           <template #default="scope">
             <div>余额: {{ formatAmount(scope.row.afterTotal) }}</div>
@@ -119,6 +125,14 @@ import { ElMessage } from 'element-plus'
 const transactionTypeOptions = ref([
   { label: '余额扣减', value: '余额扣减' },
   { label: '余额增加', value: '余额增加' }
+])
+
+// 来源类型选项
+const sourceTypeOptions = ref([
+  { label: '后台人工余额修改', value: '后台人工余额修改' },
+  { label: '下发', value: '下发' },
+  { label: 'YF指令余额修改', value: 'YF指令余额修改' },
+  { label: 'YE指令余额修改(手动校正)', value: 'YE指令余额修改(手动校正)' }
 ])
 
 // 商户选项
@@ -164,6 +178,7 @@ const dateShortcuts = [
 const searchForm = reactive({
   transactionNo: '',
   transactionType: '',
+  sourceType: '',
   merchantIds: [],
   dateRange: []
 })
@@ -178,6 +193,7 @@ const tableData = ref([
     beforeFrozen: 0.00,
     transactionAmount: 500.00,
     transactionType: '余额增加',
+    sourceType: '后台人工余额修改',
     fee: 0.00,
     freezeAmount: 0.00,
     afterTotal: 658968.10,
@@ -194,6 +210,7 @@ const tableData = ref([
     beforeFrozen: 0.00,
     transactionAmount: -30.00,
     transactionType: '余额扣减',
+    sourceType: '下发',
     fee: 0.00,
     freezeAmount: 0.00,
     afterTotal: 658938.10,
@@ -242,6 +259,8 @@ const handleReset = () => {
       searchForm[key] = ''
     }
   })
+  // 显式重置 sourceType，虽然上面的循环已覆盖，但为确保响应式更新
+  searchForm.sourceType = ''
   currentPage.value = 1
   fetchData()
 }

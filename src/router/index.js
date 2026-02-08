@@ -25,7 +25,7 @@ const router = createRouter({
           component: () => import('@/views/statistics/Dashboard.vue'),
           meta: { title: '仪表板' }
         },
-        
+
         // 订单管理
         {
           path: '/order',
@@ -41,13 +41,13 @@ const router = createRouter({
             },
             {
               path: 'withdraw',
-             name: 'WithdrawList',
-             component: () => import('@/views/order/MerchantWithdraw.vue'),
+              name: 'WithdrawList',
+              component: () => import('@/views/order/MerchantWithdraw.vue'),
               meta: { title: '商户提现审核' }
             }
           ]
         },
-        
+
         // 供应商管理
         {
           path: '/supplier',
@@ -187,7 +187,7 @@ const router = createRouter({
             }
           ]
         },
-        
+
 
         // 机器人管理
         {
@@ -298,7 +298,7 @@ const router = createRouter({
             }
           ]
         },
-        
+
         // 流水审计
         {
           path: '/audit',
@@ -467,6 +467,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
+  document.title = to.meta.title ? `${to.meta.title} - PMP` : 'PMP';
   next();
 });
 
@@ -476,7 +477,7 @@ router.onError((error) => {
   const pattern = /Loading chunk (\d)+ failed/g;
   const isChunkLoadFailed = error.message.match(pattern);
   const targetPath = router.currentRoute.value.path;
-  
+
   if (isChunkLoadFailed) {
     console.log('检测到组件加载失败，尝试重新加载...');
     // 尝试重载页面
@@ -485,4 +486,4 @@ router.onError((error) => {
 });
 
 export default router
-              meta: { title: '商户提现审核' }
+meta: { title: '商户提现审核' }

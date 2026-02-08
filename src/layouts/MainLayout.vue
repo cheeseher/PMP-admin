@@ -104,11 +104,11 @@
               <el-icon><CreditCard /></el-icon>
               <span>代付管理</span>
             </template>
-            <el-menu-item index="/payout/merchant-fund-flow">商户代付资金流水</el-menu-item>
-            <el-menu-item index="/payout/upstream-channel">代付上游通道管理</el-menu-item>
-            <el-menu-item index="/payout/upstream">代付上游管理</el-menu-item>
             <el-menu-item index="/payout/product">代付产品管理</el-menu-item>
+            <el-menu-item index="/payout/upstream">代付上游管理</el-menu-item>
+            <el-menu-item index="/payout/upstream-channel">代付上游通道管理</el-menu-item>
             <el-menu-item index="/payout/upstream-fund-flow">上游代付资金流水</el-menu-item>
+            <el-menu-item index="/payout/merchant-fund-flow">商户代付资金流水</el-menu-item>
             <el-menu-item index="/payout/order">代付订单管理</el-menu-item>
           </el-sub-menu>
 

@@ -4,52 +4,29 @@
     <el-card shadow="never" class="filter-card">
       <el-form :model="filterForm" class="filter-form">
         <div class="filter-grid">
-          <el-form-item label="上游ID">
+          <el-form-item label="ID：">
             <el-input 
               v-model="filterForm.upstreamId" 
-              placeholder="请输入" 
+              placeholder="请输入代付上游 ID" 
               style="width: 168px"
               clearable
             />
           </el-form-item>
-          <el-form-item label="代付上游名称">
+          <el-form-item label="代付上游名称：">
             <el-input 
               v-model="filterForm.upstreamName" 
-              placeholder="请输入" 
+              placeholder="请输入代付上游名称" 
               style="width: 168px"
               clearable
             />
           </el-form-item>
-          <el-form-item label="代付上游编码">
+          <el-form-item label="代付上游编码：">
             <el-input 
               v-model="filterForm.upstreamCode" 
-              placeholder="请输入" 
+              placeholder="请输入代付上游编码" 
               style="width: 168px"
               clearable
             />
-          </el-form-item>
-          <el-form-item label="商户号">
-            <el-input 
-              v-model="filterForm.merchantId" 
-              placeholder="请输入" 
-              style="width: 168px"
-              clearable
-            />
-          </el-form-item>
-          <el-form-item label="启用状态">
-            <el-select 
-              v-model="filterForm.status" 
-              placeholder="请选择" 
-              style="width: 168px"
-              clearable
-            >
-              <el-option 
-                v-for="item in statusOptions" 
-                :key="item.value" 
-                :label="item.label" 
-                :value="item.value"
-              />
-            </el-select>
           </el-form-item>
           <div class="filter-buttons">
             <el-button type="primary" @click="handleSearch">
@@ -63,26 +40,33 @@
     </el-card>
 
     <!-- 表格区域 -->
-    <el-card shadow="never">
-      <!-- 操作工具栏 -->
+    <div class="table-content-area">
+      <!-- 操作栏 -->
       <div class="table-toolbar">
         <div class="left">
-          <span class="table-title">代付上游列表</span>
-          <el-tag type="info" size="small" effect="plain">{{ pagination.total }}条记录</el-tag>
+          <el-button type="primary" :icon="Plus" @click="handleAdd">新增代付上游</el-button>
+          <el-button :icon="Delete" plain :disabled="selectedRows.length === 0" @click="handleBatchDelete">批量删除</el-button>
+        </div>
+        <div class="right">
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="loadTableData" />
+          </el-tooltip>
         </div>
       </div>
 
       <!-- 数据表格 -->
       <el-table 
-      :data="tableData" 
-      border 
-      stripe 
-      v-loading="tableLoading"
-      style="width: 100%"
-    >
-      <el-table-column prop="id" label="代付上游ID" width="120" />
+        :data="tableData" 
+        border 
+        stripe 
+        v-loading="tableLoading"
+        style="width: 100%"
+        @selection-change="handleSelectionChange"
+      >
+        <el-table-column type="selection" width="55" align="center" fixed="left" />
+        <el-table-column prop="id" label="ID" width="120" />
       <el-table-column prop="upstreamName" label="代付上游名称" width="150" />
-      <el-table-column prop="upstreamCode" label="代付上游编码" width="150" />
       <el-table-column prop="merchantId" label="商户号" width="150" />
       <el-table-column prop="balance" label="余额" width="120" align="center">
         <template #default="{ row }">
@@ -99,7 +83,7 @@
           <span>{{ formatAmount(row.alertThreshold) }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="remark" label="备注" width="200" show-overflow-tooltip />
+      <el-table-column prop="remark" label="备注" min-width="200" show-overflow-tooltip />
       <el-table-column prop="status" label="启用状态" width="100">
         <template #default="{ row }">
           <el-tag :type="row.status === 1 ? 'success' : 'danger'">
@@ -127,17 +111,18 @@
       </el-table>
 
       <!-- 分页器 -->
-      <el-pagination
-        v-model:current-page="pagination.currentPage"
-        v-model:page-size="pagination.pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        :total="pagination.total"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        class="pagination"
-      />
-    </el-card>
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="pagination.currentPage"
+          v-model:page-size="pagination.pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="pagination.total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </div>
 
     <!-- 编辑弹窗 -->
     <el-dialog 
@@ -190,12 +175,13 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, ArrowDown } from '@element-plus/icons-vue'
+import { Search, ArrowDown, Plus, Delete, Download, Refresh } from '@element-plus/icons-vue'
 import { payoutUpstreamData, statusOptions } from '@/data/payoutUpstreamData'
 
 // 响应式数据
 const tableData = ref([])
 const tableLoading = ref(false)
+const selectedRows = ref([])
 const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const editFormRef = ref()
@@ -263,27 +249,20 @@ function loadTableData() {
 }
 
 // 格式化金额
-function formatAmount(amount) {
-  if (!amount) return '0.00'
-  return Number(amount).toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  })
+function formatAmount(val) {
+  if (!val && val !== 0) return '-'
+  return Number(val).toFixed(2)
 }
 
 // 格式化货币
-function formatCurrency(amount) {
-  if (!amount) return '¥0.00'
-  return '¥' + Number(amount).toLocaleString('zh-CN', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  })
+function formatCurrency(val) {
+  if (!val && val !== 0) return '-'
+  return Number(val).toFixed(2)
 }
 
 // 搜索
 function handleSearch() {
-  ElMessage.success('搜索功能已触发')
-  loadTableData()
+  fetchData()
 }
 
 // 重置
@@ -296,6 +275,33 @@ function handleReset() {
 }
 
 
+
+// 表格选择
+function handleSelectionChange(selection) {
+  selectedRows.value = selection
+}
+
+// 新增
+function handleAdd() {
+  dialogTitle.value = '新增代付上游'
+  resetEditForm()
+  dialogVisible.value = true
+}
+
+// 批量删除
+function handleBatchDelete() {
+  if (selectedRows.value.length === 0) return
+  ElMessageBox.confirm(`确定要删除选中的 ${selectedRows.value.length} 个上游吗？`, '警告', {
+    type: 'warning'
+  }).then(() => {
+    ElMessage.success('批量删除成功')
+  })
+}
+
+// 导出
+function handleExport() {
+  ElMessage.success('导出数据生成中...')
+}
 
 // 下拉菜单操作
 function handleOperation(command, row) {
@@ -448,25 +454,26 @@ function handleCurrentChange(val) {
 }
 
 .table-toolbar {
-  margin-bottom: 16px;
   display: flex;
-  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
 .table-toolbar .left {
   display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.table-toolbar .right {
+  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.table-toolbar .left .table-title {
-  font-size: 16px;
-  font-weight: 500;
-  color: #303133;
-}
-
-.pagination {
+.pagination-container {
   margin-top: 20px;
+  display: flex;
   justify-content: flex-end;
 }
 

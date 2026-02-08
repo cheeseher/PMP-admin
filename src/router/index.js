@@ -146,20 +146,14 @@ const router = createRouter({
         {
           path: '/payout',
           name: 'Payout',
-          redirect: '/payout/merchant-fund-flow',
+          redirect: '/payout/product',
           meta: { title: '代付管理' },
           children: [
             {
-              path: 'merchant-fund-flow',
-              name: 'PayoutMerchantFundFlow',
-              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/MerchantFundFlow.vue'),
-              meta: { title: '商户代付资金流水' }
-            },
-            {
-              path: 'upstream-channel',
-              name: 'PayoutUpstreamChannel',
-              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/PayoutChannelManagement.vue'),
-              meta: { title: '代付上游通道管理' }
+              path: 'product',
+              name: 'PayoutProduct',
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/PayoutProductManagement.vue'),
+              meta: { title: '代付产品管理' }
             },
             {
               path: 'upstream',
@@ -168,16 +162,22 @@ const router = createRouter({
               meta: { title: '代付上游管理' }
             },
             {
-              path: 'product',
-              name: 'PayoutProduct',
-              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/PayoutProductManagement.vue'),
-              meta: { title: '代付产品管理' }
+              path: 'upstream-channel',
+              name: 'PayoutUpstreamChannel',
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/PayoutChannelManagement.vue'),
+              meta: { title: '代付上游通道管理' }
             },
             {
               path: 'upstream-fund-flow',
               name: 'PayoutUpstreamFundFlow',
               component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/UpstreamFundFlow.vue'),
               meta: { title: '上游代付资金流水' }
+            },
+            {
+              path: 'merchant-fund-flow',
+              name: 'PayoutMerchantFundFlow',
+              component: () => import(/* webpackChunkName: "payout" */ '@/views/payout/MerchantFundFlow.vue'),
+              meta: { title: '商户代付资金流水' }
             },
             {
               path: 'order',

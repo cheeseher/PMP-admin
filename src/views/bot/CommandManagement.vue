@@ -563,6 +563,16 @@ const allCommands = ref([
    status: 'enabled',
    type: 'default' // 预设指令
  },
+ // 新增：预设指令 序号20 USDT汇率
+ {
+   id: 120,
+   keyword: 'USDT汇率',
+   format: 'Q 或 q（全部），Z 或 z（支付宝），V 或 v（微信），K 或 k（银行卡）',
+   responseTemplate: '当前USDT汇率：\n支付宝：{{rate_z}}\n微信：{{rate_v}}\n银行卡：{{rate_k}}',
+   requiresBinding: false,
+   status: 'enabled',
+   type: 'default' // 预设指令
+ },
  {
    id: 16,
    keyword: '商户使用说明',

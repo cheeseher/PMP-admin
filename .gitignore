@@ -35,3 +35,11 @@ node_modules
 
 # Vite temp timestamps
 vite.config.js.timestamp-*.mjs
+
+# Local Node.js Environment
+node-v20.11.1-darwin-arm64/
+node-v20.11.1-darwin-arm64.tar.gz
+node.tar.gz
+.node/
+node_bin/
+.claude/

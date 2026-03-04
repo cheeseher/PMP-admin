@@ -27,6 +27,14 @@
               <el-option label="禁用" :value="false" />
             </el-select>
           </el-form-item>
+          <el-form-item label="支持设备：">
+            <el-select v-model="searchForm.supportDevice" placeholder="请选择设备" style="width: 168px" clearable>
+              <el-option label="全部" value="" />
+              <el-option label="iOS" value="ios" />
+              <el-option label="安卓" value="android" />
+              <el-option label="PC" value="pc" />
+            </el-select>
+          </el-form-item>
           <div class="filter-buttons">
             <el-button type="primary" :icon="Search" @click="handleSearch">查询</el-button>
             <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
@@ -100,6 +108,14 @@
         <el-table-column label="渠道名称" prop="supplier" min-width="120" />
         <el-table-column label="支付类型" prop="payType" width="100" align="center" />
         <el-table-column label="分组" prop="category" width="100" align="center" />
+        <el-table-column label="支持设备" min-width="130" align="center">
+          <template #default="scope">
+            <el-tag v-if="scope.row.supportDevices?.includes('ios')" size="small" type="info" style="margin-right: 4px; margin-bottom: 2px;">iOS</el-tag>
+            <el-tag v-if="scope.row.supportDevices?.includes('android')" size="small" type="success" style="margin-right: 4px; margin-bottom: 2px;">安卓</el-tag>
+            <el-tag v-if="scope.row.supportDevices?.includes('pc')" size="small" type="warning" style="margin-bottom: 2px;">PC</el-tag>
+            <span v-if="!scope.row.supportDevices || scope.row.supportDevices.length === 0">-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="状态" width="80" align="center">
           <template #default="scope">
             <el-tag
@@ -227,6 +243,14 @@
               :value="item.value"
             />
           </el-select>
+        </el-form-item>
+        <!-- [业务] 增加设备分区筛选 -->
+        <el-form-item label="支持设备" prop="supportDevices">
+          <el-checkbox-group v-model="channelForm.supportDevices">
+            <el-checkbox label="ios">iOS</el-checkbox>
+            <el-checkbox label="android">安卓</el-checkbox>
+            <el-checkbox label="pc">PC</el-checkbox>
+          </el-checkbox-group>
         </el-form-item>
         <el-form-item label="单笔最小金额" prop="minAmount">
           <el-input-number 
@@ -375,7 +399,8 @@ const searchForm = reactive({
   channelName: '',
   channelCode: '',
   category: '',
-  status: ''
+  status: '',
+  supportDevice: ''
 })
 
 // 表格数据相关
@@ -406,7 +431,8 @@ const channelForm = reactive({
   enabled: true,
   scheduledFeeEnabled: 'NO',
   scheduledFeeTime: '',
-  pendingFeeRate: undefined
+  pendingFeeRate: undefined,
+  supportDevices: ['ios', 'android', 'pc']
 })
 
 // 批量设置分组相关
@@ -437,6 +463,7 @@ const pullOrderRules = {
 // 表单验证规则
 const rules = {
   channelName: [{ required: true, message: '请输入通道名称', trigger: 'blur' }],
+  supportDevices: [{ type: 'array', required: true, message: '请至少选择一个支持设备', trigger: 'change' }],
   channelCode: [{ required: true, message: '请输入通道编码', trigger: 'blur' }],
   rate: [{ required: true, message: '请输入通道费率', trigger: 'blur' }],
   supplier: [{ required: true, message: '请选择渠道', trigger: 'change' }],
@@ -496,6 +523,10 @@ const fetchData = () => {
     
     if (searchForm.status !== '') {
       filteredData = filteredData.filter(item => item.enabled === (searchForm.status === true || searchForm.status === 'true'))
+    }
+    
+    if (searchForm.supportDevice) {
+      filteredData = filteredData.filter(item => item.supportDevices && item.supportDevices.includes(searchForm.supportDevice))
     }
     
     tableData.value = filteredData
@@ -684,7 +715,8 @@ const resetForm = () => {
     enabled: true,
     scheduledFeeEnabled: 'NO',
     scheduledFeeTime: '',
-    pendingFeeRate: undefined
+    pendingFeeRate: undefined,
+    supportDevices: ['ios', 'android', 'pc']
   })
 }
 

@@ -11,7 +11,8 @@ export const channelList = [
     category: '分组A',
     enabled: true,
     minAmount: 100.00,
-    maxAmount: 50000.00
+    maxAmount: 50000.00,
+    supportDevices: ['ios', 'android', 'pc']
   },
   {
     id: 2,
@@ -24,7 +25,8 @@ export const channelList = [
     category: '分组B',
     enabled: true,
     minAmount: 500.00,
-    maxAmount: 100000.00
+    maxAmount: 100000.00,
+    supportDevices: ['ios', 'android']
   },
   {
     id: 3,
@@ -37,7 +39,8 @@ export const channelList = [
     category: '分组A',
     enabled: true,
     minAmount: 1000.00,
-    maxAmount: 200000.00
+    maxAmount: 200000.00,
+    supportDevices: ['pc']
   },
   {
     id: 4,
@@ -50,7 +53,8 @@ export const channelList = [
     category: '分组B',
     enabled: false,
     minAmount: 200.00,
-    maxAmount: 80000.00
+    maxAmount: 80000.00,
+    supportDevices: ['ios', 'android', 'pc']
   },
   {
     id: 5,
@@ -63,7 +67,8 @@ export const channelList = [
     category: '分组A',
     enabled: true,
     minAmount: 300.00,
-    maxAmount: 150000.00
+    maxAmount: 150000.00,
+    supportDevices: ['ios', 'android']
   },
   {
     id: 6,
@@ -76,7 +81,8 @@ export const channelList = [
     category: '分组B',
     enabled: false,
     minAmount: 1000.00,
-    maxAmount: 300000.00
+    maxAmount: 300000.00,
+    supportDevices: ['pc']
   },
   {
     id: 7,
@@ -89,7 +95,8 @@ export const channelList = [
     category: '分组A',
     enabled: true,
     minAmount: 100.00,
-    maxAmount: 50000.00
+    maxAmount: 50000.00,
+    supportDevices: ['ios', 'android', 'pc']
   },
   {
     id: 8,
@@ -102,7 +109,8 @@ export const channelList = [
     category: '分组B',
     enabled: true,
     minAmount: 500.00,
-    maxAmount: 100000.00
+    maxAmount: 100000.00,
+    supportDevices: ['ios', 'android']
   },
   {
     id: 9,
@@ -115,7 +123,8 @@ export const channelList = [
     category: '分组A',
     enabled: true,
     minAmount: 1000.00,
-    maxAmount: 200000.00
+    maxAmount: 200000.00,
+    supportDevices: ['pc']
   },
   {
     id: 10,
@@ -128,7 +137,8 @@ export const channelList = [
     category: '分组B',
     enabled: false,
     minAmount: 2000.00,
-    maxAmount: 500000.00
+    maxAmount: 500000.00,
+    supportDevices: ['ios', 'android', 'pc']
   }
 ];
 
@@ -150,4 +160,4 @@ export const categoryOptions = [
   { label: '分组D', value: '分组D' },
   { label: '分组E', value: '分组E' },
   { label: '分组F', value: '分组F' }
-]; 
+];

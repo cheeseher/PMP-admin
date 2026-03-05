@@ -11,3 +11,5 @@
 - 算法实现
 - **新增指令逻辑**：在机器人预设指令中新增了"USDT汇率"（序号20，`id: 120`），格式要求支持多种方式 `Q 或 q（全部），Z 或 z（支付宝），V 或 v（微信），K 或 k（银行卡）`。前端页面 `CommandManagement.vue` 已预定义此内容。
 - **供应商通道设备筛选**：在 `/supplier/channel` 中增加了 `supportDevices` 字段，类型为数组，默认支持 `['ios', 'android', 'pc']`，表示通道能够接入的设备平台。此字段不仅在表单新增编辑生效，同时已扩展至顶部的搜索筛选表单与数据表格的列展示中。
+- **Google 验证强制绑定**：管理员登录后，路由守卫（`router.beforeEach`）检查 `localStorage.userInfo.googleAuth`，若为 `false` 则拦截所有路由，强制跳转 `/setup-google`（`GoogleSetup.vue`）。绑定成功后将 `googleAuth` 更新为 `true` 并放行进入后台。
+

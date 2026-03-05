@@ -14,6 +14,12 @@ const router = createRouter({
       meta: { title: '登录', noLayout: true }
     },
     {
+      path: '/setup-google',
+      name: 'SetupGoogle',
+      component: () => import('@/views/setup/GoogleSetup.vue'),
+      meta: { title: '安全验证设置', noLayout: true }
+    },
+    {
       path: '/',
       component: MainLayout,
       redirect: '/dashboard',
@@ -468,6 +474,21 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title ? `${to.meta.title} - PMP` : 'PMP';
+
+  const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
+  const isLoggedIn = !!userInfo.username
+  const hasGoogleAuth = !!userInfo.googleAuth
+
+  // [逻辑] 未登录且不是登录页，重定向登录
+  if (!isLoggedIn && to.name !== 'Login') {
+    return next({ name: 'Login' })
+  }
+
+  // [逻辑] 已登录但未绑定 Google，且目标页不是强制绑定页，则拦截并跳转
+  if (isLoggedIn && !hasGoogleAuth && to.name !== 'SetupGoogle') {
+    return next({ name: 'SetupGoogle' })
+  }
+
   next();
 });
 

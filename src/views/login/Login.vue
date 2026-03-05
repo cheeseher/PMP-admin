@@ -157,8 +157,10 @@ async function loginAPI(credentials) {
           userInfo: {
             id: 1,
             username: credentials.username,
-            name: '测试用户',
-            role: 'admin'
+            name: '管理员',
+            role: 'admin',
+            // [逻辑] 首次登录默认 googleAuth = false，触发路由守卫强制绑定
+            googleAuth: false
           }
         });
       } else {

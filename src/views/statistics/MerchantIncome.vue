@@ -160,6 +160,27 @@
             <span class="amount-cell">{{ formatAmount(row.afterTaxAmount) }}</span>
           </template>
         </el-table-column>
+        <el-table-column prop="nextDayModOrderAmount" label="隔日修改订单金额" width="160" align="right">
+          <template #default="{ row }">
+            <span class="amount-cell">{{ formatAmount(row.nextDayModOrderAmount) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="nextDayModOrderFee" label="隔日修改订单手续费" width="160" align="right">
+          <template #default="{ row }">
+            <span class="amount-cell">{{ formatAmount(row.nextDayModOrderFee) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="nextDayModChargeback" label="隔日修改冲账金额" width="160" align="right">
+          <template #default="{ row }">
+            <span class="amount-cell">{{ formatAmount(row.nextDayModChargeback) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="adjustedIncomeAmount" label="调账后入账金额" width="160" align="right">
+          <template #default="{ row }">
+            <!-- [逻辑] 调账后入账金额 = 入账金额 - 隔日修改冲账金额 -->
+            <span class="amount-cell">{{ formatAmount((row.afterTaxAmount || 0) - (row.nextDayModChargeback || 0)) }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="successCount" label="成功单数" width="120" align="center">
           <template #default="{ row }">
             <span>{{ formatNumber(row.successCount) }}笔</span>
@@ -244,6 +265,9 @@ const tableData = ref([
     totalAmount: 50000.00,
     fee: 255.00,
     afterTaxAmount: 50745.00,
+    nextDayModOrderAmount: 100.00,
+    nextDayModOrderFee: 1.50,
+    nextDayModChargeback: 98.50,
     successCount: 980
   },
   {
@@ -256,6 +280,9 @@ const tableData = ref([
     totalAmount: 48000.00,
     fee: 244.00,
     afterTaxAmount: 48556.00,
+    nextDayModOrderAmount: 0.00,
+    nextDayModOrderFee: 0.00,
+    nextDayModChargeback: 0.00,
     successCount: 940
   },
   {
@@ -268,6 +295,9 @@ const tableData = ref([
     totalAmount: 45000.00,
     fee: 227.50,
     afterTaxAmount: 45272.50,
+    nextDayModOrderAmount: 200.00,
+    nextDayModOrderFee: 4.00,
+    nextDayModChargeback: 196.00,
     successCount: 880
   }
 ])

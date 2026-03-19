@@ -180,15 +180,24 @@
         </el-form-item>
         
         <el-form-item label="商户费率" prop="feeRate">
-          <div class="fee-rate-input">
-            <el-input-number 
-              v-model="productForm.feeRate" 
-              :precision="0" 
-              :step="1" 
-              :min="0" 
-              :max="100"
-              style="width: calc(100% - 20px)" />
-            <span class="fee-rate-suffix">%</span>
+          <div class="fee-rate-input-wrapper">
+            <div class="fee-rate-input">
+              <el-input-number 
+                v-model="productForm.feeRate" 
+                :precision="2"
+                :step="0.1" 
+                :min="0" 
+                :max="100"
+                style="width: 140px" />
+              <span class="fee-rate-suffix">%</span>
+            </div>
+            <!-- 新增：同步到商户勾选框 -->
+            <el-checkbox 
+              v-if="formType === 'edit'"
+              v-model="productForm.syncFeeRate" 
+              class="sync-checkbox">
+              同步到商户
+            </el-checkbox>
           </div>
         </el-form-item>
         
@@ -490,6 +499,7 @@ const productForm = reactive({
   status: 'ONLINE',
   isPolling: 'WEIGHT',
   syncOption: 'none',
+  syncFeeRate: false, // 是否同步费率到商户
   effectiveTime: '',
   superPassword: '',
   remark: ''
@@ -623,6 +633,7 @@ const handleEdit = (row) => {
   productForm.status = row.status
   productForm.isPolling = row.isPolling || 'WEIGHT'
   productForm.remark = row.remark
+  productForm.syncFeeRate = false // 默认不勾选同步，由用户手动决定
   
   // 处理通道数据
   productForm.channelCode = Array.isArray(row.channelCode) ? [...row.channelCode] : []
@@ -795,19 +806,18 @@ const handleFormSubmit = async () => {
     // 创建要提交的数据副本
     const submitData = { ...productForm }
     
-    // 根据syncOption设置相应的字段
-    if (submitData.syncOption === 'none') {
+    // 根据syncOption和syncFeeRate设置相应的字段
+    if (submitData.syncOption === 'none' || !submitData.syncFeeRate) {
       submitData.syncFeeToMerchant = 'NO'
       submitData.scheduledSyncEnabled = 'NO'
-      // 保留effectiveTime，它可能被设置用于模板的生效时间
+      // 如果是为了模板生效而设置的时间，保留它
     } else if (submitData.syncOption === 'immediate') {
       submitData.syncFeeToMerchant = 'YES'
       submitData.scheduledSyncEnabled = 'NO'
-      submitData.effectiveTime = '' // 清空生效时间
+      submitData.effectiveTime = '' // 立即同步则清空时间
     } else if (submitData.syncOption === 'scheduled') {
       submitData.syncFeeToMerchant = 'YES'
       submitData.scheduledSyncEnabled = 'YES'
-      // effectiveTime已设置
     }
     
     // 更新scheduledFeeEnabled和scheduledFeeTime字段，用于向后兼容
@@ -1180,16 +1190,25 @@ const updateViewChannelTable = (selectedChannelIds) => {
   margin-bottom: 20px;
 }
 
+.fee-rate-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .fee-rate-input {
-  position: relative;
   display: flex;
   align-items: center;
 }
 
 .fee-rate-suffix {
-  margin-left: 3px;
+  margin-left: 4px;
   color: #606266;
   font-size: 14px;
+}
+
+.sync-checkbox {
+  margin-left: 8px;
 }
 
 .channel-table-container {

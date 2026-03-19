@@ -13,4 +13,5 @@
 - **供应商通道设备筛选**：在 `/supplier/channel` 中增加了 `supportDevices` 字段，类型为数组，默认支持 `['ios', 'android', 'pc']`，表示通道能够接入的设备平台。此字段不仅在表单新增编辑生效，同时已扩展至顶部的搜索筛选表单与数据表格的列展示中。
 - **Google 验证强制绑定**：管理员登录后，路由守卫（`router.beforeEach`）检查 `localStorage.userInfo.googleAuth`，若为 `false` 则拦截所有路由，强制跳转 `/setup-google`（`GoogleSetup.vue`）。绑定成功后将 `googleAuth` 更新为 `true` 并放行进入后台。
 - **商户收款统计额外字段**：在 `/statistics/merchant-income` 页面增加了 `隔日修改订单金额`、`隔日修改订单手续费`、`隔日修改冲账金额` 和 `调账后入账金额`。其中调账后入账金额的计算逻辑为前端根据公式 `调账后入账金额 = 入账金额 - 隔日修改冲账金额` 动态算出并展示。
+- **商户费率分步同步逻辑**：在支付产品编辑时，引入了 `syncFeeRate` 勾选逻辑。只有当用户手动勾选“同步到商户”且下方的“同步配置到商户”选项非 `none` 时，系统才会向后端发送 `syncFeeToMerchant: 'YES'`。这允许管理员在仅修改产品模板（如仅改名或备注）时不误触全局费率同步。
 

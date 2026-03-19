@@ -191,13 +191,6 @@
                 style="width: 140px" />
               <span class="fee-rate-suffix">%</span>
             </div>
-            <!-- 新增：同步到商户勾选框 -->
-            <el-checkbox 
-              v-if="formType === 'edit'"
-              v-model="productForm.syncFeeRate" 
-              class="sync-checkbox">
-              同步到商户
-            </el-checkbox>
           </div>
         </el-form-item>
         
@@ -224,6 +217,16 @@
             <el-radio label="immediate">立即同步</el-radio>
             <el-radio label="scheduled">定时同步</el-radio>
           </el-radio-group>
+        </el-form-item>
+
+        <!-- 移动后的费率同步选项 -->
+        <el-form-item label="同步内容选项" v-if="formType === 'edit' && productForm.syncOption !== 'none'">
+          <div class="sync-content-options">
+            <el-checkbox v-model="productForm.syncFeeRate">
+              同步商户费率
+            </el-checkbox>
+            <div class="form-tip">勾选后，费率修改将同步至绑定此产品的商户</div>
+          </div>
         </el-form-item>
         
         <!-- 生效时间设置 -->
@@ -988,6 +991,9 @@ const updateCountdown = () => {
 
 // 处理同步选项变更
 const handleSyncOptionChange = (value) => {
+  // 根据用户要求，切换模式时默认为不勾选同步费率，由用户手动决定是否勾选
+  productForm.syncFeeRate = false
+
   if (value === 'immediate' && productForm.effectiveTime) {
     ElMessageBox.confirm(
       '切换为立即同步将取消定时任务，是否继续？',
@@ -1207,8 +1213,13 @@ const updateViewChannelTable = (selectedChannelIds) => {
   font-size: 14px;
 }
 
+.sync-content-options {
+  display: flex;
+  flex-direction: column;
+}
+
 .sync-checkbox {
-  margin-left: 8px;
+  margin-left: 0;
 }
 
 .channel-table-container {

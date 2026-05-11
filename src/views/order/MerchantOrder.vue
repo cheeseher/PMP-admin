@@ -389,6 +389,20 @@
             <span v-else>{{ scope.row.upstreamOrderNo }}</span>
           </template>
         </el-table-column>
+        <el-table-column prop="upstreamResponse" label="上游返回内容" min-width="150">
+          <template #default="scope">
+            <el-button
+              v-if="scope.row.upstreamResponse"
+              type="primary"
+              link
+              size="small"
+              @click="showUpstreamResponse(scope.row.upstreamResponse)"
+            >
+              查看
+            </el-button>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="remarkInfo" label="备注" min-width="150" />
         <el-table-column label="操作" width="120" fixed="right">
           <template #default="{ row }">
@@ -465,6 +479,25 @@
         />
       </div>
     </el-card>
+<!-- 弹窗显示上游返回内容 -->
+    <el-dialog
+      v-model="responseDialogVisible"
+      title="上游返回内容"
+      width="600px"
+      append-to-body
+    >
+      <div class="json-dialog-header">
+        <el-button type="primary" link @click="copyResponse" :icon="DocumentCopy">
+          一键复制
+        </el-button>
+      </div>
+      <pre class="json-content">{{ formattedResponse }}</pre>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="responseDialogVisible = false">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -483,7 +516,8 @@ import {
   GoldMedal, 
   CircleCheckFilled, 
   Ticket, 
-  Service 
+  Service,
+  DocumentCopy
 } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import dayjs from 'dayjs'
@@ -492,6 +526,49 @@ import { supplierList, supplierTemplates } from '@/data/supplierData'
 
 // 加载状态
 const loading = ref(false)
+
+// 上游返回内容弹窗相关
+const responseDialogVisible = ref(false)
+const formattedResponse = ref('')
+
+const showUpstreamResponse = (response) => {
+  try {
+    // 尝试解析并格式化JSON
+    const parsed = JSON.parse(response)
+    formattedResponse.value = JSON.stringify(parsed, null, 2)
+  } catch (e) {
+    // 如果不是有效的JSON，则原样显示
+    formattedResponse.value = response
+  }
+  responseDialogVisible.value = true
+}
+
+const copyResponse = async () => {
+  if (!formattedResponse.value) return
+  
+  try {
+    // 优先尝试使用现代的 clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(formattedResponse.value)
+      ElMessage.success('复制成功')
+    } else {
+      // 降级方案
+      const textArea = document.createElement('textarea')
+      textArea.value = formattedResponse.value
+      // 将 textarea 移出视口，避免影响布局
+      textArea.style.position = 'absolute'
+      textArea.style.left = '-999999px'
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      textArea.remove()
+      ElMessage.success('复制成功')
+    }
+  } catch (err) {
+    console.error('Failed to copy text: ', err)
+    ElMessage.error('复制失败，请手动复制')
+  }
+}
 
 // 模板数据
 const templateMap = {
@@ -615,6 +692,7 @@ const originalTableData = ref([
     orderStatus: 'success',
     createTime: '2023-03-14 17:31:32',
     completeTime: '2025-03-22 13:20:31',
+    upstreamResponse: '{"code": "SUCCESS", "msg": "交易成功"}',
     remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
@@ -638,6 +716,7 @@ const originalTableData = ref([
     orderStatus: 'reorder_success',
     createTime: '2024-02-28 10:25:16',
     completeTime: '2024-02-28 10:30:45',
+    upstreamResponse: '{"status": 1, "info": "OK"}',
     remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
@@ -661,6 +740,7 @@ const originalTableData = ref([
     orderStatus: 'pending',
     createTime: '2024-03-31 14:22:10',
     completeTime: '',
+    upstreamResponse: '{"error": "WAIT_PAY", "detail": "等待支付"}',
     remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
@@ -684,6 +764,7 @@ const originalTableData = ref([
     orderStatus: 'canceled',
     createTime: '2024-04-05 09:15:30',
     completeTime: '2024-04-05 09:25:45',
+    upstreamResponse: '{"result": "FAIL", "reason": "USER_CANCEL"}',
     remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
@@ -707,6 +788,7 @@ const originalTableData = ref([
     orderStatus: 'created',
     createTime: '2024-04-10 14:05:10',
     completeTime: '',
+    upstreamResponse: '{"code": "00", "message": "下单成功"}',
     remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
@@ -730,6 +812,7 @@ const originalTableData = ref([
     orderStatus: 'failed',
     createTime: '2024-04-08 16:20:45',
     completeTime: '2024-04-08 16:25:30',
+    upstreamResponse: '{"respCode": "99", "respMsg": "系统异常"}',
     remarkInfo: '请查看右下角悬浮文档图标'
   },
   {
@@ -753,6 +836,7 @@ const originalTableData = ref([
     orderStatus: 'closed',
     createTime: '2024-04-07 19:15:40',
     completeTime: '2024-04-07 19:45:40',
+    upstreamResponse: '{"state": "CLOSED"}',
     remarkInfo: '请查看右下角悬浮文档图标'
   }
 ])
@@ -1153,6 +1237,28 @@ function getOrderStatusTagClass(status) {
 
 .filter-buttons .el-button + .el-button {
   margin-left: 12px;
+}
+
+/* JSON 格式化显示样式 */
+.json-dialog-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.json-content {
+  background-color: #f5f7fa;
+  padding: 15px;
+  border-radius: 4px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #333;
+  overflow-x: auto;
+  max-height: 400px;
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 /* 时间筛选容器样式 */

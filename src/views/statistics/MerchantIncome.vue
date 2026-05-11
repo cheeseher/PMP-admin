@@ -46,6 +46,21 @@
               />
             </el-select>
           </el-form-item>
+          <el-form-item label="商户组：">
+            <el-select
+              v-model="searchForm.merchantGroupId"
+              placeholder="请选择商户组"
+              style="width: 220px"
+              clearable
+            >
+              <el-option
+                v-for="group in merchantGroupList"
+                :key="group.id"
+                :label="group.groupName"
+                :value="group.id"
+              />
+            </el-select>
+          </el-form-item>
           <div class="filter-buttons">
           <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
           <el-button plain :icon="Refresh" @click="handleReset">重置</el-button>
@@ -129,6 +144,8 @@
         stripe
         style="width: 100%"
         v-loading="loading"
+        show-summary
+        :summary-method="getSummaries"
       >
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column prop="merchantId" label="商户ID" width="120" align="center" />
@@ -210,6 +227,8 @@ import { Search, Refresh, Download, Money, Plus, Discount, Wallet, Document } fr
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
 
+import { merchantGroupList } from '@/data/merchantGroupData'
+
 // 根据时间类型获取日期范围
 const getDateRangeByType = (type) => {
   const today = dayjs()
@@ -239,6 +258,7 @@ const merchantOptions = ref([
 // 搜索表单数据
 const searchForm = reactive({
   merchantIds: [],
+  merchantGroupId: '',
   timeType: 'all',
   dateRange: []
 })
@@ -369,6 +389,7 @@ const handleSearch = () => {
 // 重置方法
 const handleReset = () => {
   searchForm.merchantIds = []
+  searchForm.merchantGroupId = ''
   searchForm.timeType = 'all'
   searchForm.dateRange = []
   handleSearch()
@@ -412,6 +433,50 @@ const formatAmount = (amount) => {
 // 格式化数字
 const formatNumber = (num) => {
   return num.toLocaleString('zh-CN')
+}
+
+// 合计行计算
+const getSummaries = (param) => {
+  const { columns, data } = param
+  const sums = []
+
+  columns.forEach((column, index) => {
+    if (index === 0) {
+      sums[index] = '合计'
+      return
+    }
+
+    // 不计算合计的列 (ID, 账户, 名称, 日期等)
+    if (['merchantId', 'merchantAccount', 'merchantName', 'date'].includes(column.property)) {
+      sums[index] = ''
+      return
+    }
+
+    const values = data.map((item) => Number(item[column.property]))
+    if (!values.every((value) => Number.isNaN(value))) {
+      const sum = values.reduce((prev, curr) => {
+        const value = Number(curr)
+        if (!Number.isNaN(value)) {
+          return prev + curr
+        } else {
+          return prev
+        }
+      }, 0)
+      
+      // 金额格式化
+      if (['successAmount', 'supplementAmount', 'totalAmount', 'fee', 'afterTaxAmount', 'nextDayModOrderAmount', 'nextDayModOrderFee', 'nextDayModChargeback', 'adjustedIncomeAmount'].includes(column.property)) {
+        sums[index] = formatAmount(sum)
+      } else if (column.property === 'successCount') {
+        sums[index] = formatNumber(sum) + ' 笔'
+      } else {
+        sums[index] = formatNumber(sum)
+      }
+    } else {
+      sums[index] = ''
+    }
+  })
+
+  return sums
 }
 </script>
 

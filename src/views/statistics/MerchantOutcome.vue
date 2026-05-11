@@ -54,67 +54,47 @@
       </el-form>
     </el-card>
 
-    <!-- 统计卡片 -->
-    <div class="stat-cards">
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总成功出款金额</div>
-          <div class="stat-body">
-            <el-icon :size="22" color="#909399"><Money /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalSuccessAmount) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总补单金额</div>
-          <div class="stat-body">
-            <el-icon :size="22" color="#909399"><Plus /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalSupplementAmount) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总出款金额</div>
-          <div class="stat-body">
-            <el-icon :size="22" color="#909399"><Money /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalAmount) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总手续费</div>
-          <div class="stat-body">
-            <el-icon :size="22" color="#909399"><Discount /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalFee) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总实际金额</div>
-          <div class="stat-body">
-            <el-icon :size="22" color="#909399"><Wallet /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalActualAmount) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总成功单数</div>
-          <div class="stat-body">
-            <el-icon :size="22" color="#909399"><Document /></el-icon>
-            <span class="stat-value">{{ formatNumber(totalSuccessCount) }}笔</span>
-          </div>
-        </div>
-      </el-card>
+    <!-- 统计信息区域 - 文本样式 -->
+    <div class="text-stats-bar">
+      <div class="stat-item">
+        <span class="label">总成功出款金额：</span>
+        <span class="value income">
+          <span class="currency">¥</span>
+          {{ formatAmount(totalSuccessAmount).replace('¥', '') }}
+        </span>
+      </div>
+      <div class="stat-item">
+        <span class="label">总补单金额：</span>
+        <span class="value emphasis">
+          <span class="currency">¥</span>
+          {{ formatAmount(totalSupplementAmount).replace('¥', '') }}
+        </span>
+      </div>
+      <div class="stat-item">
+        <span class="label">总出款金额：</span>
+        <span class="value emphasis">
+          <span class="currency">¥</span>
+          {{ formatAmount(totalAmount).replace('¥', '') }}
+        </span>
+      </div>
+      <div class="stat-item">
+        <span class="label">总手续费：</span>
+        <span class="value expense">
+          <span class="currency">¥</span>
+          {{ formatAmount(totalFee).replace('¥', '') }}
+        </span>
+      </div>
+      <div class="stat-item">
+        <span class="label">总实际金额：</span>
+        <span class="value emphasis">
+          <span class="currency">¥</span>
+          {{ formatAmount(totalActualAmount).replace('¥', '') }}
+        </span>
+      </div>
+      <div class="stat-item">
+        <span class="label">总成功单数：</span>
+        <span class="value income">{{ formatNumber(totalSuccessCount) }}笔</span>
+      </div>
     </div>
 
     <!-- 数据表格 -->
@@ -383,7 +363,7 @@ const formatNumber = (num) => {
 }
 
 .filter-container {
-  margin-bottom: 16px;
+  /* 去除底部间距 */
 }
 
 .filter-form {
@@ -413,45 +393,12 @@ const formatNumber = (num) => {
 }
 
 /* 统计卡片样式 */
-.stat-cards {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.stat-card {
-  height: auto;
-}
-
 .stat-card :deep(.el-card__body) {
   padding: 10px;
 }
 
-.compact-card-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-header {
-  font-size: 14px;
-  color: #606266;
-  margin-bottom: 8px;
-}
-
-.stat-body {
-  display: flex;
-  align-items: center;
-}
-
 .stat-body .el-icon {
   margin-right: 8px;
-}
-
-.stat-value {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
 }
 
 .table-toolbar {
@@ -486,22 +433,50 @@ const formatNumber = (num) => {
   font-weight: 500;
 }
 
-/* 媒体查询，适配小屏幕 */
-@media (max-width: 1600px) {
-  .stat-cards {
-    grid-template-columns: repeat(3, 1fr);
-  }
+
+/* 统计信息区域 - 文本样式 */
+.text-stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ebeef5;
 }
 
-@media (max-width: 1200px) {
-  .stat-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.stat-item {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 14px;
 }
 
-@media (max-width: 768px) {
-  .stat-cards {
-    grid-template-columns: 1fr;
-  }
+.stat-item .label {
+  color: #606266;
+  margin-right: 4px;
 }
+
+.stat-item .value {
+  font-family: 'Roboto Mono', Monaco, monospace;
+  font-weight: 600;
+  color: #303133;
+}
+
+.stat-item .value.income {
+  color: #67c23a;
+}
+
+.stat-item .value.expense {
+  color: #f56c6c;
+}
+
+.stat-item .value.emphasis {
+  color: #409eff;
+  font-size: 15px;
+}
+
+
 </style> 

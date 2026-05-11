@@ -154,93 +154,48 @@
       </el-form>
     </el-card>
 
-    <!-- 统计卡片区域 -->
-    <div class="statistics-cards">
-      <el-row :gutter="16">
-        <el-col :span="4">
-          <el-card class="stat-card">
-            <div class="stat-item">
-              <div class="stat-label">总跑量</div>
-              <div class="stat-value primary">{{ formatAmount(statistics.totalAmount) }}</div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="4">
-          <el-card class="stat-card">
-            <div class="stat-item">
-              <div class="stat-label">总成功单数</div>
-              <div class="stat-value success">{{ statistics.successCount }}</div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="4">
-          <el-card class="stat-card">
-            <div class="stat-item">
-              <div class="stat-label">商户出款总额</div>
-              <div class="stat-value warning">{{ formatAmount(statistics.merchantAmount) }}</div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="4">
-          <el-card class="stat-card">
-            <div class="stat-item">
-              <div class="stat-label">总利润</div>
-              <div class="stat-value danger">{{ formatAmount(statistics.totalProfit) }}</div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="4">
-          <el-card class="stat-card">
-            <div class="stat-item">
-              <div class="stat-label">成功率</div>
-              <div class="stat-value info">{{ statistics.successRate }}%</div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="4">
-          <el-card class="stat-card">
-            <div class="stat-item">
-              <div class="stat-label">成功金额</div>
-              <div class="stat-value primary">{{ formatAmount(statistics.successAmount) }}</div>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-      
-      <el-row :gutter="16" style="margin-top: 16px;">
-        <el-col :span="4">
-          <el-card class="stat-card">
-            <div class="stat-item">
-              <div class="stat-label">成功单数</div>
-              <div class="stat-value success">{{ statistics.successOrderCount }}</div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="4">
-          <el-card class="stat-card">
-            <div class="stat-item">
-              <div class="stat-label">补单单数</div>
-              <div class="stat-value warning">{{ statistics.supplementCount }}</div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="4">
-          <el-card class="stat-card">
-            <div class="stat-item">
-              <div class="stat-label">商户折扣</div>
-              <div class="stat-value info">{{ formatAmount(statistics.merchantDiscount) }}</div>
-            </div>
-          </el-card>
-        </el-col>
-        <el-col :span="4">
-          <el-card class="stat-card">
-            <div class="stat-item">
-              <div class="stat-label">上游通道成本</div>
-              <div class="stat-value danger">{{ formatAmount(statistics.upstreamCost) }}</div>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
+    <!-- 统计信息区域 - 文本样式 -->
+    <div class="text-stats-bar">
+      <div class="stat-item">
+        <span class="label">总跑量：</span>
+        <span class="value emphasis">{{ formatAmount(statistics.totalAmount) }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">总成功单数：</span>
+        <span class="value">{{ statistics.successCount }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">商户出款总额：</span>
+        <span class="value expense">{{ formatAmount(statistics.merchantAmount) }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">总利润：</span>
+        <span class="value income">{{ formatAmount(statistics.totalProfit) }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">成功率：</span>
+        <span class="value">{{ statistics.successRate }}%</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">成功金额：</span>
+        <span class="value income">{{ formatAmount(statistics.successAmount) }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">成功单数：</span>
+        <span class="value">{{ statistics.successOrderCount }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">补单单数：</span>
+        <span class="value">{{ statistics.supplementCount }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">商户折扣：</span>
+        <span class="value income">{{ formatAmount(statistics.merchantDiscount) }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">上游通道成本：</span>
+        <span class="value expense">{{ formatAmount(statistics.upstreamCost) }}</span>
+      </div>
     </div>
 
     <!-- 表格区域 -->

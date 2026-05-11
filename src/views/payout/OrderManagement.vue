@@ -101,66 +101,47 @@
       </el-form>
     </el-card>
 
-    <!-- 统计信息区域 - 卡片样式 -->
-    <div class="horizontal-stat-cards">
-      <!-- 总订单数 -->
-      <div class="mini-stat-card">
-        <div class="stat-header">总订单数</div>
-        <div class="stat-value">{{ stats.totalOrders }}</div>
+    <!-- 统计信息区域 - 文本样式 -->
+    <div class="text-stats-bar">
+      <div class="stat-item">
+        <span class="label">总代付金额：</span>
+        <span class="value emphasis">{{ formatAmount(63821095740.00) }}</span>
       </div>
-
-      <!-- 成功订单数 -->
-      <div class="mini-stat-card">
-        <div class="stat-header">成功订单数</div>
-        <div class="stat-value">{{ stats.successOrders }}</div>
+      <div class="stat-item">
+        <span class="label">总代付单数：</span>
+        <span class="value">0</span>
       </div>
-
-      <!-- 失败订单数 -->
-      <div class="mini-stat-card">
-        <div class="stat-header">失败订单数</div>
-        <div class="stat-value">{{ stats.failedOrders }}</div>
+      <div class="stat-item">
+        <span class="label">成功金额：</span>
+        <span class="value income">{{ formatAmount(0) }}</span>
       </div>
-
-      <!-- 处理中订单数 -->
-      <div class="mini-stat-card">
-        <div class="stat-header">处理中订单数</div>
-        <div class="stat-value">{{ stats.pendingOrders }}</div>
+      <div class="stat-item">
+        <span class="label">成功单数：</span>
+        <span class="value">0</span>
       </div>
-
-      <!-- 总金额 -->
-      <div class="mini-stat-card">
-        <div class="stat-header">总金额</div>
-        <div class="stat-value">{{ formatAmount(stats.totalAmount) }}</div>
+      <div class="stat-item">
+        <span class="label">成功率：</span>
+        <span class="value">0.00%</span>
       </div>
-
-      <!-- 成功金额 -->
-      <div class="mini-stat-card">
-        <div class="stat-header">成功金额</div>
-        <div class="stat-value">{{ formatAmount(stats.successAmount) }}</div>
+      <div class="stat-item">
+        <span class="label">失败金额：</span>
+        <span class="value expense">{{ formatAmount(0) }}</span>
       </div>
-
-      <!-- 失败金额 -->
-      <div class="mini-stat-card">
-        <div class="stat-header">失败金额</div>
-        <div class="stat-value">{{ formatAmount(stats.failedAmount) }}</div>
+      <div class="stat-item">
+        <span class="label">失败单数：</span>
+        <span class="value">0</span>
       </div>
-
-      <!-- 处理中金额 -->
-      <div class="mini-stat-card">
-        <div class="stat-header">处理中金额</div>
-        <div class="stat-value">{{ formatAmount(stats.processingAmount) }}</div>
+      <div class="stat-item">
+        <span class="label">商户手续费：</span>
+        <span class="value income">{{ formatAmount(0) }}</span>
       </div>
-
-      <!-- 成功率 -->
-      <div class="mini-stat-card">
-        <div class="stat-header">成功率</div>
-        <div class="stat-value">{{ stats.successRate }}%</div>
+      <div class="stat-item">
+        <span class="label">通道成本：</span>
+        <span class="value expense">{{ formatAmount(0) }}</span>
       </div>
-
-      <!-- 手续费 -->
-      <div class="mini-stat-card">
-        <div class="stat-header">手续费</div>
-        <div class="stat-value">{{ formatAmount(stats.totalFee) }}</div>
+      <div class="stat-item">
+        <span class="label">平台利润：</span>
+        <span class="value income">{{ formatAmount(0) }}</span>
       </div>
     </div>
 
@@ -613,7 +594,7 @@ onMounted(() => {
 }
 
 .filter-card {
-  margin-bottom: 20px;
+  /* 去除底部间距，统一由 text-stats-bar 控制间距 */
 }
 
 .filter-grid {
@@ -646,77 +627,48 @@ onMounted(() => {
   margin-left: 12px;
 }
 
-.horizontal-stat-cards {
+/* 统计信息区域 - 文本样式 */
+.text-stats-bar {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  overflow-x: auto;
-  padding: 2px 0;
-}
-
-.horizontal-stat-cards::-webkit-scrollbar {
-  height: 4px;
-}
-
-.horizontal-stat-cards::-webkit-scrollbar-thumb {
-  background-color: rgba(144, 147, 153, 0.3);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
   border-radius: 4px;
-}
-
-.horizontal-stat-cards::-webkit-scrollbar-track {
-  background-color: transparent;
-}
-
-.mini-stat-card {
-  flex: 0 0 auto;
-  width: 140px;
-  padding: 8px 12px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   border: 1px solid #ebeef5;
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  transition: all 0.2s ease;
-  background-color: #ffffff;
 }
 
-.mini-stat-card:hover {
-  border-color: #dcdfe6;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-}
-
-.stat-header {
-  font-size: 12px;
-  color: #909399;
-  margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.stat-value {
+.stat-item {
+  display: inline-flex;
+  align-items: baseline;
   font-size: 14px;
+}
+
+.stat-item .label {
+  color: #606266;
+  margin-right: 4px;
+}
+
+.stat-item .value {
+  font-family: 'Roboto Mono', Monaco, monospace;
   font-weight: 600;
   color: #303133;
-  font-family: 'Roboto Mono', monospace;
 }
 
-/* 媒体查询，适配小屏幕 */
-@media (max-width: 1200px) {
-  .horizontal-stat-cards {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
+.stat-item .value.income {
+  color: #67c23a;
 }
 
-@media (max-width: 768px) {
-  .horizontal-stat-cards {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
-  
-  .mini-stat-card {
-    width: 130px;
-  }
+.stat-item .value.expense {
+  color: #f56c6c;
+}
+
+.stat-item .value.emphasis {
+  color: #409eff;
+  font-size: 15px;
 }
 
 .table-card {

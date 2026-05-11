@@ -35,47 +35,24 @@
       </el-form>
     </el-card>
 
-    <!-- 统计卡片 -->
-    <div class="stat-cards">
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总收款金额</div>
-          <div class="stat-body">
-            <el-icon :size="22"><Money /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalSuccessAmount) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总通道成本</div>
-          <div class="stat-body">
-            <el-icon :size="22"><Discount /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalChannelCost) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总利润</div>
-          <div class="stat-body">
-            <el-icon :size="22"><Wallet /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalProfit) }}</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card shadow="hover" class="stat-card">
-        <div class="compact-card-content">
-          <div class="stat-header">总手续费</div>
-          <div class="stat-body">
-            <el-icon :size="22"><Money /></el-icon>
-            <span class="stat-value">{{ formatAmount(totalFee) }}</span>
-          </div>
-        </div>
-      </el-card>
+    <!-- 统计信息区域 - 文本样式 -->
+    <div class="text-stats-bar">
+      <div class="stat-item">
+        <span class="label">总收款金额：</span>
+        <span class="value emphasis">{{ formatAmount(totalSuccessAmount) }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">总通道成本：</span>
+        <span class="value expense">{{ formatAmount(totalChannelCost) }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">总利润：</span>
+        <span class="value income">{{ formatAmount(totalProfit) }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="label">总手续费：</span>
+        <span class="value expense">{{ formatAmount(totalFee) }}</span>
+      </div>
     </div>
 
     <!-- 数据表格 -->
@@ -357,7 +334,7 @@ const formatNumber = (num) => {
 }
 
 .filter-container {
-  margin-bottom: 16px;
+  /* 去除底部间距 */
 }
 
 .filter-grid {
@@ -384,45 +361,12 @@ const formatNumber = (num) => {
 }
 
 /* 统计卡片样式 */
-.stat-cards {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.stat-card {
-  height: auto;
-}
-
 .stat-card :deep(.el-card__body) {
   padding: 10px;
 }
 
-.compact-card-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-header {
-  font-size: 14px;
-  color: #606266;
-  margin-bottom: 8px;
-}
-
-.stat-body {
-  display: flex;
-  align-items: center;
-}
-
 .stat-body .el-icon {
   margin-right: 8px;
-}
-
-.stat-value {
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
 }
 
 .table-toolbar {
@@ -463,16 +407,50 @@ const formatNumber = (num) => {
   flex-wrap: wrap;
 }
 
-/* 媒体查询，适配小屏幕 */
-@media (max-width: 1200px) {
-  .stat-cards {
-    grid-template-columns: repeat(2, 1fr);
-  }
+
+/* 统计信息区域 - 文本样式 */
+.text-stats-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ebeef5;
 }
 
-@media (max-width: 768px) {
-  .stat-cards {
-    grid-template-columns: 1fr;
-  }
+.stat-item {
+  display: inline-flex;
+  align-items: baseline;
+  font-size: 14px;
 }
+
+.stat-item .label {
+  color: #606266;
+  margin-right: 4px;
+}
+
+.stat-item .value {
+  font-family: 'Roboto Mono', Monaco, monospace;
+  font-weight: 600;
+  color: #303133;
+}
+
+.stat-item .value.income {
+  color: #67c23a;
+}
+
+.stat-item .value.expense {
+  color: #f56c6c;
+}
+
+.stat-item .value.emphasis {
+  color: #409eff;
+  font-size: 15px;
+}
+
+
 </style> 

@@ -62,6 +62,7 @@
           <el-button type="primary" @click="openDefaultRoleDialog">群组普通用户权限设置</el-button>
         </div>
         <div class="right">
+          <el-button type="warning" @click="openBatchPullDialog">批量拉人</el-button>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="handleSearch" />
           </el-tooltip>
@@ -245,6 +246,63 @@
         <div class="dialog-footer">
           <el-button @click="singleJoinDialogVisible = false">取消</el-button>
           <el-button type="primary" :loading="singleJoinLoading" @click="submitSingleJoin">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <el-dialog
+      v-model="batchPullDialogVisible"
+      title="批量拉人"
+      width="600px"
+      destroy-on-close
+    >
+      <el-form :model="batchPullForm" label-width="100px">
+        <el-form-item label="TG群组" required>
+          <el-select
+            v-model="batchPullForm.groupIds"
+            multiple
+            filterable
+            collapse-tags
+            collapse-tags-tooltip
+            placeholder="请选择TG群组"
+            style="width: 100%;"
+          >
+            <el-option
+              v-for="g in tableData"
+              :key="g.groupId"
+              :label="`${g.groupName}（${g.groupId}）`"
+              :value="g.groupId"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="普通账号" required>
+          <el-select
+            v-model="batchPullForm.accountIds"
+            multiple
+            filterable
+            collapse-tags
+            collapse-tags-tooltip
+            placeholder="请选择普通账号"
+            style="width: 100%;"
+          >
+            <el-option
+              v-for="acc in normalAccountOptions"
+              :key="acc.id"
+              :label="acc.name"
+              :value="acc.id"
+            >
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <span>{{ acc.name }}</span>
+                <span v-if="acc.errorMessage" style="color: #E6A23C; font-size: 12px">被限制</span>
+              </div>
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="batchPullDialogVisible = false">取消</el-button>
+          <el-button type="primary" :loading="batchPullLoading" @click="submitBatchPull">确认</el-button>
         </div>
       </template>
     </el-dialog>
@@ -715,6 +773,28 @@ const submitSingleJoin = () => {
     singleJoinLoading.value = false;
     singleJoinDialogVisible.value = false;
     ElMessage.success('入群指令已下发给机器人！');
+  }, 1000);
+};
+
+const batchPullDialogVisible = ref(false);
+const batchPullLoading = ref(false);
+const batchPullForm = reactive({
+  groupIds: [],
+  accountIds: []
+});
+const openBatchPullDialog = () => {
+  batchPullForm.groupIds = [];
+  batchPullForm.accountIds = [];
+  batchPullDialogVisible.value = true;
+};
+const submitBatchPull = () => {
+  if (!batchPullForm.groupIds.length) return ElMessage.warning('请选择TG群组');
+  if (!batchPullForm.accountIds.length) return ElMessage.warning('请选择普通账号');
+  batchPullLoading.value = true;
+  setTimeout(() => {
+    batchPullLoading.value = false;
+    batchPullDialogVisible.value = false;
+    ElMessage.success('批量拉人指令已下发给机器人！');
   }, 1000);
 };
 
@@ -1423,6 +1503,12 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   margin-bottom: 16px;
+}
+
+.table-toolbar .right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .pagination-container {

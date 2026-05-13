@@ -62,7 +62,20 @@
           <el-button type="primary" @click="openDefaultRoleDialog">群组普通用户权限设置</el-button>
         </div>
         <div class="right">
-          <el-button type="warning" @click="openBatchPullDialog">批量拉人</el-button>
+          <!-- [设计] 已选提示与批量拉人按钮，未选时禁用 -->
+          <span v-if="selectedGroups.length > 0" class="selected-tip">
+            已选 <strong>{{ selectedGroups.length }}</strong> 个群组
+            <el-button link type="danger" style="padding: 0 4px" @click="clearSelection">清空</el-button>
+          </span>
+          <el-tooltip :content="selectedGroups.length === 0 ? '请先在表格中勾选群组' : '批量拉人'" placement="top">
+            <span>
+              <el-button
+                type="warning"
+                :disabled="selectedGroups.length === 0"
+                @click="openBatchPullDialog"
+              >批量拉人</el-button>
+            </span>
+          </el-tooltip>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="handleSearch" />
           </el-tooltip>
@@ -71,12 +84,17 @@
 
       <!-- 数据表格 -->
       <el-table
+        ref="groupTableRef"
         v-loading="loading"
-        :data="tableData"
+        :data="pagedTableData"
         border
         stripe
         style="width: 100%"
+        @select="handleRowSelect"
+        @select-all="handleSelectAll"
       >
+        <!-- [设计] 选择列，跨页全选由自定义逻辑维护 -->
+        <el-table-column type="selection" width="50" :selectable="() => true" />
         <el-table-column prop="groupId" label="群组ID" min-width="150" />
         <el-table-column prop="groupName" label="群组名称" min-width="180" />
         <el-table-column prop="categoryName" label="分组" min-width="120">
@@ -231,11 +249,11 @@
             <el-option
               v-for="acc in normalAccountOptions"
               :key="acc.id"
-              :label="acc.name"
+              :label="acc.tgid ? `${acc.name}(${acc.tgid})` : acc.name"
               :value="acc.id"
             >
               <div style="display: flex; justify-content: space-between; align-items: center">
-                <span>{{ acc.name }}</span>
+                <span>{{ acc.name }}<span v-if="acc.tgid" style="color: #909399; font-size: 12px">（{{ acc.tgid }}）</span></span>
                 <span v-if="acc.errorMessage" style="color: #E6A23C; font-size: 12px">被限制</span>
               </div>
             </el-option>
@@ -253,56 +271,66 @@
     <el-dialog
       v-model="batchPullDialogVisible"
       title="批量拉人"
-      width="600px"
+      width="480px"
       destroy-on-close
     >
-      <el-form :model="batchPullForm" label-width="100px">
-        <el-form-item label="TG群组" required>
-          <el-select
-            v-model="batchPullForm.groupIds"
-            multiple
-            filterable
-            collapse-tags
-            collapse-tags-tooltip
-            placeholder="请选择TG群组"
-            style="width: 100%;"
-          >
-            <el-option
-              v-for="g in tableData"
-              :key="g.groupId"
-              :label="`${g.groupName}（${g.groupId}）`"
-              :value="g.groupId"
-            />
-          </el-select>
-        </el-form-item>
+      <!-- [设计] 群组只显示数量，不展开Tag列表 -->
+      <el-alert
+        style="margin-bottom: 20px;"
+        :title="`已选择 ${selectedGroups.length} 个群组`"
+        type="info"
+        :closable="false"
+        show-icon
+      />
+      <el-form :model="batchPullForm" label-width="80px">
         <el-form-item label="普通账号" required>
+          <!-- [设计] el-select多选+可搜索，第一项为全选哨兵选项 -->
           <el-select
             v-model="batchPullForm.accountIds"
             multiple
             filterable
             collapse-tags
+            :max-collapse-tags="3"
             collapse-tags-tooltip
-            placeholder="请选择普通账号"
-            style="width: 100%;"
+            placeholder="请搜索或选择普通账号"
+            style="width: 100%"
+            @change="handleAccountSelectChange"
           >
+            <!-- 全选项，使用哨兵值区分普通选项 -->
+            <el-option
+              value="__SELECT_ALL__"
+              class="select-all-option"
+            >
+              <span style="font-weight: 600; color: #409EFF;">
+                {{ batchSelectAllLabel }}
+              </span>
+            </el-option>
             <el-option
               v-for="acc in normalAccountOptions"
               :key="acc.id"
-              :label="acc.name"
+              :label="acc.tgid ? `${acc.name}(${acc.tgid})` : acc.name"
               :value="acc.id"
             >
-              <div style="display: flex; justify-content: space-between; align-items: center">
-                <span>{{ acc.name }}</span>
-                <span v-if="acc.errorMessage" style="color: #E6A23C; font-size: 12px">被限制</span>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span>
+                  {{ acc.name }}
+                  <span v-if="acc.tgid" style="color: #909399; font-size: 12px;">（{{ acc.tgid }}）</span>
+                </span>
+                <span v-if="acc.errorMessage" style="color: #E6A23C; font-size: 12px;">⚠ 被限制</span>
               </div>
             </el-option>
           </el-select>
+          <div style="font-size: 12px; color: #909399; margin-top: 6px;">
+            已选 {{ batchPullForm.accountIds.length }} / 共 {{ normalAccountOptions.length }} 个账号
+          </div>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="batchPullDialogVisible = false">取消</el-button>
-          <el-button type="primary" :loading="batchPullLoading" @click="submitBatchPull">确认</el-button>
+          <el-button type="primary" :loading="batchPullLoading" @click="submitBatchPull">
+            确认（{{ selectedGroups.length }} 个群 × {{ batchPullForm.accountIds.length }} 个账号）
+          </el-button>
         </div>
       </template>
     </el-dialog>
@@ -667,7 +695,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, nextTick, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Search, Refresh, ArrowDown, Setting, Lock } from '@element-plus/icons-vue';
 
@@ -779,16 +807,38 @@ const submitSingleJoin = () => {
 const batchPullDialogVisible = ref(false);
 const batchPullLoading = ref(false);
 const batchPullForm = reactive({
-  groupIds: [],
-  accountIds: []
+  accountIds: [] // [逻辑] 仅存储真实账号ID，不包含哨兵值
 });
+
+// [逻辑] 全选按钒标签文字（根据当前是否已全选动态变化）
+const batchSelectAllLabel = computed(() => {
+  const allIds = normalAccountOptions.value.map(a => a.id);
+  const allSelected = allIds.length > 0 && allIds.every(id => batchPullForm.accountIds.includes(id));
+  return allSelected ? '取消全选' : `全选所有账号（${allIds.length}个）`;
+});
+
+// [逻辑] 处理哨兵全选项点击：切换全选/取消全选
+const handleAccountSelectChange = (newVal) => {
+  if (newVal.includes('__SELECT_ALL__')) {
+    const realSelected = newVal.filter(v => v !== '__SELECT_ALL__');
+    const allIds = normalAccountOptions.value.map(a => a.id);
+    // 如果其他带哨兵均已选中，说明之前是全选状态 → 取消全选
+    if (realSelected.length === allIds.length) {
+      batchPullForm.accountIds = [];
+    } else {
+      // 否则全选所有账号
+      batchPullForm.accountIds = [...allIds];
+    }
+  }
+  // 自动将哨兵值过滤掉，确保数组中不残留 __SELECT_ALL__
+  batchPullForm.accountIds = batchPullForm.accountIds.filter(v => v !== '__SELECT_ALL__');
+};
+
 const openBatchPullDialog = () => {
-  batchPullForm.groupIds = [];
   batchPullForm.accountIds = [];
   batchPullDialogVisible.value = true;
 };
 const submitBatchPull = () => {
-  if (!batchPullForm.groupIds.length) return ElMessage.warning('请选择TG群组');
   if (!batchPullForm.accountIds.length) return ElMessage.warning('请选择普通账号');
   batchPullLoading.value = true;
   setTimeout(() => {
@@ -972,9 +1022,87 @@ const tableData = ref([
     boundMerchants: []
   }
 ]);
+// [逻辑] 客户端筛选后的全量数据（供分页和跨页全选使用）
+const filteredData = computed(() => {
+  const name = filterForm.groupName?.trim().toLowerCase();
+  const category = filterForm.groupCategory;
+  const type = filterForm.groupType;
+  const bot = filterForm.botId;
+  return tableData.value.filter(item => {
+    const matchName = name ? (item.groupName || '').toLowerCase().includes(name) || (item.groupId || '').includes(name) : true;
+    const matchCategory = category
+      ? (category === 'unassigned' ? !item.categoryId : item.categoryId == category)
+      : true;
+    const matchType = type ? item.groupType === type : true;
+    const matchBot = bot ? item.associatedBot?.includes(botOptions.value.find(b => b.id == bot)?.name) : true;
+    return matchName && matchCategory && matchType && matchBot;
+  });
+});
+
+// [逻辑] 当前页展示数据（客户端分页切片）
+const pagedTableData = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value;
+  return filteredData.value.slice(start, start + pageSize.value);
+});
+
 const currentPage = ref(1);
 const pageSize = ref(10);
-const total = ref(5);
+const total = computed(() => filteredData.value.length);
+
+// [逻辑] 跨页选中维护
+const groupTableRef = ref(null);
+const selectedGroups = ref([]); // 存储所有已选群组对象
+
+// 手动行勾选（含取消勾选）
+const handleRowSelect = (selection, row) => {
+  const isSelected = selection.some(g => g.groupId === row.groupId);
+  if (isSelected) {
+    if (!selectedGroups.value.some(g => g.groupId === row.groupId)) {
+      selectedGroups.value.push(row);
+    }
+  } else {
+    selectedGroups.value = selectedGroups.value.filter(g => g.groupId !== row.groupId);
+  }
+};
+
+// 点击表头全选 = 全选/取消全选 filteredData 中所有数据
+const handleSelectAll = (selection) => {
+  if (selection.length > 0) {
+    // [逻辑] 选中筛选后所有数据，去重合并
+    filteredData.value.forEach(row => {
+      if (!selectedGroups.value.some(g => g.groupId === row.groupId)) {
+        selectedGroups.value.push(row);
+      }
+    });
+  } else {
+    // 取消当前筛选结果内的所有选中
+    const filteredIds = new Set(filteredData.value.map(g => g.groupId));
+    selectedGroups.value = selectedGroups.value.filter(g => !filteredIds.has(g.groupId));
+  }
+};
+
+// 翻页后恢复当前页的视觉勾选状态
+const restorePageSelection = () => {
+  nextTick(() => {
+    if (!groupTableRef.value) return;
+    const selectedIds = new Set(selectedGroups.value.map(g => g.groupId));
+    pagedTableData.value.forEach(row => {
+      groupTableRef.value.toggleRowSelection(row, selectedIds.has(row.groupId));
+    });
+  });
+};
+
+const clearSelection = () => {
+  selectedGroups.value = [];
+  groupTableRef.value?.clearSelection();
+};
+
+const removeSelectedGroup = (group) => {
+  selectedGroups.value = selectedGroups.value.filter(g => g.groupId !== group.groupId);
+  // 若该行在当前页，同步取消勾选
+  const row = pagedTableData.value.find(r => r.groupId === group.groupId);
+  if (row) groupTableRef.value?.toggleRowSelection(row, false);
+};
 
 // 群组成员列表对话框
 const memberListDialogVisible = ref(false);
@@ -1229,10 +1357,11 @@ const submitDefaultRole = () => {
 // 操作函数
 const handleSearch = () => {
   loading.value = true;
-  // 模拟API调用
+  currentPage.value = 1;
   setTimeout(() => {
     loading.value = false;
-  }, 500);
+    restorePageSelection();
+  }, 300);
 };
 
 const resetFilter = () => {
@@ -1245,12 +1374,12 @@ const resetFilter = () => {
 
 const handleSizeChange = (val) => {
   pageSize.value = val;
-  handleSearch();
+  restorePageSelection();
 };
 
 const handleCurrentChange = (val) => {
   currentPage.value = val;
-  handleSearch();
+  restorePageSelection();
 };
 
 const openMemberListDialog = (row) => {
@@ -1540,5 +1669,19 @@ onMounted(() => {
   color: #909399;
   font-size: 12px;
   margin-top: 5px;
+}
+
+/* [设计] 批量拉人已选提示文字样式 */
+.selected-tip {
+  font-size: 13px;
+  color: #606266;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+/* [设计] 全选选项视觉分隔 */
+:deep(.select-all-option) {
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  margin-bottom: 4px;
 }
 </style>

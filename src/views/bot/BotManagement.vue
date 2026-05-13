@@ -418,6 +418,13 @@ const handleSearch = () => {
         return matchName && matchStatus
       })
       normalTotal.value = displayNormalData.value.length
+    } else if (activeTab.value === 'pull') {
+      displayPullData.value = pullTableData.value.filter(item => {
+        const matchName = name ? (item.name || item.username || '').toLowerCase().includes(name) : true
+        const matchStatus = statusFilter ? item.status === statusFilter : true
+        return matchName && matchStatus
+      })
+      pullTotal.value = displayPullData.value.length
     } else {
       const matchNameLower = name
       displayData.value = tableData.value.filter(item => {
@@ -658,6 +665,33 @@ const normalCurrentPage = ref(1)
 const normalPageSize = ref(10)
 const normalTotal = ref(displayNormalData.value.length)
 
+// 新增：拉人账号数据源与渲染数据
+const PULL_ACCOUNT_STORAGE_KEY = 'pmp_bot_pull_accounts'
+const defaultPullAccounts = [
+  { id: 201, name: '拉人账号A', tgid: '200000001', phone: '+661380000101', apiid: '654321', apiHash: 'phashA', secondPassword: '', status: 'enabled', creator: 'admin', createdAt: '2023-10-02 10:00:00' },
+  { id: 202, name: '拉人账号B', tgid: '200000002', phone: '+661380000102', apiid: '765432', apiHash: 'phashB', secondPassword: '', status: 'enabled', creator: 'admin', createdAt: '2023-10-03 12:20:00', errorMessage: '频繁操作' }
+]
+const loadPullAccounts = () => {
+  try {
+    const raw = localStorage.getItem(PULL_ACCOUNT_STORAGE_KEY)
+    if (!raw) return defaultPullAccounts
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : defaultPullAccounts
+  } catch {
+    return defaultPullAccounts
+  }
+}
+const persistPullAccounts = () => {
+  localStorage.setItem(PULL_ACCOUNT_STORAGE_KEY, JSON.stringify(pullTableData.value))
+}
+const pullTableData = ref(loadPullAccounts())
+const displayPullData = ref([...pullTableData.value])
+
+// 新增：拉人账号分页数据
+const pullCurrentPage = ref(1)
+const pullPageSize = ref(10)
+const pullTotal = ref(displayPullData.value.length)
+
 // 新增：普通账号表单对话框
 const normalDialogVisible = ref(false)
 const normalDialogType = ref('add')
@@ -749,23 +783,46 @@ const submitNormalForm = () => {
           creator: 'admin',
           createdAt: new Date().toLocaleString()
         }
-        normalTableData.value.unshift(newUser)
-        persistNormalAccounts()
-        ElMessage.success('普通账号添加成功')
-      } else {
-        const index = normalTableData.value.findIndex(item => item.id === normalForm.id)
-        if (index !== -1) {
-          normalTableData.value[index] = {
-            ...normalTableData.value[index],
-            name: normalForm.name.trim(),
-            phone: normalForm.phone,
-            apiid: normalForm.apiid,
-            apiHash: normalForm.apiHash,
-            secondPassword: normalForm.secondPassword || '',
-          }
+        
+        if (currentAccountType.value === 'pull') {
+          pullTableData.value.unshift(newUser)
+          persistPullAccounts()
+          ElMessage.success('拉人账号添加成功')
+        } else {
+          normalTableData.value.unshift(newUser)
           persistNormalAccounts()
+          ElMessage.success('普通账号添加成功')
         }
-        ElMessage.success('普通账号更新成功')
+      } else {
+        if (currentAccountType.value === 'pull') {
+          const index = pullTableData.value.findIndex(item => item.id === normalForm.id)
+          if (index !== -1) {
+            pullTableData.value[index] = {
+              ...pullTableData.value[index],
+              name: normalForm.name.trim(),
+              phone: normalForm.phone,
+              apiid: normalForm.apiid,
+              apiHash: normalForm.apiHash,
+              secondPassword: normalForm.secondPassword || '',
+            }
+            persistPullAccounts()
+          }
+          ElMessage.success('拉人账号更新成功')
+        } else {
+          const index = normalTableData.value.findIndex(item => item.id === normalForm.id)
+          if (index !== -1) {
+            normalTableData.value[index] = {
+              ...normalTableData.value[index],
+              name: normalForm.name.trim(),
+              phone: normalForm.phone,
+              apiid: normalForm.apiid,
+              apiHash: normalForm.apiHash,
+              secondPassword: normalForm.secondPassword || '',
+            }
+            persistNormalAccounts()
+          }
+          ElMessage.success('普通账号更新成功')
+        }
       }
       handleSearch()
       loading.value = false
@@ -805,9 +862,39 @@ const handleNormalCurrentChange = (val) => {
   handleSearch()
 }
 
+// 新增：拉人账号分页与删除
+const handlePullSizeChange = (val) => {
+  pullPageSize.value = val
+  handleSearch()
+}
+const handlePullCurrentChange = (val) => {
+  pullCurrentPage.value = val
+  handleSearch()
+}
+const handlePullDelete = (row) => {
+  ElMessageBox.confirm(`确认删除拉人账号"${row.name}"?`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    loading.value = true
+    setTimeout(() => {
+      const index = pullTableData.value.findIndex(item => item.id === row.id)
+      if (index !== -1) {
+        pullTableData.value.splice(index, 1)
+        persistPullAccounts()
+        ElMessage.success('拉人账号删除成功')
+      }
+      handleSearch()
+      loading.value = false
+    }, 500)
+  }).catch(() => {})
+}
+
 // 生命周期钩子
 onMounted(() => {
   persistNormalAccounts()
+  persistPullAccounts()
   // 初始加载数据
   handleSearch()
 })

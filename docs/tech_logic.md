@@ -14,4 +14,6 @@
 - **Google 验证强制绑定**：管理员登录后，路由守卫（`router.beforeEach`）检查 `localStorage.userInfo.googleAuth`，若为 `false` 则拦截所有路由，强制跳转 `/setup-google`（`GoogleSetup.vue`）。绑定成功后将 `googleAuth` 更新为 `true` 并放行进入后台。
 - **商户收款统计额外字段**：在 `/statistics/merchant-income` 页面增加了 `隔日修改订单金额`、`隔日修改订单手续费`、`隔日修改冲账金额` 和 `调账后入账金额`。其中调账后入账金额的计算逻辑为前端根据公式 `调账后入账金额 = 入账金额 - 隔日修改冲账金额` 动态算出并展示。
 - **商户费率分步同步逻辑**：在支付产品编辑时，引入了 `syncFeeRate` 勾选逻辑。该选项现在与同步模式（`syncOption`）联动，仅在非“不同步”模式下显示。在切换同步模式时，系统会**默认将 `syncFeeRate` 置为 `false`**，避免管理员在仅修改产品基础配置（如名称、备注）时意外覆盖所有商户的费率设置。
-
+- **表格跨页选择逻辑**（GroupManagement.vue）：为了支持在大数据量（500-1000条）下的批量操作，系统引入了手动维护的 `selectedGroups[]` 数组。通过监听 `select` 和 `select-all` 事件来增删该数组中的对象。在翻页（`handleCurrentChange`）或搜索后，调用 `restorePageSelection()` 方法利用 `toggleRowSelection` 视觉补回当前页的勾选状态。
+- **客户端搜索与分页**：在原型阶段，群组和分组列表采用客户端分页。数据源通过 `computed` (如 `filteredData` 和 `pagedTableData`) 实时计算。搜索操作会重置 `currentPage` 为 1，并触发 `restorePageSelection` 以同步勾选视觉。
+- **下拉框全选逻辑**：在账号多选下拉框中引入了哨兵值 `__SELECT_ALL__`。当该值出现在选中数组中时，系统会自动将所有账号 ID 存入（或清空）实际的 `accountIds` 数组，并立即过滤掉哨兵值，确保传参纯净。

@@ -15,6 +15,17 @@
               style="width: 200px"
             />
           </el-form-item>
+          <el-form-item label="分组：">
+            <el-select v-model="filterForm.groupCategory" placeholder="请选择分组" clearable style="width: 168px">
+              <el-option label="未分组" value="unassigned" />
+              <el-option 
+                v-for="category in groupCategoryOptions" 
+                :key="category.id" 
+                :label="category.name" 
+                :value="category.id"
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="群组类型：">
             <el-select v-model="filterForm.groupType" placeholder="请选择类型" clearable style="width: 168px">
               <el-option label="全部" value="" />
@@ -67,11 +78,35 @@
       >
         <el-table-column prop="groupId" label="群组ID" min-width="150" />
         <el-table-column prop="groupName" label="群组名称" min-width="180" />
+        <el-table-column prop="categoryName" label="分组" min-width="120">
+          <template #default="{ row }">
+            <el-tag v-if="row.categoryName" type="info" effect="plain">{{ row.categoryName }}</el-tag>
+            <span v-else class="text-secondary">未分组</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="groupType" label="群组类型" width="120" align="center">
           <template #default="{ row }">
             <el-tag :type="getGroupTypeTagType(row.groupType)">
               {{ getGroupTypeLabel(row.groupType) }}
             </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="ordinaryAccount" label="普通账号" width="100" align="center">
+          <template #default="{ row }">
+            <el-button v-if="row.ordinaryAccount && (Array.isArray(row.ordinaryAccount) ? row.ordinaryAccount.length : row.ordinaryAccount.split(',').filter(Boolean).length) > 0" type="primary" link @click="openAccountListDialog(row)">
+              {{ Array.isArray(row.ordinaryAccount) ? row.ordinaryAccount.length : row.ordinaryAccount.split(',').filter(Boolean).length }}
+            </el-button>
+            <span v-else class="text-secondary">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="pullAccount" label="拉人账号" min-width="120">
+          <template #default="{ row }">
+            <template v-if="row.pullAccount && (Array.isArray(row.pullAccount) ? row.pullAccount.length : row.pullAccount.split(',').filter(Boolean).length) > 0">
+              <el-tag size="small" type="warning">
+                {{ formatAccountWithTgid(Array.isArray(row.pullAccount) ? row.pullAccount[0] : row.pullAccount.split(',').filter(Boolean)[0]) }}
+              </el-tag>
+            </template>
+            <span v-else class="text-secondary">-</span>
           </template>
         </el-table-column>
         <el-table-column prop="memberCount" label="群组人数" width="100" align="center">
@@ -95,6 +130,14 @@
         </el-table-column>
         <el-table-column prop="associatedBot" label="关联机器人" min-width="150" />
         <el-table-column prop="createTime" label="创建时间" min-width="180" />
+        <el-table-column label="操作" width="160" fixed="right" align="center">
+          <template #default="{ row }">
+            <div class="operation-buttons">
+              <el-button type="primary" link @click="openConfigGroupDialog(row)">配置信息</el-button>
+              <el-button type="warning" link @click="openSingleJoinDialog(row)">一键拉人</el-button>
+            </div>
+          </template>
+        </el-table-column>
       </el-table>
 
       <!-- 分页器 -->
@@ -134,6 +177,75 @@
       <el-empty v-if="!memberListData || memberListData.length === 0" description="暂无符合条件的成员" />
       <template #footer>
         <el-button @click="memberListDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 普通账号列表对话框 -->
+    <el-dialog
+      v-model="accountListDialogVisible"
+      title="普通账号列表"
+      width="600px"
+      destroy-on-close
+    >
+      <div v-if="currentGroupForAccounts" style="margin-bottom: 16px;">
+        <p><strong>群组:</strong> {{ currentGroupForAccounts.groupName }}（{{ currentGroupForAccounts.groupId }}）</p>
+      </div>
+      <el-table :data="accountListData" border stripe>
+        <el-table-column prop="name" label="账号名称" min-width="150" />
+        <el-table-column prop="tgid" label="TGID" min-width="160" />
+        <el-table-column label="备注" min-width="200">
+          <template #default="{ row }">
+            <div v-if="row.errorMessage">
+              <span class="limit-label">限制</span>：{{ getLimitMessage(row.errorMessage) }}
+            </div>
+            <span v-else class="text-secondary">-</span>
+          </template>
+        </el-table-column>
+      </el-table>
+      <template #footer>
+        <el-button @click="accountListDialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog
+      v-model="singleJoinDialogVisible"
+      title="一键拉人"
+      width="600px"
+      destroy-on-close
+    >
+      <div v-if="currentGroupForJoin" style="margin-bottom: 16px;">
+        <p><strong>群组:</strong> {{ currentGroupForJoin.groupName }}（{{ currentGroupForJoin.groupId }}）</p>
+      </div>
+      <el-form :model="singleJoinForm" label-width="100px">
+        <el-form-item label="普通账号" required>
+          <el-select
+            v-model="singleJoinForm.accountIds"
+            multiple
+            filterable
+            collapse-tags
+            collapse-tags-tooltip
+            placeholder="请选择要拉入的普通账号"
+            style="width: 100%;"
+          >
+            <el-option
+              v-for="acc in normalAccountOptions"
+              :key="acc.id"
+              :label="acc.name"
+              :value="acc.id"
+            >
+              <div style="display: flex; justify-content: space-between; align-items: center">
+                <span>{{ acc.name }}</span>
+                <span v-if="acc.errorMessage" style="color: #E6A23C; font-size: 12px">被限制</span>
+              </div>
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="singleJoinDialogVisible = false">取消</el-button>
+          <el-button type="primary" :loading="singleJoinLoading" @click="submitSingleJoin">确认</el-button>
+        </div>
       </template>
     </el-dialog>
 
@@ -463,6 +575,37 @@
         </template>
     </el-dialog>
   </div>
+
+    <!-- 配置群组信息对话框 -->
+    <el-dialog
+      v-model="configGroupDialogVisible"
+      title="配置群组信息"
+      width="500px"
+      destroy-on-close
+    >
+      <el-form ref="configGroupFormRef" :model="configGroupForm" label-width="100px">
+        <el-form-item label="群组名称">
+          <el-input v-model="configGroupForm.groupName" disabled />
+        </el-form-item>
+        <el-form-item label="所属分组" prop="categoryId">
+          <el-select v-model="configGroupForm.categoryId" placeholder="请选择分组" clearable style="width: 100%;">
+            <el-option 
+              v-for="category in groupCategoryOptions" 
+              :key="category.id" 
+              :label="category.name" 
+              :value="category.id"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="configGroupDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="submitConfigGroup">保存</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
 </template>
 
 <script setup>
@@ -474,8 +617,134 @@ import { Search, Refresh, ArrowDown, Setting, Lock } from '@element-plus/icons-v
 // 移除了说明卡片
 
 // 筛选表单
+
+// ----------------- 新增逻辑：分组与入群 -----------------
+
+const NORMAL_ACCOUNT_STORAGE_KEY = 'pmp_bot_normal_accounts';
+const loadNormalAccounts = () => {
+  try {
+    const raw = localStorage.getItem(NORMAL_ACCOUNT_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+const normalAccountOptions = ref([]);
+const getLimitMessage = (msg) => {
+  const str = String(msg || '');
+  return str.replace(/^限制[:：]\s*/g, '');
+};
+const formatAccountWithTgid = (acc) => {
+  if (!acc) return '';
+  if (typeof acc === 'string') return acc;
+  const name = acc?.name || '';
+  const tgid = acc?.tgid || '';
+  return tgid ? `${name}（${tgid}）` : name;
+};
+
+const accountListDialogVisible = ref(false);
+const accountListData = ref([]);
+const currentGroupForAccounts = ref(null);
+
+const openAccountListDialog = (row) => {
+  currentGroupForAccounts.value = row;
+  
+  let rawAccounts = row.ordinaryAccount;
+  if (!rawAccounts) rawAccounts = [];
+  if (typeof rawAccounts === 'string') {
+    rawAccounts = rawAccounts.split(',').map(s => s.trim()).filter(Boolean);
+  }
+  
+  // Convert strings/objects to unified format for display
+  accountListData.value = rawAccounts.map(acc => {
+    if (typeof acc === 'string') {
+      // Find in options if it exists to get errorMessage
+      const found = normalAccountOptions.value.find(o => o.name === acc);
+      return found ? found : { name: acc, errorMessage: '' };
+    }
+    return {
+      name: acc?.name || '',
+      tgid: acc?.tgid || '',
+      errorMessage: acc?.errorMessage || ''
+    };
+  });
+  
+  accountListDialogVisible.value = true;
+};
+
+const GROUP_CATEGORY_STORAGE_KEY = 'pmp_bot_group_category_options';
+const loadGroupCategoryOptions = () => {
+  try {
+    const raw = localStorage.getItem(GROUP_CATEGORY_STORAGE_KEY);
+    if (!raw) {
+      return [
+        { id: 1, name: '核心商户群' },
+        { id: 2, name: '备用测试群' }
+      ];
+    }
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map(item => ({ id: item?.id, name: item?.name }))
+      .filter(item => item.id != null && String(item.name || '').trim());
+  } catch {
+    return [];
+  }
+};
+const groupCategoryOptions = ref(loadGroupCategoryOptions());
+
+
+// 一键拉人 (单个群组)
+const singleJoinDialogVisible = ref(false);
+const singleJoinLoading = ref(false);
+const currentGroupForJoin = ref(null);
+const singleJoinForm = reactive({
+  accountIds: []
+});
+const openSingleJoinDialog = (row) => {
+  currentGroupForJoin.value = row;
+  singleJoinForm.accountIds = [];
+  singleJoinDialogVisible.value = true;
+};
+const submitSingleJoin = () => {
+  if (!singleJoinForm.accountIds.length) return ElMessage.warning('请选择普通账号');
+  singleJoinLoading.value = true;
+  setTimeout(() => {
+    singleJoinLoading.value = false;
+    singleJoinDialogVisible.value = false;
+    ElMessage.success('入群指令已下发给机器人！');
+  }, 1000);
+};
+
+// 配置群组信息 (分组, 账号)
+const configGroupDialogVisible = ref(false);
+const configGroupForm = reactive({
+  groupId: '',
+  groupName: '',
+  categoryId: '',
+});
+const openConfigGroupDialog = (row) => {
+  configGroupForm.groupId = row.groupId;
+  configGroupForm.groupName = row.groupName;
+  configGroupForm.categoryId = row.categoryId || '';
+  configGroupDialogVisible.value = true;
+};
+const submitConfigGroup = () => {
+  const group = tableData.value.find(g => g.groupId === configGroupForm.groupId);
+  if (group) {
+    group.categoryId = configGroupForm.categoryId;
+    const category = groupCategoryOptions.value.find(c => c.id === configGroupForm.categoryId);
+    group.categoryName = category ? category.name : '';
+  }
+  configGroupDialogVisible.value = false;
+  ElMessage.success('配置保存成功');
+};
+
 const filterForm = reactive({
   groupName: '',
+  groupCategory: '',
   groupType: '',
   botId: '',
 });
@@ -544,6 +813,16 @@ const tableData = ref([
     roleId: 1,
     roleName: '上游群角色',
     memberCount: 58,
+    categoryId: 1,
+    categoryName: '核心商户群',
+    ordinaryAccount: [
+      { name: '@test_ord', errorMessage: 'rpcDoRequest: rpc error code 428: FLOOD_WAIT (11)' },
+      { name: '@test_ord2', errorMessage: '' }
+    ],
+    pullAccount: [
+      { name: '@test_pull1', tgid: '200000001', errorMessage: '' },
+      { name: '@test_pull2', tgid: '200000002', errorMessage: '频繁操作' }
+    ],
     associatedBot: '机器人A',
     createTime: '2023-05-15 10:30:45',
     boundSuppliers: [
@@ -878,6 +1157,7 @@ const handleSearch = () => {
 
 const resetFilter = () => {
   filterForm.groupName = '';
+  filterForm.groupCategory = '';
   filterForm.groupType = '';
   filterForm.botId = '';
   handleSearch();
@@ -1077,6 +1357,8 @@ const submitMemberPermission = () => {
 
 // 页面加载时执行
 onMounted(() => {
+  groupCategoryOptions.value = loadGroupCategoryOptions();
+  normalAccountOptions.value = loadNormalAccounts();
   handleSearch();
 });
 </script>
@@ -1151,6 +1433,16 @@ onMounted(() => {
 
 .dialog-footer {
   text-align: right;
+}
+
+.operation-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.limit-label {
+  color: var(--el-color-danger);
 }
 
 .command-format {

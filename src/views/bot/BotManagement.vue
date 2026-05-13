@@ -7,10 +7,10 @@
     <el-card shadow="never" class="filter-container">
       <el-form :model="filterForm" class="filter-form">
         <div class="filter-grid">
-          <el-form-item :label="activeTab === 'normal' ? '账号名称：' : '机器人名称：'">
+          <el-form-item :label="activeTab === 'bot' ? '机器人名称：' : '账号名称：'">
             <el-input 
               v-model="filterForm.botName" 
-              :placeholder="activeTab === 'normal' ? '请输入账号名称' : '请输入机器人名称'" 
+              :placeholder="activeTab === 'bot' ? '请输入机器人名称' : '请输入账号名称'" 
               clearable 
               style="width: 220px" 
             />
@@ -155,6 +155,65 @@
               :total="normalTotal"
               @size-change="handleNormalSizeChange"
               @current-change="handleNormalCurrentChange"
+            />
+          </div>
+        </el-tab-pane>
+
+        <!-- 新增：拉人账号 Tab -->
+        <el-tab-pane label="拉人账号" name="pull">
+          <!-- 表格工具栏 -->
+          <div class="table-toolbar">
+            <div class="left">
+              <el-button type="primary" :icon="Plus" @click="openNormalDialog('add', 'pull')">新增拉人账号</el-button>
+            </div>
+            <div class="right">
+              <el-tooltip content="刷新数据">
+                <el-button :icon="Refresh" circle plain @click="handleSearch" />
+              </el-tooltip>
+            </div>
+          </div>
+
+          <!-- 拉人账号数据表格 -->
+          <el-table
+            v-loading="loading"
+            :data="displayPullData"
+            border
+            stripe
+            style="width: 100%"
+          >
+            <el-table-column type="index" label="序号" width="60" align="center" />
+            <el-table-column prop="name" label="名称" min-width="160" />
+            <el-table-column prop="tgid" label="TGID" min-width="160" />
+            <el-table-column prop="phone" label="手机号" min-width="180" />
+            <el-table-column prop="apiid" label="apiid" min-width="160" />
+            <el-table-column label="备注" min-width="180">
+              <template #default="{ row }">
+                <div v-if="row.errorMessage">
+                  <span style="color: #E6A23C">限制</span>：{{ row.errorMessage }}
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column prop="creator" label="创建人" width="120" />
+            <el-table-column prop="createdAt" label="创建时间" width="180" />
+            <el-table-column fixed="right" label="操作" width="120" align="center">
+              <template #default="{ row }">
+                <el-button type="danger" link @click="handlePullDelete(row)">
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <!-- 分页器 -->
+          <div class="pagination-container">
+            <el-pagination
+              v-model:current-page="pullCurrentPage"
+              v-model:page-size="pullPageSize"
+              :page-sizes="[10, 20, 50, 100]"
+              layout="total, sizes, prev, pager, next, jumper"
+              :total="pullTotal"
+              @size-change="handlePullSizeChange"
+              @current-change="handlePullCurrentChange"
             />
           </div>
         </el-tab-pane>
@@ -570,13 +629,28 @@ const getStatusLabel = (status) => {
 
 
 // 新增：普通账号数据源与渲染数据
-const normalTableData = ref([
+const NORMAL_ACCOUNT_STORAGE_KEY = 'pmp_bot_normal_accounts'
+const defaultNormalAccounts = [
   { id: 101, name: '普通账号A', tgid: '100000001', phone: '+661380000001', apiid: '123456', apiHash: 'hashA', secondPassword: '', status: 'enabled', creator: 'admin', createdAt: '2023-10-02 09:00:00' },
   { id: 102, name: '普通账号B', tgid: '100000002', phone: '+661380000002', apiid: '234567', apiHash: 'hashB', secondPassword: '', status: 'disabled', creator: 'admin', createdAt: '2023-10-03 11:20:00', errorMessage: 'rpcDoRequest: rpc error code 428: FLOOD_WAIT (11)' },
   { id: 103, name: '普通账号C', tgid: '100000003', phone: '+661380000003', apiid: '345678', apiHash: 'hashC', secondPassword: '', status: 'enabled', creator: 'test', createdAt: '2023-10-04 14:15:30' },
   { id: 104, name: '普通账号D', tgid: '100000004', phone: '+661380000004', apiid: '456789', apiHash: 'hashD', secondPassword: '', status: 'disabled', creator: 'admin', createdAt: '2023-10-05 16:45:00', errorMessage: 'rpcDoRequest: rpc error code 428: FLOOD_WAIT (11)' },
   { id: 105, name: '普通账号E', tgid: '100000005', phone: '+661380000005', apiid: '567890', apiHash: 'hashE', secondPassword: '', status: 'enabled', creator: 'user1', createdAt: '2023-10-06 09:10:20' }
-])
+]
+const loadNormalAccounts = () => {
+  try {
+    const raw = localStorage.getItem(NORMAL_ACCOUNT_STORAGE_KEY)
+    if (!raw) return defaultNormalAccounts
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed : defaultNormalAccounts
+  } catch {
+    return defaultNormalAccounts
+  }
+}
+const persistNormalAccounts = () => {
+  localStorage.setItem(NORMAL_ACCOUNT_STORAGE_KEY, JSON.stringify(normalTableData.value))
+}
+const normalTableData = ref(loadNormalAccounts())
 const displayNormalData = ref([...normalTableData.value])
 
 // 新增：普通账号分页数据
@@ -603,7 +677,9 @@ const handleTabChange = () => {
 }
 
 // 新增：打开普通账号对话框
-const openNormalDialog = (type, row) => {
+const currentAccountType = ref('normal');
+const openNormalDialog = (type, accountType = 'normal', row) => {
+  currentAccountType.value = accountType;
   normalDialogType.value = type
   normalDialogVisible.value = true
   nextTick(() => {
@@ -674,6 +750,7 @@ const submitNormalForm = () => {
           createdAt: new Date().toLocaleString()
         }
         normalTableData.value.unshift(newUser)
+        persistNormalAccounts()
         ElMessage.success('普通账号添加成功')
       } else {
         const index = normalTableData.value.findIndex(item => item.id === normalForm.id)
@@ -686,6 +763,7 @@ const submitNormalForm = () => {
             apiHash: normalForm.apiHash,
             secondPassword: normalForm.secondPassword || '',
           }
+          persistNormalAccounts()
         }
         ElMessage.success('普通账号更新成功')
       }
@@ -708,6 +786,7 @@ const handleNormalDelete = (row) => {
       const index = normalTableData.value.findIndex(item => item.id === row.id)
       if (index !== -1) {
         normalTableData.value.splice(index, 1)
+        persistNormalAccounts()
         ElMessage.success('普通账号删除成功')
       }
       handleSearch()
@@ -728,6 +807,7 @@ const handleNormalCurrentChange = (val) => {
 
 // 生命周期钩子
 onMounted(() => {
+  persistNormalAccounts()
   // 初始加载数据
   handleSearch()
 })

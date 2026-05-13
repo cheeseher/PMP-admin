@@ -227,6 +227,12 @@ const router = createRouter({
               meta: { title: '群组管理' }
             },
             {
+              path: 'group-category',
+              name: 'GroupCategoryManagement',
+              component: () => import('@/views/bot/GroupCategoryManagement.vue'),
+              meta: { title: '分组管理' }
+            },
+            {
               path: 'mass-message',
               name: 'MassSendMessage',
               component: () => import('@/views/bot/MassSendMessage.vue'),

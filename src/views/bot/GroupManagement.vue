@@ -76,6 +76,17 @@
               >批量拉人</el-button>
             </span>
           </el-tooltip>
+          
+          <el-tooltip :content="selectedGroups.length === 0 ? '请先在表格中勾选群组' : '批量设置分组'" placement="top">
+            <span>
+              <el-button
+                type="primary"
+                plain
+                :disabled="selectedGroups.length === 0"
+                @click="openBatchSetCategoryDialog"
+              >批量设置分组</el-button>
+            </span>
+          </el-tooltip>
           <el-tooltip content="刷新数据">
             <el-button :icon="Refresh" circle plain @click="handleSearch" />
           </el-tooltip>
@@ -330,6 +341,48 @@
           <el-button @click="batchPullDialogVisible = false">取消</el-button>
           <el-button type="primary" :loading="batchPullLoading" @click="submitBatchPull">
             确认（{{ selectedGroups.length }} 个群 × {{ batchPullForm.accountIds.length }} 个账号）
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- [设计] 批量设置分组弹窗 -->
+    <el-dialog
+      v-model="batchSetCategoryDialogVisible"
+      title="批量设置分组"
+      width="440px"
+      destroy-on-close
+    >
+      <el-alert
+        style="margin-bottom: 20px;"
+        :title="`正在为选中的 ${selectedGroups.length} 个群组设置新分组`"
+        type="info"
+        :closable="false"
+        show-icon
+      />
+      <el-form :model="batchSetCategoryForm" label-width="80px">
+        <el-form-item label="目标分组" required>
+          <el-select
+            v-model="batchSetCategoryForm.categoryId"
+            placeholder="请选择目标分组"
+            style="width: 100%"
+            clearable
+          >
+            <el-option
+              v-for="opt in groupCategoryOptions"
+              :key="opt.id"
+              :label="opt.name"
+              :value="opt.id"
+            />
+            <el-option label="未分配" :value="''" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="batchSetCategoryDialogVisible = false">取消</el-button>
+          <el-button type="primary" :loading="batchSetCategoryLoading" @click="submitBatchSetCategory">
+            确认设置
           </el-button>
         </div>
       </template>
@@ -710,7 +763,17 @@ const NORMAL_ACCOUNT_STORAGE_KEY = 'pmp_bot_normal_accounts';
 const loadNormalAccounts = () => {
   try {
     const raw = localStorage.getItem(NORMAL_ACCOUNT_STORAGE_KEY);
-    if (!raw) return [];
+    if (!raw) {
+      // [原型图] 补全默认模拟数据
+      const defaultAccounts = [
+        { id: 101, name: '账号A', tgid: '100000001', status: 'enabled' },
+        { id: 102, name: '账号B', tgid: '100000002', status: 'enabled', errorMessage: '频繁操作' },
+        { id: 103, name: '账号C', tgid: '100000003', status: 'enabled' },
+        { id: 104, name: '账号D', tgid: '100000004', status: 'enabled' }
+      ];
+      localStorage.setItem(NORMAL_ACCOUNT_STORAGE_KEY, JSON.stringify(defaultAccounts));
+      return defaultAccounts;
+    }
     const parsed = JSON.parse(raw);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
@@ -846,6 +909,34 @@ const submitBatchPull = () => {
     batchPullDialogVisible.value = false;
     ElMessage.success('批量拉人指令已下发给机器人！');
   }, 1000);
+};
+
+// [逻辑] 批量设置分组相关
+const batchSetCategoryDialogVisible = ref(false);
+const batchSetCategoryLoading = ref(false);
+const batchSetCategoryForm = reactive({
+  categoryId: ''
+});
+const openBatchSetCategoryDialog = () => {
+  batchSetCategoryForm.categoryId = '';
+  batchSetCategoryDialogVisible.value = true;
+};
+const submitBatchSetCategory = () => {
+  batchSetCategoryLoading.value = true;
+  setTimeout(() => {
+    // [原型图逻辑] 模拟更新本地数据
+    const targetCategoryId = batchSetCategoryForm.categoryId;
+    selectedGroups.value.forEach(sg => {
+      const group = tableData.value.find(t => t.groupId === sg.groupId);
+      if (group) {
+        group.categoryId = targetCategoryId;
+      }
+    });
+    
+    batchSetCategoryLoading.value = false;
+    batchSetCategoryDialogVisible.value = false;
+    ElMessage.success(`成功为 ${selectedGroups.value.length} 个群组更新分组`);
+  }, 800);
 };
 
 // 配置群组信息 (分组, 账号)

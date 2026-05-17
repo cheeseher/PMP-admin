@@ -534,3 +534,128 @@ export const productStatsData = [
     updateTime: '2024-03-14 15:30:00'
   }
 ]; 
+
+// 渠道余额快照数据
+export const channelBalanceData = [
+  {
+    supplierId: '1001',
+    supplierName: '快钱支付',
+    channelName: '支付宝扫码',
+    channelMchNo: 'CH_MCH_883019',
+    balance: 250000.00,
+    frozenAmount: 30000.00,
+    availableAmount: 220000.00,
+    todayIncome: 95000.00,
+    todayOutcome: 45000.00,
+    snapshotTime: '2024-03-14 00:00:00'
+  },
+  {
+    supplierId: '1002',
+    supplierName: '通联支付',
+    channelName: '微信H5',
+    channelMchNo: 'CH_MCH_994028',
+    balance: 185000.50,
+    frozenAmount: 15000.00,
+    availableAmount: 170000.50,
+    todayIncome: 65000.00,
+    todayOutcome: 20000.00,
+    snapshotTime: '2024-03-14 00:00:00'
+  },
+  {
+    supplierId: '1003',
+    supplierName: '汇付天下',
+    channelName: '银联在线',
+    channelMchNo: 'CH_MCH_771092',
+    balance: 560000.00,
+    frozenAmount: 60000.00,
+    availableAmount: 500000.00,
+    todayIncome: 150000.00,
+    todayOutcome: 80000.00,
+    snapshotTime: '2024-03-14 00:00:00'
+  },
+  {
+    supplierId: '1004',
+    supplierName: '易宝支付',
+    channelName: 'QQ钱包H5',
+    channelMchNo: 'CH_MCH_665041',
+    balance: 95000.00,
+    frozenAmount: 5000.00,
+    availableAmount: 90000.00,
+    todayIncome: 30000.00,
+    todayOutcome: 10000.00,
+    snapshotTime: '2024-03-14 00:00:00'
+  },
+  {
+    supplierId: '1001',
+    supplierName: '快钱支付',
+    channelName: '微信扫码',
+    channelMchNo: 'CH_MCH_883020',
+    balance: 310000.00,
+    frozenAmount: 40000.00,
+    availableAmount: 270000.00,
+    todayIncome: 120000.00,
+    todayOutcome: 50000.00,
+    snapshotTime: '2024-03-14 00:00:00'
+  },
+  {
+    supplierId: '1005',
+    supplierName: '连连支付',
+    channelName: '快捷支付',
+    channelMchNo: 'CH_MCH_554032',
+    balance: 780000.00,
+    frozenAmount: 80000.00,
+    availableAmount: 700000.00,
+    todayIncome: 230000.00,
+    todayOutcome: 120000.00,
+    snapshotTime: '2024-03-14 00:00:00'
+  },
+  {
+    supplierId: '1002',
+    supplierName: '通联支付',
+    channelName: '支付宝H5',
+    channelMchNo: 'CH_MCH_994029',
+    balance: 420000.00,
+    frozenAmount: 20000.00,
+    availableAmount: 400000.00,
+    todayIncome: 110000.00,
+    todayOutcome: 60000.00,
+    snapshotTime: '2024-03-14 00:00:00'
+  },
+  {
+    supplierId: '1003',
+    supplierName: '汇付天下',
+    channelName: '支付宝扫码',
+    channelMchNo: 'CH_MCH_771093',
+    balance: 150000.00,
+    frozenAmount: 10000.00,
+    availableAmount: 140000.00,
+    todayIncome: 45000.00,
+    todayOutcome: 15000.00,
+    snapshotTime: '2024-03-14 00:00:00'
+  },
+  {
+    supplierId: '1006',
+    supplierName: '银联商务',
+    channelName: '银联扫码',
+    channelMchNo: 'CH_MCH_443021',
+    balance: 890000.00,
+    frozenAmount: 90000.00,
+    availableAmount: 800000.00,
+    todayIncome: 280000.00,
+    todayOutcome: 140000.00,
+    snapshotTime: '2024-03-14 00:00:00'
+  },
+  {
+    supplierId: '1004',
+    supplierName: '易宝支付',
+    channelName: '支付宝扫码',
+    channelMchNo: 'CH_MCH_665042',
+    balance: 210000.00,
+    frozenAmount: 10000.00,
+    availableAmount: 200000.00,
+    todayIncome: 75000.00,
+    todayOutcome: 30000.00,
+    snapshotTime: '2024-03-14 00:00:00'
+  }
+];
+ 

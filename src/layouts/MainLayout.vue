@@ -33,6 +33,7 @@
             <el-menu-item index="/statistics/platform-profit">平台分润统计</el-menu-item>
             <el-menu-item index="/statistics/merchant-income">商户收款统计</el-menu-item>
             <el-menu-item index="/statistics/merchant-balance">商户余额快照</el-menu-item>
+            <el-menu-item index="/statistics/channel-balance">渠道余额快照</el-menu-item>
           </el-sub-menu>
 
           <!-- 流水审计 -->

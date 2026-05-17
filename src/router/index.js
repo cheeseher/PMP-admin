@@ -307,6 +307,12 @@ const router = createRouter({
               name: 'StatisticsMerchantBalance',
               component: () => import('@/views/statistics/MerchantBalance.vue'),
               meta: { title: '商户余额快照' }
+            },
+            {
+              path: 'channel-balance',
+              name: 'StatisticsChannelBalance',
+              component: () => import('@/views/statistics/ChannelBalance.vue'),
+              meta: { title: '渠道余额快照' }
             }
           ]
         },

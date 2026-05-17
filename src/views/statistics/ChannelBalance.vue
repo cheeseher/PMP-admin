@@ -1,0 +1,528 @@
+<!-- 数据统计/渠道余额快照 - 展示渠道余额实时数据 -->
+<template>
+  <div class="channel-balance-container">
+    <!-- 搜索表单 -->
+    <el-card shadow="never" class="filter-container">
+      <el-form :model="searchForm" class="filter-form">
+        <div class="filter-grid">
+          <el-form-item label="时间筛选：">
+            <div class="time-filter-container">
+              <el-select v-model="searchForm.timeType" placeholder="选择时间类型" style="width: 120px">
+                <el-option label="全部" value="all" />
+                <el-option label="自定义时间" value="custom" />
+                <el-option label="昨日" value="yesterday" />
+                <el-option label="最近7天" value="last7days" />
+              </el-select>
+              <el-date-picker
+                v-if="searchForm.timeType === 'custom'"
+                v-model="searchForm.dateRange"
+                type="daterange"
+                range-separator="~"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                format="YYYY-MM-DD"
+                value-format="YYYY-MM-DD"
+                style="width: 240px; margin-left: 8px;"
+              />
+            </div>
+          </el-form-item>
+          
+
+
+          <el-form-item label="渠道名称：">
+            <el-select
+              v-model="searchForm.channelNames"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="请选择渠道"
+              style="width: 220px"
+              clearable
+              filterable
+            >
+              <el-option
+                v-for="item in channelOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              />
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="商户号：">
+            <el-input
+              v-model="searchForm.channelMchNo"
+              placeholder="请输入渠道商户号"
+              style="width: 180px"
+              clearable
+            />
+          </el-form-item>
+
+          <div class="filter-buttons">
+            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">查询</el-button>
+            <el-button plain :icon="RefreshRight" @click="handleReset">重置</el-button>
+          </div>
+        </div>
+      </el-form>
+    </el-card>
+
+    <!-- 表格区域 -->
+    <el-card shadow="never">
+      <!-- 表格工具栏 -->
+      <div class="table-toolbar">
+        <div class="left">
+          <span class="table-title">渠道余额列表</span>
+          <el-tag type="info" size="small" effect="plain">{{ total }}条记录</el-tag>
+        </div>
+        <div class="right">
+          <el-button type="primary" :icon="Download" @click="handleExport">导出</el-button>
+          <el-tooltip content="刷新数据">
+            <el-button :icon="Refresh" circle plain @click="refreshData" :loading="loading" />
+          </el-tooltip>
+        </div>
+      </div>
+
+      <!-- 数据表格 -->
+      <el-table 
+        :data="tableData" 
+        border 
+        stripe
+        style="width: 100%" 
+        v-loading="loading"
+        @row-dblclick="viewDetail"
+      >
+        <el-table-column type="selection" width="55" align="center" />
+        <el-table-column prop="supplierId" label="供应商 ID" width="120" align="center" />
+        <el-table-column prop="channelName" label="渠道名称" width="150" align="center" />
+        <el-table-column prop="channelMchNo" label="渠道商户号" min-width="160" show-overflow-tooltip align="center" />
+        <el-table-column prop="date" label="日期" width="120" align="center" />
+        <el-table-column prop="availableAmount" label="可用余额" width="150" align="right">
+          <template #default="{ row }">
+            <span class="amount-cell">{{ formatAmount(row.availableAmount) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="snapshotTime" label="备份时间" width="180" align="center" />
+      </el-table>
+
+      <!-- 分页 -->
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          :total="total"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
+    </el-card>
+
+    <!-- 明细查看对话框 -->
+    <el-dialog
+      v-model="detailDialogVisible"
+      title="渠道余额明细"
+      width="800px"
+      destroy-on-close
+    >
+      <el-descriptions :column="2" border>
+        <el-descriptions-item label="渠道名称" :span="2">{{ currentChannel.channelName }}</el-descriptions-item>
+        <el-descriptions-item label="供应商名称">{{ currentChannel.supplierName }}</el-descriptions-item>
+        <el-descriptions-item label="供应商 ID">{{ currentChannel.supplierId }}</el-descriptions-item>
+        <el-descriptions-item label="渠道商户号">{{ currentChannel.channelMchNo }}</el-descriptions-item>
+        <el-descriptions-item label="快照时间">{{ currentChannel.snapshotTime }}</el-descriptions-item>
+        <el-descriptions-item label="账户余额">{{ formatAmount(currentChannel.balance) }}</el-descriptions-item>
+        <el-descriptions-item label="冻结金额">{{ formatAmount(currentChannel.frozenAmount) }}</el-descriptions-item>
+        <el-descriptions-item label="可用金额" :span="2">
+          <span class="amount-highlight">{{ formatAmount(currentChannel.availableAmount) }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="今日流水" :span="2">
+          <el-tag type="success">收入: {{ formatAmount(currentChannel.todayIncome) }}</el-tag>
+          <el-tag type="danger" style="margin-left: 10px;">支出: {{ formatAmount(currentChannel.todayOutcome) }}</el-tag>
+        </el-descriptions-item>
+      </el-descriptions>
+      
+      <div class="channel-detail-chart">
+        <div class="chart-title">余额变化趋势 (近7日)</div>
+        <div ref="balanceChartRef" class="balance-chart"></div>
+      </div>
+      
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="detailDialogVisible = false">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { 
+  Download, 
+  Refresh, 
+  Search, 
+  RefreshRight
+} from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { formatAmount } from '@/utils/formatUtils'
+import { channelBalanceData } from '@/data/statisticsData'
+import dayjs from 'dayjs'
+
+// 根据时间类型获取日期范围
+const getDateRangeByType = (type) => {
+  const today = dayjs()
+  
+  switch (type) {
+    case 'all':
+      return []
+    case 'today':
+      return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    case 'yesterday':
+      const yesterday = today.subtract(1, 'day')
+      return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]
+    case 'last7days':
+      return [today.subtract(6, 'day').format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]
+    default:
+      return []
+  }
+}
+
+
+
+// 渠道选项
+const channelOptions = ref([
+  { value: '支付宝扫码', label: '支付宝扫码' },
+  { value: '支付宝H5', label: '支付宝H5' },
+  { value: '微信扫码', label: '微信扫码' },
+  { value: '微信H5', label: '微信H5' },
+  { value: '银联在线', label: '银联在线' },
+  { value: '银联扫码', label: '银联扫码' },
+  { value: 'QQ钱包H5', label: 'QQ钱包H5' },
+  { value: '快捷支付', label: '快捷支付' }
+])
+
+// 搜索表单数据
+const searchForm = reactive({
+  timeType: 'all',
+  dateRange: [],
+  channelNames: [],
+  channelMchNo: ''
+})
+
+// 监听时间类型变化，自动设置日期范围
+watch(() => searchForm.timeType, (newType) => {
+  if (newType !== 'custom') {
+    searchForm.dateRange = getDateRangeByType(newType)
+  } else {
+    searchForm.dateRange = []
+  }
+})
+
+// 表格数据
+const tableData = ref([])
+
+// 分页相关
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+const loading = ref(false)
+
+// 详情对话框相关
+const detailDialogVisible = ref(false)
+const currentChannel = ref({})
+const balanceChartRef = ref(null)
+
+// 初始化表格数据
+const initTableData = () => {
+  loading.value = true
+  const data = channelBalanceData.map(item => ({
+    ...item,
+    date: item.snapshotTime ? item.snapshotTime.split(' ')[0] : ''
+  }))
+  tableData.value = data
+  total.value = data.length
+  loading.value = false
+}
+
+// 搜索方法
+const handleSearch = () => {
+  loading.value = true
+  
+  // 模拟筛选数据
+  setTimeout(() => {
+    let filteredData = [...channelBalanceData]
+    
+    // 渠道筛选
+    if (searchForm.channelNames && searchForm.channelNames.length > 0) {
+      filteredData = filteredData.filter(item => 
+        searchForm.channelNames.includes(item.channelName)
+      )
+    }
+
+    // 商户号筛选
+    if (searchForm.channelMchNo) {
+      filteredData = filteredData.filter(item => 
+        item.channelMchNo.toLowerCase().includes(searchForm.channelMchNo.trim().toLowerCase())
+      )
+    }
+    
+    // 时间筛选
+    if (searchForm.timeType !== 'all' && searchForm.dateRange && searchForm.dateRange.length === 2) {
+      const [startDate, endDate] = searchForm.dateRange;
+      filteredData = filteredData.filter(item => {
+        if (!item.snapshotTime) return false;
+        const itemDate = item.snapshotTime.split(' ')[0];
+        return itemDate >= startDate && itemDate <= endDate;
+      });
+    }
+    
+    const processedData = filteredData.map(item => ({
+      ...item,
+      date: item.snapshotTime ? item.snapshotTime.split(' ')[0] : ''
+    }))
+    
+    tableData.value = processedData
+    total.value = processedData.length
+    
+    loading.value = false
+    ElMessage.success('查询成功')
+  }, 600)
+}
+
+// 重置方法
+const handleReset = () => {
+  searchForm.timeType = 'all'
+  searchForm.dateRange = []
+  searchForm.channelNames = []
+  searchForm.channelMchNo = ''
+  handleSearch()
+}
+
+// 分页方法
+const handleSizeChange = (val) => {
+  pageSize.value = val
+  handleSearch()
+}
+
+const handleCurrentChange = (val) => {
+  currentPage.value = val
+  handleSearch()
+}
+
+// 导出数据
+const handleExport = () => {
+  ElMessageBox.confirm(
+    '确认导出当前筛选条件下的渠道余额数据?',
+    '导出确认',
+    {
+      confirmButtonText: '确认导出',
+      cancelButtonText: '取消',
+      type: 'info'
+    }
+  )
+    .then(() => {
+      ElMessage({
+        type: 'success',
+        message: '数据导出成功，请在下载中心查看'
+      })
+    })
+    .catch(() => {})
+}
+
+// 刷新数据
+const refreshData = () => {
+  loading.value = true
+  setTimeout(() => {
+    initTableData()
+    loading.value = false
+    ElMessage.success('数据已刷新')
+  }, 600)
+}
+
+// 查看明细
+const viewDetail = (row) => {
+  currentChannel.value = row
+  detailDialogVisible.value = true
+  
+  // 模拟图表初始化，使用原生 DOM 自制的高端柱状图，与 MerchantBalance 保持一致
+  setTimeout(() => {
+    if (balanceChartRef.value) {
+      const chartContainer = balanceChartRef.value;
+      chartContainer.innerHTML = '';
+      chartContainer.style.display = 'flex';
+      chartContainer.style.flexDirection = 'column';
+      chartContainer.style.justifyContent = 'center';
+      chartContainer.style.alignItems = 'center';
+      
+      const chartText = document.createElement('div');
+      chartText.textContent = '余额趋势图 (模拟数据)';
+      chartText.style.color = '#606266';
+      chartText.style.marginBottom = '15px';
+      
+      const chartBars = document.createElement('div');
+      chartBars.style.display = 'flex';
+      chartBars.style.alignItems = 'flex-end';
+      chartBars.style.height = '150px';
+      chartBars.style.width = '100%';
+      chartBars.style.justifyContent = 'space-around';
+      
+      const days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+      const values = [
+        row.balance * 0.85,
+        row.balance * 0.9,
+        row.balance * 0.95,
+        row.balance * 0.85,
+        row.balance * 0.92,
+        row.balance * 0.97,
+        row.balance
+      ];
+      
+      days.forEach((day, index) => {
+        const barContainer = document.createElement('div');
+        barContainer.style.display = 'flex';
+        barContainer.style.flexDirection = 'column';
+        barContainer.style.alignItems = 'center';
+        
+        const barHeight = (values[index] / row.balance) * 120;
+        const bar = document.createElement('div');
+        bar.style.width = '30px';
+        bar.style.height = `${barHeight}px`;
+        bar.style.backgroundColor = '#67c23a'; // 渠道使用精美的绿色主题区分于商户的蓝色
+        bar.style.borderRadius = '3px 3px 0 0';
+        bar.style.transition = 'all 0.3s ease';
+        
+        // 增加 hover 动画效果
+        bar.onmouseover = () => {
+          bar.style.backgroundColor = '#85ce61';
+        };
+        bar.onmouseout = () => {
+          bar.style.backgroundColor = '#67c23a';
+        };
+        
+        const label = document.createElement('div');
+        label.textContent = day;
+        label.style.marginTop = '5px';
+        label.style.fontSize = '12px';
+        label.style.color = '#606266';
+        
+        const value = document.createElement('div');
+        value.textContent = formatAmount(values[index]).replace('¥', '');
+        value.style.fontSize = '10px';
+        value.style.color = '#909399';
+        value.style.marginTop = '2px';
+        
+        barContainer.appendChild(bar);
+        barContainer.appendChild(label);
+        barContainer.appendChild(value);
+        
+        chartBars.appendChild(barContainer);
+      });
+      
+      chartContainer.appendChild(chartText);
+      chartContainer.appendChild(chartBars);
+    }
+  }, 100);
+}
+
+// 页面加载时获取数据
+onMounted(() => {
+  handleSearch()
+})
+</script>
+
+<style scoped>
+.channel-balance-container {
+  padding: 16px;
+}
+
+.filter-container {
+  margin-bottom: 16px;
+}
+
+.filter-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.filter-form :deep(.el-form-item) {
+  margin-bottom: 0;
+  margin-right: 0;
+}
+
+.filter-buttons {
+  margin-left: auto;
+  display: flex;
+}
+
+.filter-buttons .el-button + .el-button {
+  margin-left: 12px;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.table-toolbar .left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-title {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.table-toolbar .right .el-button {
+  margin-left: 8px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.amount-cell {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: 500;
+}
+
+.amount-highlight {
+  font-family: 'Roboto Mono', monospace;
+  font-weight: bold;
+  font-size: 16px;
+  color: #67c23a;
+}
+
+.channel-detail-chart {
+  margin-top: 20px;
+}
+
+.chart-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #606266;
+}
+
+.balance-chart {
+  height: 300px;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+</style>

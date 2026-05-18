@@ -385,7 +385,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="remarkInfo" label="备注" min-width="150" />
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="操作" width="80" fixed="right" align="center">
           <template #default="{ row }">
             <el-dropdown @command="handleCommand">
               <el-button link type="primary">
@@ -1329,15 +1329,7 @@ function getOrderStatusTagClass(status) {
 .stat-item .value {
   font-family: 'Roboto Mono', Monaco, monospace;
   font-weight: 600;
-  color: #303133;
-}
-
-.stat-item .value.income {
-  color: #67c23a;
-}
-
-.stat-item .value.expense {
-  color: #f56c6c;
+  color: #409eff;
 }
 
 .stat-item .value.emphasis {

@@ -99,7 +99,7 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="120" fixed="right" align="center">
+        <el-table-column label="操作" width="80" fixed="right" align="center">
           <template #default="scope">
             <el-dropdown @command="(command) => handleCommand(command, scope.row)">
               <el-button type="primary" link class="operation-button">

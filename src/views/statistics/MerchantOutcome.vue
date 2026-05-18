@@ -462,15 +462,7 @@ const formatNumber = (num) => {
 .stat-item .value {
   font-family: 'Roboto Mono', Monaco, monospace;
   font-weight: 600;
-  color: #303133;
-}
-
-.stat-item .value.income {
-  color: #67c23a;
-}
-
-.stat-item .value.expense {
-  color: #f56c6c;
+  color: #409eff;
 }
 
 .stat-item .value.emphasis {

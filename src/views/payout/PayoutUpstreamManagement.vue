@@ -91,7 +91,7 @@
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="120" fixed="right" align="center">
+      <el-table-column label="操作" width="80" fixed="right" align="center">
           <template #default="{ row }">
             <el-dropdown @command="(command) => handleOperation(command, row)">
               <el-button type="primary" link>

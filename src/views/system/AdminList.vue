@@ -73,7 +73,7 @@
             />
           </template>
         </el-table-column>
-        <el-table-column label="操作" min-width="120" fixed="right">
+        <el-table-column label="操作" width="80" fixed="right" align="center">
           <template #default="scope">
             <el-dropdown trigger="click" @command="(command) => handleCommand(command, scope.row)">
               <el-button type="primary" link>
